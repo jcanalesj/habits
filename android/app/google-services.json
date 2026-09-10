@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "891906790516",
+    "project_id": "constanza-dev",
+    "storage_bucket": "constanza-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:891906790516:android:130e1d32cdf53587edad21",
+        "android_client_info": {
+          "package_name": "com.jcanales.constanza"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnia6FOZRHVo3ij1rnTfMJ2WyMF4GMyU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

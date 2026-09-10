@@ -1,0 +1,123 @@
+{
+  "@@locale": "en",
+  "appTitle": "Constanza",
+  "goodMorning": "Good morning, {name}! 👋",
+  "@goodMorning": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "goodAfternoon": "Good afternoon, {name}! 👋",
+  "@goodAfternoon": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "goodEvening": "Good evening, {name}! 👋",
+  "@goodEvening": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "tagline": "Small actions, big changes.",
+  "generalStreak": "Overall streak",
+  "consecutiveDays": "consecutive days",
+  "freeWildcardAvailable": "1 free wildcard available this week",
+  "amazing": "Amazing!",
+  "keepItUp": "Keep it up",
+  "streaksByAmbito": "Streaks by area",
+  "seeAll": "See all",
+  "days": "days",
+  "myHabits": "My habits",
+  "newHabit": "New habit",
+  "seeAllMyHabits": "See all my habits",
+  "nextReminder": "Next reminder",
+  "todayAt": "Today at {time}",
+  "@todayAt": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "markNow": "Mark now",
+  "periodicityDaily": "Daily",
+  "periodicityWeekly": "Weekly",
+  "periodicityMonthly": "Monthly",
+  "periodicityYearly": "Yearly",
+  "restDaysCount": "{count, plural, =1{1 rest day} other{{count} rest days}}",
+  "@restDaysCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "navHome": "Home",
+  "navHabits": "Habits",
+  "navStats": "Stats",
+  "navProfile": "Profile",
+  "comingSoon": "Coming soon",
+  "createHabitComingSoon": "Create habit: coming soon",
+  "somethingWentWrong": "Something went wrong: {error}",
+  "@somethingWentWrong": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "taglineLine1": "Small actions,",
+  "taglineLine2": "big changes.",
+  "signInTitle": "Sign in",
+  "signInSubtitle": "Access your account",
+  "emailHint": "Email",
+  "passwordHint": "Password",
+  "forgotPassword": "Forgot your password?",
+  "continueLabel": "Continue",
+  "orContinueWith": "or continue with",
+  "noAccountQuestion": "Don't have an account?",
+  "registerAction": "Sign up",
+  "registerTitle": "Create your account",
+  "registerSubtitle": "Start building your best self today.",
+  "nicknameLabel": "Nickname",
+  "nicknameHint": "Choose a nickname",
+  "emailLabel": "Email",
+  "emailExampleHint": "example@email.com",
+  "passwordLabel": "Password",
+  "registerPasswordHint": "At least 8 characters",
+  "confirmPasswordLabel": "Confirm your password",
+  "confirmPasswordHint": "Enter your password again",
+  "acceptTermsPrefix": "I accept the ",
+  "termsAndConditions": "Terms and Conditions",
+  "privacyJoiner": " and the ",
+  "privacyPolicy": "Privacy Policy",
+  "registerButton": "Sign up",
+  "alreadyHaveAccount": "Already have an account?",
+  "signInAction": "Sign in",
+  "nicknameRequired": "Enter a nickname",
+  "registerInvalidEmail": "Enter a valid email address",
+  "registerPasswordTooShort": "Password must be at least 8 characters",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "acceptTermsError": "You must accept the terms and privacy policy",
+  "verifyAccountTitle": "Verify your account",
+  "verificationCodeSent": "We sent a 6-digit code to",
+  "codeExpiresIn": "The code will expire in {time} minutes",
+  "@codeExpiresIn": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "verifyButton": "Verify",
+  "codeNotReceived": "Didn't receive the code?",
+  "resendCode": "Resend code",
+  "invalidVerificationCode": "Enter the complete 6-digit code",
+  "invalidEmail": "Enter a valid email address",
+  "passwordTooShort": "Password must be at least 6 characters",
+  "signInError": "Could not sign in. Try again.",
+  "brandFooter": "Your best version, every day.",
+  "loadingYourBestVersion": "Loading your best version...",
+  "splashPhrase1": "Small actions, big changes.",
+  "splashPhrase2": "Build who you want to be",
+  "splashPhrase3": "Every day counts, even if you can't feel it",
+  "splashPhrase4": "Consistency isn't perfection, it's continuing.",
+  "splashPhrase5": "Today is a good day to keep going",
+  "weekdayInitials": "M,T,W,T,F,S,S",
+  "@weekdayInitials": {
+    "description": "Single-letter initials for Monday through Sunday, comma-separated"
+  }
+}

@@ -1,0 +1,50 @@
+import 'package:flutter/material.dart';
+import 'package:habits/localization/l10n.dart';
+import 'package:habits/theme/app_theme.dart';
+
+/// Cabecera de la Home: saludo, lema y avatar.
+class HomeHeader extends StatelessWidget {
+  const HomeHeader({super.key, required this.greeting});
+
+  final String greeting;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                greeting,
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                context.l10n.tagline,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          width: 52,
+          height: 52,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+          ),
+          child: const Text('👾', style: TextStyle(fontSize: 24)),
+        ),
+      ],
+    );
+  }
+}

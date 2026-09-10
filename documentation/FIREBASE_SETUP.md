@@ -1,0 +1,197 @@
+# Guía paso a paso — Conectar la app a Firebase (Auth + Firestore)
+
+> **Estado**: pendiente de empezar. Este documento es la hoja de ruta para sustituir el
+> repositorio en memoria (`InMemoryHabitsRepository`) por Firebase, siguiendo la
+> arquitectura ya montada: **solo cambia la capa `3_data`**; dominio y presentación no se tocan.
+>
+> Leyenda de cada paso: 🧑 lo haces tú (requiere tu cuenta/consola) · 🤖 lo puede hacer Claude Code · 🤝 juntos (comando en tu terminal con tu sesión iniciada).
+
+---
+
+## Fase 0 — Decisiones previas
+
+### 0.1 🧑 Elegir el identificador definitivo de la app
+
+> ✔ **Decidido y aplicado**:
+> - Nombre visible: **Constanza** (iOS `CFBundleDisplayName`, Android `android:label`, título localizado en `.arb`).
+> - Bundle id / applicationId: **`com.jcanales.constanza`** — aplicado en Android
+>   (`namespace`, `applicationId`, paquete de `MainActivity`), iOS (`PRODUCT_BUNDLE_IDENTIFIER`
+>   de Runner y RunnerTests) y macOS (`AppInfo.xcconfig`).
+>
+> Este es el id con el que se registrarán las apps en Firebase (paso 2.1).
+
+### 0.2 🧑 Decidir entornos
+Recomendado para el MVP: **un único proyecto Firebase** (`constanza-dev`) y crear el de
+producción más adelante, cuando haya release. Alternativa: crear ya `constanza-dev` y
+`constanza-prod` con `--dart-define` para elegir entorno (la arquitectura del proyecto ya
+contempla `config_*.json`, ver ARCHITECTURE.md §9.1).
+
+---
+
+## Fase 1 — Herramientas e infraestructura
+
+### 1.1 🧑 Instalar Firebase CLI e iniciar sesión
+```bash
+# macOS
+curl -sL https://firebase.tools | bash    # o: npm install -g firebase-tools
+firebase login
+```
+
+### 1.2 🤝 Instalar FlutterFire CLI
+```bash
+dart pub global activate flutterfire_cli
+# Asegúrate de tener ~/.pub-cache/bin en el PATH
+```
+
+### 1.3 🧑 Crear el proyecto Firebase
+En la [consola de Firebase](https://console.firebase.google.com) → "Añadir proyecto"
+(p. ej. `constanza-dev`). Google Analytics: opcional, se puede desactivar para el MVP.
+
+> También puede hacerse por CLI: `firebase projects:create constanza-dev-XXXX`.
+
+---
+
+## Fase 2 — Conectar el proyecto Flutter
+
+### 2.1 🤝 Registrar las apps y generar la configuración
+Desde la raíz del repo, con tu sesión de Firebase iniciada:
+```bash
+flutterfire configure --project=<id-del-proyecto> --platforms=ios,android
+```
+Esto genera:
+- `lib/firebase_options.dart` (se versiona en git)
+- `android/app/google-services.json`
+- `ios/Runner/GoogleService-Info.plist`
+
+### 2.2 🤖 Añadir dependencias
+```bash
+flutter pub add firebase_core firebase_auth cloud_firestore
+```
+> Nota: la primera compilación de iOS tras esto tarda bastante (CocoaPods + SDKs de Firebase).
+
+### 2.3 🤖 Inicializar Firebase en `main.dart`
+```dart
+WidgetsFlutterBinding.ensureInitialized();
+await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+```
+
+### 2.4 🤖 Versiones mínimas
+El documento funcional (§10) fija Android 8.0 (API 26) e iOS 14, por encima de los
+mínimos que exige Firebase — Claude fija `minSdk = 26` y el deployment target de iOS a 14
+si no lo están ya.
+
+---
+
+## Fase 3 — Firestore
+
+### 3.1 🧑 Crear la base de datos
+Consola → Build → Firestore Database → "Crear base de datos":
+- **Modo producción** (reglas restrictivas desde el inicio).
+- **Región**: `eur3` (europe-west) — usuarios en España/UE (requisito RGPD del doc funcional §10).
+
+### 3.2 🤖 Reglas de seguridad
+Todo scoped por usuario (`request.auth.uid == userId`, doc funcional §10). Claude crea
+`firestore.rules` en el repo y se despliegan con `firebase deploy --only firestore:rules` 🤝:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### 3.3 Modelo de datos (ya definido en el doc funcional §9.1)
+| Colección/Documento | Contenido |
+|---|---|
+| `users/{userId}` | perfil, subscriptionStatus, trialEndsAt, timezone |
+| `users/{userId}/ambitos/{ambitoId}` | nombre, tipo, racha activa, mejor racha, comodín |
+| `users/{userId}/habitos/{habitoId}` | nombre, ambitoId, periodicidad, descansos, tarea de recuperación, color, recordatorio |
+| `users/{userId}/registros/{registroId}` | fecha (día lógico), habitoId, tipo |
+| `users/{userId}/rachaGeneral` (doc) | contador, comodín semanal, fecha último uso |
+
+Las entidades de `0_entity` ya modelan estos campos: el trabajo es solo de mappers.
+
+### 3.4 🤖 Persistencia offline
+En iOS/Android viene activada por defecto (doc funcional §9.2, last-write-wins). Claude
+lo deja explícito en la configuración e incluye un comentario con la decisión.
+
+---
+
+## Fase 4 — Authentication
+
+### 4.1 🧑 Activar el proveedor
+Consola → Build → Authentication → Sign-in method → activar **Email/Password**.
+(La arquitectura queda preparada para añadir Google/Apple en v2 sin reescritura, doc §8.)
+
+### 4.2 🤖 Feature `auth` completa (nueva feature con las 4 capas)
+- `0_entity`: `AppUser`.
+- `1_domain`: `AuthRepository` abstracto + usecases (`SignInUsecase`, `SignUpUsecase`,
+  `SignOutUsecase`, `SendPasswordResetUsecase`) con sealed results.
+- `3_data`: `FirebaseAuthRepository`.
+- `2_presentation`: páginas de login/registro/recuperación (componentes en `lib/components/`),
+  textos en `.arb` (es/en), guard de navegación en GoRouter (redirect si no hay sesión).
+- Verificación de email al registro y flujo estándar de recuperación (asunción del doc §8).
+
+---
+
+## Fase 5 — Sustituir el repositorio en memoria
+
+### 5.1 🤖 `FirestoreHabitsRepository` en `3_data`
+- `api/`: wrapper de acceso a Firestore (colecciones tipadas con `withConverter`).
+- `mappers/`: DTO (mapas de Firestore) ⇄ entidades de `0_entity`.
+- `repositories/firestore_habits_repository.dart`: implementa `HabitsRepository`.
+
+### 5.2 🤖 Cambiar el cableado (una línea)
+En `lib/features/habits/2_presentation/providers/habits_providers.dart`:
+```dart
+final habitsRepositoryProvider = Provider<HabitsRepository>((ref) {
+  return FirestoreHabitsRepository(ref.read(firestoreProvider), ref.read(currentUserIdProvider));
+});
+```
+`InMemoryHabitsRepository` se conserva para tests y para `main.mocked.dart`.
+
+### 5.3 🤖 Sembrar ámbitos predefinidos
+Al crear una cuenta se escriben los ámbitos predefinidos (Salud, Mente, Desarrollo,
+Energía…) en `users/{uid}/ambitos` (doc funcional §4.4).
+
+---
+
+## Fase 6 — Desarrollo local y pruebas
+
+### 6.1 🤝 Emuladores (recomendado)
+```bash
+firebase init emulators        # Auth + Firestore
+firebase emulators:start
+```
+🤖 Claude añade un flag (`--dart-define=USE_FIREBASE_EMULATOR=true`) para que la app
+apunte a los emuladores en desarrollo, y así probar sin tocar datos reales ni cuota.
+
+### 6.2 🤖 Tests
+- Unit tests de mappers y del repositorio con `fake_cloud_firestore` / `firebase_auth_mocks`.
+- Los tests de dominio y widgets existentes no cambian (siguen usando el repo en memoria).
+
+---
+
+## Checklist resumen
+
+- [x] 0.1 🧑 Decidir applicationId/bundle id definitivo → `com.jcanales.constanza` ✔
+- [x] 0.2 🧑 Decidir entornos → un único proyecto `constanza-dev` para el MVP ✔
+- [x] 1.1 🧑 `firebase login` ✔ (CLI instalada en `~/.npm-global/bin`, en PATH vía `.zshrc`)
+- [x] 1.2 🤝 Instalar FlutterFire CLI ✔ (1.4.1, `~/.pub-cache/bin`)
+- [x] 1.3 🧑 Crear proyecto → `constanza-dev` creado por CLI ✔
+- [x] 2.1 🤝 `flutterfire configure` ✔ (apps iOS/Android registradas, `firebase_options.dart` generado)
+- [x] 2.2–2.4 🤖 Dependencias + init en `main.dart` + minSdk 26 / iOS 14 ✔
+- [ ] 3.1 🧑 Crear Firestore (eur3, modo producción)
+- [ ] 3.2 🤖🤝 Reglas de seguridad + deploy
+- [ ] 3.4 🤖 Persistencia offline
+- [ ] 4.1 🧑 Activar Email/Password
+- [ ] 4.2 🤖 Feature auth completa
+- [ ] 5.x 🤖 FirestoreHabitsRepository + cableado + seed de ámbitos
+- [ ] 6.x 🤝 Emuladores + tests
+
+**Siguiente acción**: decide el punto 0.1 (identificador) y el 0.2 (entornos), haz
+`firebase login` y crea el proyecto (1.3). A partir de ahí Claude puede continuar con
+todo lo marcado 🤖 en una sesión.
