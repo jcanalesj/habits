@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habits/features/auth/2_presentation/pages/register_page.dart';
-import 'package:habits/localization/gen/app_localizations.dart';
 
-Widget _appUnderTest() {
-  return const ProviderScope(
-    child: MaterialApp(
-      locale: Locale('es'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: RegisterPage(),
-    ),
-  );
-}
+import '../../../helpers/auth_test_helpers.dart';
 
 void main() {
+  late AuthTestEnv env;
+
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
+
+  setUp(() => env = AuthTestEnv());
+
+  Widget app() => localizedApp(const RegisterPage(), overrides: env.overrides);
 
   testWidgets('RegisterPage muestra el formulario de alta', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -27,7 +22,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pump();
 
     expect(find.text('Crea tu cuenta'), findsOneWidget);
@@ -45,11 +40,11 @@ void main() {
   });
 
   testWidgets('Enviar vacío muestra los errores del registro', (tester) async {
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pump();
 
     await tester.tap(find.text('Registrarme'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Introduce un nickname'), findsOneWidget);
     expect(find.text('Introduce un correo válido'), findsOneWidget);
@@ -61,6 +56,27 @@ void main() {
       find.text('Debes aceptar los términos y la política de privacidad'),
       findsOneWidget,
     );
+    expect(env.auth.currentUser, isNull);
+  });
+
+  testWidgets('Un correo ya registrado muestra el error del proveedor', (
+    tester,
+  ) async {
+    env.auth.registerAccount(unverifiedUser);
+    await tester.pumpWidget(app());
+    await tester.pump();
+
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), 'Nuevo');
+    await tester.enterText(fields.at(1), unverifiedUser.email);
+    await tester.enterText(fields.at(2), 'secreta12');
+    await tester.enterText(fields.at(3), 'secreta12');
+    await tester.tap(find.byType(Checkbox));
+    await tester.tap(find.text('Registrarme'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ya existe una cuenta con ese correo.'), findsOneWidget);
+    expect(env.auth.currentUser, isNull);
   });
 
   testWidgets('El campo enfocado sube sobre el teclado sin cambiar de tamaño', (
@@ -72,7 +88,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetViewInsets);
 
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
     final confirmField = find.byType(TextField).at(3);

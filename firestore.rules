@@ -1,10 +1,291 @@
 rules_version = '2';
+
+// =============================================================================
+// Constanza — Security Rules de Firestore
+//
+// Principios (decisiones aprobadas, ver documentation/):
+//   1. Todo el modelo vive bajo users/{uid}. Un usuario solo accede a lo suyo
+//      y únicamente con el email verificado.
+//   2. Los REGISTROS de cumplimiento son la fuente de verdad. Los documentos
+//      canónicos (users, ambitos, habitos) NO contienen campos derivados
+//      (rachas, mejores rachas, comodines). Lo derivado vive aislado en
+//      users/{uid}/cache/rachas, que la app trata como caché reconstruible.
+//      Cuando existan Cloud Functions, basta con cerrar la escritura de ese
+//      documento al cliente para que las rachas pasen a calcularse en servidor.
+//   3. El cliente no puede escribir la suscripción ni alterar createdAt/email.
+//   4. Los hábitos se borran en soft delete (deletedAt); nunca hard delete,
+//      así el histórico de registros se conserva para estadísticas.
+//   5. El ámbito "general" no se puede borrar: es el destino de los hábitos
+//      cuando se elimina otro ámbito.
+// =============================================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Todo el modelo de datos vive bajo users/{userId} (doc funcional §9.1):
-    // cada usuario solo puede leer y escribir sus propios documentos (§10).
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+    // ----------------------------------------------------------------- helpers
+    function isOwner(uid) {
+      return request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true;
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Un campo escrito con FieldValue.serverTimestamp() vale request.time.
+    function isServerTime(value) { return value == request.time; }
+    function unchanged(field) { return incoming()[field] == existing()[field]; }
+
+    function isShortText(value, max) {
+      return value is string && value.size() > 0 && value.size() <= max;
+    }
+    function isNonNegInt(value) { return value is int && value >= 0; }
+    function isColor(value) { return value is int && value >= 0 && value <= 4294967295; }
+    function isNullOrTimestamp(value) { return value == null || value is timestamp; }
+
+    // Día lógico en formato YYYY-MM-DD (string, independiente de zona horaria).
+    function isDia(value) {
+      return value is string
+        && value.matches('^20[2-9][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
+    }
+    // Un día lógico no puede estar en el futuro (tolerancia de 2 días para
+    // cubrir cualquier zona horaria y la sincronización offline).
+    function isDiaNoFuturo(value) {
+      return timestamp.date(int(value[0:4]), int(value[5:7]), int(value[8:10]))
+        <= request.time + duration.value(2, 'd');
+    }
+    function isHora(value) {
+      return value is string && value.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+    }
+
+    function isPeriodicidad(value) {
+      return value in ['daily', 'weekly', 'monthly', 'yearly'];
+    }
+    function isTipoRegistro(value) {
+      return value in ['completed', 'recovery', 'plannedRest'];
+    }
+
+    // Ámbitos que la app siembra al crear la cuenta. Solo estos ids pueden
+    // llevar esPredefinido = true.
+    function isAmbitoPredefinido(ambitoId) {
+      return ambitoId in ['general', 'salud', 'mente', 'desarrollo', 'energia'];
+    }
+
+    function ambitoPath(uid, ambitoId) {
+      return /databases/$(database)/documents/users/$(uid)/ambitos/$(ambitoId);
+    }
+    function habitoPath(uid, habitoId) {
+      return /databases/$(database)/documents/users/$(uid)/habitos/$(habitoId);
+    }
+
+    // ------------------------------------------------------------ users/{uid}
+    // Perfil del usuario. Sin campos derivados.
+    match /users/{uid} {
+      allow get: if isOwner(uid);
+      allow list: if false;
+
+      allow create: if isOwner(uid)
+        && validUser(incoming())
+        && incoming().email == request.auth.token.email
+        && incoming().subscription == {'status': 'free'}
+        && isServerTime(incoming().createdAt)
+        && isServerTime(incoming().updatedAt)
+        && (!('lastActiveAt' in incoming()) || isServerTime(incoming().lastActiveAt));
+
+      allow update: if isOwner(uid)
+        && validUser(incoming())
+        && unchanged('email')
+        && unchanged('createdAt')
+        // La suscripción solo la cambia el backend (Admin SDK / Functions).
+        && unchanged('subscription')
+        && isServerTime(incoming().updatedAt)
+        && (!('lastActiveAt' in incoming())
+            || isServerTime(incoming().lastActiveAt)
+            || ('lastActiveAt' in existing() && unchanged('lastActiveAt')));
+
+      // El borrado de cuenta (cascada completa) se hace en servidor.
+      allow delete: if false;
+
+      function validUser(d) {
+        return d.keys().hasOnly([
+            'email', 'displayName', 'timezone', 'locale', 'subscription',
+            'onboardingCompleted', 'createdAt', 'updatedAt', 'lastActiveAt'
+          ])
+          && d.keys().hasAll(['email', 'timezone', 'locale', 'subscription', 'createdAt', 'updatedAt'])
+          && d.email is string
+          && (!('displayName' in d) || d.displayName == null || isShortText(d.displayName, 40))
+          && isShortText(d.timezone, 64)
+          && d.locale in ['es', 'en']
+          && d.subscription is map
+          && (!('onboardingCompleted' in d) || d.onboardingCompleted is bool);
+      }
+    }
+
+    // ------------------------------------------------- users/{uid}/ambitos/{id}
+    // Configuración de ámbitos. Sin rachas ni comodines (van en cache/rachas).
+    match /users/{uid}/ambitos/{ambitoId} {
+      allow read: if isOwner(uid);
+
+      allow create: if isOwner(uid)
+        && validAmbito(incoming())
+        && isServerTime(incoming().createdAt)
+        && isServerTime(incoming().updatedAt);
+
+      allow update: if isOwner(uid)
+        && validAmbito(incoming())
+        && unchanged('createdAt')
+        && unchanged('esPredefinido')
+        && isServerTime(incoming().updatedAt);
+
+      // "general" es el ámbito de reasignación y no puede eliminarse. La app
+      // reasigna los hábitos del ámbito borrado a "general" en el mismo batch.
+      allow delete: if isOwner(uid) && ambitoId != 'general';
+
+      function validAmbito(d) {
+        return d.keys().hasOnly(['nombre', 'emoji', 'colorValue', 'esPredefinido', 'orden', 'createdAt', 'updatedAt'])
+          && d.keys().hasAll(['nombre', 'emoji', 'colorValue', 'esPredefinido', 'orden', 'createdAt', 'updatedAt'])
+          && isShortText(d.nombre, 40)
+          && isShortText(d.emoji, 16)
+          && isColor(d.colorValue)
+          && d.esPredefinido == isAmbitoPredefinido(ambitoId)
+          && isNonNegInt(d.orden);
+      }
+    }
+
+    // ------------------------------------------------- users/{uid}/habitos/{id}
+    // Configuración de hábitos. Sin rachas. Soft delete vía deletedAt.
+    match /users/{uid}/habitos/{habitoId} {
+      allow read: if isOwner(uid);
+
+      allow create: if isOwner(uid)
+        && validHabito(incoming())
+        && incoming().deletedAt == null
+        && isServerTime(incoming().createdAt)
+        && isServerTime(incoming().updatedAt)
+        && exists(ambitoPath(uid, incoming().ambitoId));
+
+      allow update: if isOwner(uid)
+        && validHabito(incoming())
+        && unchanged('createdAt')
+        && isServerTime(incoming().updatedAt)
+        && (unchanged('ambitoId') || exists(ambitoPath(uid, incoming().ambitoId)))
+        // deletedAt solo puede quedarse igual, ponerse a null (restaurar) o
+        // fijarse al instante del servidor (soft delete).
+        && (unchanged('deletedAt')
+            || incoming().deletedAt == null
+            || isServerTime(incoming().deletedAt));
+
+      // Nunca hard delete: los registros históricos deben conservarse.
+      allow delete: if false;
+
+      function validHabito(d) {
+        return d.keys().hasOnly([
+            'nombre', 'emoji', 'colorValue', 'ambitoId', 'periodicidad',
+            'historialPeriodicidad', 'descansosPermitidos', 'tareaRecuperacion',
+            'recuperacionCooldownDias', 'recordatorioHora', 'orden', 'deletedAt',
+            'createdAt', 'updatedAt'
+          ])
+          && d.keys().hasAll([
+            'nombre', 'emoji', 'colorValue', 'ambitoId', 'periodicidad',
+            'historialPeriodicidad', 'descansosPermitidos',
+            'recuperacionCooldownDias', 'orden', 'deletedAt', 'createdAt', 'updatedAt'
+          ])
+          && isShortText(d.nombre, 60)
+          && isShortText(d.emoji, 16)
+          && isColor(d.colorValue)
+          && isShortText(d.ambitoId, 128)
+          && isPeriodicidad(d.periodicidad)
+          && d.historialPeriodicidad is list
+          && d.historialPeriodicidad.size() <= 50
+          && d.descansosPermitidos is int
+          && d.descansosPermitidos >= 0 && d.descansosPermitidos <= 366
+          && (!('tareaRecuperacion' in d) || d.tareaRecuperacion == null || isShortText(d.tareaRecuperacion, 120))
+          && d.recuperacionCooldownDias is int
+          && d.recuperacionCooldownDias >= 1 && d.recuperacionCooldownDias <= 365
+          && (!('recordatorioHora' in d) || d.recordatorioHora == null || isHora(d.recordatorioHora))
+          && isNonNegInt(d.orden)
+          && isNullOrTimestamp(d.deletedAt);
+      }
+    }
+
+    // ----------------------------------------------- users/{uid}/registros/{id}
+    // FUENTE DE VERDAD. Id determinista "{habitoId}_{YYYY-MM-DD}": marcar es
+    // set, desmarcar es delete, sin duplicados y sin consultas previas.
+    match /users/{uid}/registros/{registroId} {
+      allow read: if isOwner(uid);
+
+      allow create: if isOwner(uid)
+        && validRegistro(incoming())
+        && registroId == incoming().habitoId + '_' + incoming().dia
+        && isDiaNoFuturo(incoming().dia)
+        && isServerTime(incoming().createdAt)
+        && habitoActivo(incoming().habitoId)
+        && (incoming().tipo != 'recovery' || habitoTieneRecuperacion(incoming().habitoId));
+
+      // Solo puede cambiar el tipo (p. ej. cumplido -> recuperación).
+      allow update: if isOwner(uid)
+        && validRegistro(incoming())
+        && unchanged('habitoId')
+        && unchanged('dia')
+        && unchanged('createdAt')
+        && habitoActivo(incoming().habitoId)
+        && (incoming().tipo != 'recovery' || habitoTieneRecuperacion(incoming().habitoId));
+
+      // Los registros de un hábito eliminado (soft delete) son inmutables.
+      allow delete: if isOwner(uid) && habitoActivo(existing().habitoId);
+
+      function habitoData(habitoId) { return get(habitoPath(uid, habitoId)).data; }
+      function habitoActivo(habitoId) {
+        return exists(habitoPath(uid, habitoId)) && habitoData(habitoId).deletedAt == null;
+      }
+      function habitoTieneRecuperacion(habitoId) {
+        return 'tareaRecuperacion' in habitoData(habitoId)
+          && habitoData(habitoId).tareaRecuperacion != null;
+      }
+
+      function validRegistro(d) {
+        return d.keys().hasOnly(['habitoId', 'dia', 'tipo', 'tz', 'createdAt', 'updatedAt'])
+          && d.keys().hasAll(['habitoId', 'dia', 'tipo', 'createdAt'])
+          && isShortText(d.habitoId, 128)
+          && isDia(d.dia)
+          && isTipoRegistro(d.tipo)
+          && (!('tz' in d) || isShortText(d.tz, 64))
+          && (!('updatedAt' in d) || d.updatedAt is timestamp);
+      }
+    }
+
+    // -------------------------------------------------- users/{uid}/cache/rachas
+    // ÚNICO documento con datos derivados que el cliente puede escribir.
+    // Es una caché reconstruible desde registros + configuración; las reglas
+    // solo validan forma y tipos, no el valor. Al introducir Cloud Functions,
+    // cambiar create/update a "if false" y calcularlo en servidor.
+    match /users/{uid}/cache/{cacheId} {
+      allow read: if isOwner(uid);
+
+      allow create, update: if isOwner(uid)
+        && cacheId == 'rachas'
+        && validCacheRachas(incoming());
+
+      allow delete: if isOwner(uid);
+
+      function validCacheRachas(d) {
+        return d.keys().hasOnly(['general', 'habitos', 'ambitos', 'calculadoHasta', 'version', 'updatedAt'])
+          && d.keys().hasAll(['general', 'habitos', 'ambitos', 'calculadoHasta', 'updatedAt'])
+          && d.general is map
+          && d.general.keys().hasOnly(['actual', 'mejor', 'comodinDisponible', 'ultimoDiaRegistrado'])
+          && d.general.keys().hasAll(['actual', 'mejor', 'comodinDisponible'])
+          && isNonNegInt(d.general.actual)
+          && isNonNegInt(d.general.mejor)
+          && d.general.comodinDisponible is bool
+          && (!('ultimoDiaRegistrado' in d.general)
+              || d.general.ultimoDiaRegistrado == null
+              || isDia(d.general.ultimoDiaRegistrado))
+          && d.habitos is map
+          && d.ambitos is map
+          && isDia(d.calculadoHasta)
+          && (!('version' in d) || d.version is int)
+          && isServerTime(d.updatedAt);
+      }
     }
   }
 }

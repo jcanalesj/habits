@@ -15,12 +15,16 @@ T _$identity<T>(T value) => value;
 mixin _$Habit {
 
  String get id; String get name;/// Un hábito pertenece a un único ámbito (decisión cerrada, sección 4.4).
- String get ambitoId; Periodicity get periodicity;/// Cupo de descansos planificados dentro del periodo (ej. 2 de cada 7).
+ String get ambitoId; Periodicity get periodicity;/// Cambios de periodicidad anteriores, en orden cronológico.
+ List<PeriodicityChange> get periodicityHistory;/// Cupo de descansos planificados dentro del periodo (ej. 2 de cada 7).
  int get restDaysAllowed;/// Tarea alternativa más ligera que salva la racha del ámbito.
  String? get recoveryTask;/// Límite de uso de la tarea de recuperación: 1 vez cada X días.
  int get recoveryCooldownDays;/// Color asignado de la paleta al crear el hábito, editable.
  int get colorValue; String get emoji;/// Hora fija de recordatorio en formato "HH:mm" (v1), opcional.
- String? get reminderTime; int get currentStreak; DateTime get createdAt;
+ String? get reminderTime;/// Posición en las listas.
+ int get order; DateTime get createdAt;/// Soft delete: los hábitos borrados conservan su histórico de registros
+/// y no aparecen en las consultas normales.
+ DateTime? get deletedAt;
 /// Create a copy of Habit
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +35,16 @@ $HabitCopyWith<Habit> get copyWith => _$HabitCopyWithImpl<Habit>(this as Habit, 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Habit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ambitoId, ambitoId) || other.ambitoId == ambitoId)&&(identical(other.periodicity, periodicity) || other.periodicity == periodicity)&&(identical(other.restDaysAllowed, restDaysAllowed) || other.restDaysAllowed == restDaysAllowed)&&(identical(other.recoveryTask, recoveryTask) || other.recoveryTask == recoveryTask)&&(identical(other.recoveryCooldownDays, recoveryCooldownDays) || other.recoveryCooldownDays == recoveryCooldownDays)&&(identical(other.colorValue, colorValue) || other.colorValue == colorValue)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.currentStreak, currentStreak) || other.currentStreak == currentStreak)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Habit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ambitoId, ambitoId) || other.ambitoId == ambitoId)&&(identical(other.periodicity, periodicity) || other.periodicity == periodicity)&&const DeepCollectionEquality().equals(other.periodicityHistory, periodicityHistory)&&(identical(other.restDaysAllowed, restDaysAllowed) || other.restDaysAllowed == restDaysAllowed)&&(identical(other.recoveryTask, recoveryTask) || other.recoveryTask == recoveryTask)&&(identical(other.recoveryCooldownDays, recoveryCooldownDays) || other.recoveryCooldownDays == recoveryCooldownDays)&&(identical(other.colorValue, colorValue) || other.colorValue == colorValue)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.order, order) || other.order == order)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,ambitoId,periodicity,restDaysAllowed,recoveryTask,recoveryCooldownDays,colorValue,emoji,reminderTime,currentStreak,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,ambitoId,periodicity,const DeepCollectionEquality().hash(periodicityHistory),restDaysAllowed,recoveryTask,recoveryCooldownDays,colorValue,emoji,reminderTime,order,createdAt,deletedAt);
 
 @override
 String toString() {
-  return 'Habit(id: $id, name: $name, ambitoId: $ambitoId, periodicity: $periodicity, restDaysAllowed: $restDaysAllowed, recoveryTask: $recoveryTask, recoveryCooldownDays: $recoveryCooldownDays, colorValue: $colorValue, emoji: $emoji, reminderTime: $reminderTime, currentStreak: $currentStreak, createdAt: $createdAt)';
+  return 'Habit(id: $id, name: $name, ambitoId: $ambitoId, periodicity: $periodicity, periodicityHistory: $periodicityHistory, restDaysAllowed: $restDaysAllowed, recoveryTask: $recoveryTask, recoveryCooldownDays: $recoveryCooldownDays, colorValue: $colorValue, emoji: $emoji, reminderTime: $reminderTime, order: $order, createdAt: $createdAt, deletedAt: $deletedAt)';
 }
 
 
@@ -51,7 +55,7 @@ abstract mixin class $HabitCopyWith<$Res>  {
   factory $HabitCopyWith(Habit value, $Res Function(Habit) _then) = _$HabitCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String ambitoId, Periodicity periodicity, int restDaysAllowed, String? recoveryTask, int recoveryCooldownDays, int colorValue, String emoji, String? reminderTime, int currentStreak, DateTime createdAt
+ String id, String name, String ambitoId, Periodicity periodicity, List<PeriodicityChange> periodicityHistory, int restDaysAllowed, String? recoveryTask, int recoveryCooldownDays, int colorValue, String emoji, String? reminderTime, int order, DateTime createdAt, DateTime? deletedAt
 });
 
 
@@ -68,21 +72,23 @@ class _$HabitCopyWithImpl<$Res>
 
 /// Create a copy of Habit
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? ambitoId = null,Object? periodicity = null,Object? restDaysAllowed = null,Object? recoveryTask = freezed,Object? recoveryCooldownDays = null,Object? colorValue = null,Object? emoji = null,Object? reminderTime = freezed,Object? currentStreak = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? ambitoId = null,Object? periodicity = null,Object? periodicityHistory = null,Object? restDaysAllowed = null,Object? recoveryTask = freezed,Object? recoveryCooldownDays = null,Object? colorValue = null,Object? emoji = null,Object? reminderTime = freezed,Object? order = null,Object? createdAt = null,Object? deletedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,ambitoId: null == ambitoId ? _self.ambitoId : ambitoId // ignore: cast_nullable_to_non_nullable
 as String,periodicity: null == periodicity ? _self.periodicity : periodicity // ignore: cast_nullable_to_non_nullable
-as Periodicity,restDaysAllowed: null == restDaysAllowed ? _self.restDaysAllowed : restDaysAllowed // ignore: cast_nullable_to_non_nullable
+as Periodicity,periodicityHistory: null == periodicityHistory ? _self.periodicityHistory : periodicityHistory // ignore: cast_nullable_to_non_nullable
+as List<PeriodicityChange>,restDaysAllowed: null == restDaysAllowed ? _self.restDaysAllowed : restDaysAllowed // ignore: cast_nullable_to_non_nullable
 as int,recoveryTask: freezed == recoveryTask ? _self.recoveryTask : recoveryTask // ignore: cast_nullable_to_non_nullable
 as String?,recoveryCooldownDays: null == recoveryCooldownDays ? _self.recoveryCooldownDays : recoveryCooldownDays // ignore: cast_nullable_to_non_nullable
 as int,colorValue: null == colorValue ? _self.colorValue : colorValue // ignore: cast_nullable_to_non_nullable
 as int,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,reminderTime: freezed == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
-as String?,currentStreak: null == currentStreak ? _self.currentStreak : currentStreak // ignore: cast_nullable_to_non_nullable
+as String?,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,deletedAt: freezed == deletedAt ? _self.deletedAt : deletedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -167,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int currentStreak,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  List<PeriodicityChange> periodicityHistory,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Habit() when $default != null:
-return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.currentStreak,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.periodicityHistory,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
   return orElse();
 
 }
@@ -188,10 +194,10 @@ return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.restD
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int currentStreak,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  List<PeriodicityChange> periodicityHistory,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Habit():
-return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.currentStreak,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.periodicityHistory,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +214,10 @@ return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.restD
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int currentStreak,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  List<PeriodicityChange> periodicityHistory,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Habit() when $default != null:
-return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.currentStreak,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.periodicityHistory,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
   return null;
 
 }
@@ -222,8 +228,8 @@ return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.restD
 /// @nodoc
 
 
-class _Habit implements Habit {
-  const _Habit({required this.id, required this.name, required this.ambitoId, required this.periodicity, this.restDaysAllowed = 0, this.recoveryTask, this.recoveryCooldownDays = 7, required this.colorValue, required this.emoji, this.reminderTime, this.currentStreak = 0, required this.createdAt});
+class _Habit extends Habit {
+  const _Habit({required this.id, required this.name, required this.ambitoId, required this.periodicity, final  List<PeriodicityChange> periodicityHistory = const [], this.restDaysAllowed = 0, this.recoveryTask, this.recoveryCooldownDays = 7, required this.colorValue, required this.emoji, this.reminderTime, this.order = 0, required this.createdAt, this.deletedAt}): _periodicityHistory = periodicityHistory,super._();
   
 
 @override final  String id;
@@ -231,6 +237,15 @@ class _Habit implements Habit {
 /// Un hábito pertenece a un único ámbito (decisión cerrada, sección 4.4).
 @override final  String ambitoId;
 @override final  Periodicity periodicity;
+/// Cambios de periodicidad anteriores, en orden cronológico.
+ final  List<PeriodicityChange> _periodicityHistory;
+/// Cambios de periodicidad anteriores, en orden cronológico.
+@override@JsonKey() List<PeriodicityChange> get periodicityHistory {
+  if (_periodicityHistory is EqualUnmodifiableListView) return _periodicityHistory;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_periodicityHistory);
+}
+
 /// Cupo de descansos planificados dentro del periodo (ej. 2 de cada 7).
 @override@JsonKey() final  int restDaysAllowed;
 /// Tarea alternativa más ligera que salva la racha del ámbito.
@@ -242,8 +257,12 @@ class _Habit implements Habit {
 @override final  String emoji;
 /// Hora fija de recordatorio en formato "HH:mm" (v1), opcional.
 @override final  String? reminderTime;
-@override@JsonKey() final  int currentStreak;
+/// Posición en las listas.
+@override@JsonKey() final  int order;
 @override final  DateTime createdAt;
+/// Soft delete: los hábitos borrados conservan su histórico de registros
+/// y no aparecen en las consultas normales.
+@override final  DateTime? deletedAt;
 
 /// Create a copy of Habit
 /// with the given fields replaced by the non-null parameter values.
@@ -255,16 +274,16 @@ _$HabitCopyWith<_Habit> get copyWith => __$HabitCopyWithImpl<_Habit>(this, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Habit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ambitoId, ambitoId) || other.ambitoId == ambitoId)&&(identical(other.periodicity, periodicity) || other.periodicity == periodicity)&&(identical(other.restDaysAllowed, restDaysAllowed) || other.restDaysAllowed == restDaysAllowed)&&(identical(other.recoveryTask, recoveryTask) || other.recoveryTask == recoveryTask)&&(identical(other.recoveryCooldownDays, recoveryCooldownDays) || other.recoveryCooldownDays == recoveryCooldownDays)&&(identical(other.colorValue, colorValue) || other.colorValue == colorValue)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.currentStreak, currentStreak) || other.currentStreak == currentStreak)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Habit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ambitoId, ambitoId) || other.ambitoId == ambitoId)&&(identical(other.periodicity, periodicity) || other.periodicity == periodicity)&&const DeepCollectionEquality().equals(other._periodicityHistory, _periodicityHistory)&&(identical(other.restDaysAllowed, restDaysAllowed) || other.restDaysAllowed == restDaysAllowed)&&(identical(other.recoveryTask, recoveryTask) || other.recoveryTask == recoveryTask)&&(identical(other.recoveryCooldownDays, recoveryCooldownDays) || other.recoveryCooldownDays == recoveryCooldownDays)&&(identical(other.colorValue, colorValue) || other.colorValue == colorValue)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.order, order) || other.order == order)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,ambitoId,periodicity,restDaysAllowed,recoveryTask,recoveryCooldownDays,colorValue,emoji,reminderTime,currentStreak,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,ambitoId,periodicity,const DeepCollectionEquality().hash(_periodicityHistory),restDaysAllowed,recoveryTask,recoveryCooldownDays,colorValue,emoji,reminderTime,order,createdAt,deletedAt);
 
 @override
 String toString() {
-  return 'Habit(id: $id, name: $name, ambitoId: $ambitoId, periodicity: $periodicity, restDaysAllowed: $restDaysAllowed, recoveryTask: $recoveryTask, recoveryCooldownDays: $recoveryCooldownDays, colorValue: $colorValue, emoji: $emoji, reminderTime: $reminderTime, currentStreak: $currentStreak, createdAt: $createdAt)';
+  return 'Habit(id: $id, name: $name, ambitoId: $ambitoId, periodicity: $periodicity, periodicityHistory: $periodicityHistory, restDaysAllowed: $restDaysAllowed, recoveryTask: $recoveryTask, recoveryCooldownDays: $recoveryCooldownDays, colorValue: $colorValue, emoji: $emoji, reminderTime: $reminderTime, order: $order, createdAt: $createdAt, deletedAt: $deletedAt)';
 }
 
 
@@ -275,7 +294,7 @@ abstract mixin class _$HabitCopyWith<$Res> implements $HabitCopyWith<$Res> {
   factory _$HabitCopyWith(_Habit value, $Res Function(_Habit) _then) = __$HabitCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String ambitoId, Periodicity periodicity, int restDaysAllowed, String? recoveryTask, int recoveryCooldownDays, int colorValue, String emoji, String? reminderTime, int currentStreak, DateTime createdAt
+ String id, String name, String ambitoId, Periodicity periodicity, List<PeriodicityChange> periodicityHistory, int restDaysAllowed, String? recoveryTask, int recoveryCooldownDays, int colorValue, String emoji, String? reminderTime, int order, DateTime createdAt, DateTime? deletedAt
 });
 
 
@@ -292,21 +311,23 @@ class __$HabitCopyWithImpl<$Res>
 
 /// Create a copy of Habit
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? ambitoId = null,Object? periodicity = null,Object? restDaysAllowed = null,Object? recoveryTask = freezed,Object? recoveryCooldownDays = null,Object? colorValue = null,Object? emoji = null,Object? reminderTime = freezed,Object? currentStreak = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? ambitoId = null,Object? periodicity = null,Object? periodicityHistory = null,Object? restDaysAllowed = null,Object? recoveryTask = freezed,Object? recoveryCooldownDays = null,Object? colorValue = null,Object? emoji = null,Object? reminderTime = freezed,Object? order = null,Object? createdAt = null,Object? deletedAt = freezed,}) {
   return _then(_Habit(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,ambitoId: null == ambitoId ? _self.ambitoId : ambitoId // ignore: cast_nullable_to_non_nullable
 as String,periodicity: null == periodicity ? _self.periodicity : periodicity // ignore: cast_nullable_to_non_nullable
-as Periodicity,restDaysAllowed: null == restDaysAllowed ? _self.restDaysAllowed : restDaysAllowed // ignore: cast_nullable_to_non_nullable
+as Periodicity,periodicityHistory: null == periodicityHistory ? _self._periodicityHistory : periodicityHistory // ignore: cast_nullable_to_non_nullable
+as List<PeriodicityChange>,restDaysAllowed: null == restDaysAllowed ? _self.restDaysAllowed : restDaysAllowed // ignore: cast_nullable_to_non_nullable
 as int,recoveryTask: freezed == recoveryTask ? _self.recoveryTask : recoveryTask // ignore: cast_nullable_to_non_nullable
 as String?,recoveryCooldownDays: null == recoveryCooldownDays ? _self.recoveryCooldownDays : recoveryCooldownDays // ignore: cast_nullable_to_non_nullable
 as int,colorValue: null == colorValue ? _self.colorValue : colorValue // ignore: cast_nullable_to_non_nullable
 as int,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,reminderTime: freezed == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
-as String?,currentStreak: null == currentStreak ? _self.currentStreak : currentStreak // ignore: cast_nullable_to_non_nullable
+as String?,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,deletedAt: freezed == deletedAt ? _self.deletedAt : deletedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 

@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "habitos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "deletedAt", "order": "ASCENDING" },
+        { "fieldPath": "orden", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "registros",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "habitoId", "order": "ASCENDING" },
+        { "fieldPath": "dia", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

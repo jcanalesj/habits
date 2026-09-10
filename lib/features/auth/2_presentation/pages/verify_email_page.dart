@@ -1,124 +1,92 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
-import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
+import 'package:habits/features/auth/2_presentation/controllers/verify_email_controller.dart';
+import 'package:habits/features/auth/2_presentation/l10n/auth_failure_l10n.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 
+/// Verificación del email mediante el enlace que envía Firebase Auth.
+///
+/// El usuario abre el enlace desde su correo y vuelve a la app; la pantalla
+/// comprueba el estado real contra el proveedor al pulsar el botón y,
+/// además, lo sondea automáticamente cada pocos segundos. Al confirmarse,
+/// la sesión se actualiza y el router lleva a la home.
 class VerifyEmailPage extends ConsumerStatefulWidget {
-  const VerifyEmailPage({super.key, required this.email, this.displayName});
+  const VerifyEmailPage({super.key});
 
-  final String email;
-  final String? displayName;
+  /// Intervalo del sondeo automático de verificación.
+  static const pollInterval = Duration(seconds: 5);
+
+  /// Espera mínima entre reenvíos del correo.
+  static const resendCooldown = Duration(seconds: 30);
 
   @override
   ConsumerState<VerifyEmailPage> createState() => _VerifyEmailPageState();
 }
 
 class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
-  static const _codeLength = 6;
-  static const _expirationSeconds = 5 * 60;
-
-  late final List<TextEditingController> _controllers;
-  late final List<FocusNode> _focusNodes;
-  Timer? _timer;
-  int _secondsRemaining = _expirationSeconds;
-  bool _showError = false;
+  Timer? _ticker;
+  int _elapsedSeconds = 0;
+  int _resendCooldownSeconds = 0;
 
   @override
   void initState() {
     super.initState();
-    _controllers = List.generate(_codeLength, (_) => TextEditingController());
-    _focusNodes = List.generate(_codeLength, (_) => FocusNode());
-    _startTimer();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _onTick());
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
-    for (final controller in _controllers) {
-      controller.dispose();
-    }
-    for (final node in _focusNodes) {
-      node.dispose();
-    }
+    _ticker?.cancel();
     super.dispose();
   }
 
-  String get _code => _controllers.map((controller) => controller.text).join();
-
-  String get _formattedTime {
-    final minutes = (_secondsRemaining ~/ 60).toString().padLeft(2, '0');
-    final seconds = (_secondsRemaining % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
-
-  void _startTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) return;
-      if (_secondsRemaining == 0) {
-        timer.cancel();
-      } else {
-        setState(() => _secondsRemaining--);
-      }
-    });
-  }
-
-  void _onCodeChanged(int index, String value) {
-    if (_showError) setState(() => _showError = false);
-    if (value.isNotEmpty && index < _codeLength - 1) {
-      _focusNodes[index + 1].requestFocus();
-    } else if (value.isNotEmpty && index == _codeLength - 1) {
-      FocusScope.of(context).unfocus();
-    } else if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
+  void _onTick() {
+    if (!mounted) return;
+    _elapsedSeconds++;
+    if (_resendCooldownSeconds > 0) {
+      setState(() => _resendCooldownSeconds--);
+    }
+    if (_elapsedSeconds % VerifyEmailPage.pollInterval.inSeconds == 0) {
+      _check(silent: true);
     }
   }
 
-  void _verify() {
-    if (_code.length != _codeLength) {
-      setState(() => _showError = true);
-      _focusNodes.first.requestFocus();
-      return;
-    }
-
-    ref
-        .read(authControllerProvider.notifier)
-        .setUser(
-          AppUser(
-            id: 'mock-${widget.email.hashCode}',
-            email: widget.email,
-            displayName: widget.displayName,
-            emailVerified: true,
-          ),
-        );
-    context.go('/home');
+  Future<void> _check({bool silent = false}) async {
+    final verified = await ref
+        .read(verifyEmailControllerProvider.notifier)
+        .checkVerified(silent: silent);
+    if (verified && mounted) context.go('/home');
   }
 
-  void _resendCode() {
-    for (final controller in _controllers) {
-      controller.clear();
+  Future<void> _resend() async {
+    final sent = await ref
+        .read(verifyEmailControllerProvider.notifier)
+        .resend();
+    if (sent && mounted) {
+      setState(
+        () => _resendCooldownSeconds = VerifyEmailPage.resendCooldown.inSeconds,
+      );
     }
-    setState(() {
-      _secondsRemaining = _expirationSeconds;
-      _showError = false;
-    });
-    _startTimer();
-    _focusNodes.first.requestFocus();
+  }
+
+  Future<void> _useAnotherAccount() async {
+    await ref.read(authControllerProvider.notifier).signOut();
+    if (mounted) context.go('/login');
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
-    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final state = ref.watch(verifyEmailControllerProvider);
+    final email = ref.watch(authControllerProvider).value?.email ?? '';
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -142,92 +110,96 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                     vertical: 12,
                   ),
                   child: Center(
-                    child: AnimatedSlide(
-                      offset: keyboardVisible
-                          ? const Offset(0, -0.12)
-                          : Offset.zero,
-                      duration: const Duration(milliseconds: 280),
-                      curve: Curves.easeOutCubic,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: SizedBox(
-                          width: contentWidth,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: _VerificationBackButton(
-                                  onPressed: () => context.pop(),
-                                ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SizedBox(
+                        width: contentWidth,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: _VerificationBackButton(
+                                onPressed: _useAnotherAccount,
                               ),
-                              const SizedBox(height: 48),
-                              const _VerificationBrand(),
-                              const SizedBox(height: 38),
-                              Text(
-                                l10n.verifyAccountTitle,
-                                textAlign: TextAlign.center,
-                                style: textTheme.headlineLarge?.copyWith(
-                                  color: AppColors.authHeading,
-                                  fontSize: AppDimensions.authTitleFontSize,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.7,
-                                ),
+                            ),
+                            const SizedBox(height: 40),
+                            const _VerificationBrand(),
+                            const SizedBox(height: 34),
+                            Text(
+                              l10n.verifyAccountTitle,
+                              textAlign: TextAlign.center,
+                              style: textTheme.headlineLarge?.copyWith(
+                                color: AppColors.authHeading,
+                                fontSize: AppDimensions.authTitleFontSize,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.7,
                               ),
-                              const SizedBox(height: 18),
-                              Text(
-                                l10n.verificationCodeSent,
-                                textAlign: TextAlign.center,
-                                style: textTheme.titleMedium?.copyWith(
-                                  color: AppColors.authSecondary,
-                                  fontSize: AppDimensions.authSubtitleFontSize,
-                                ),
+                            ),
+                            const SizedBox(height: 28),
+                            const _MailIllustration(),
+                            const SizedBox(height: 24),
+                            Text(
+                              l10n.verifyLinkSent,
+                              textAlign: TextAlign.center,
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.authSecondary,
+                                fontSize: AppDimensions.authSubtitleFontSize,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.email,
-                                textAlign: TextAlign.center,
-                                style: textTheme.titleMedium?.copyWith(
-                                  color: AppColors.primaryDeep,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              email,
+                              textAlign: TextAlign.center,
+                              style: textTheme.titleMedium?.copyWith(
+                                color: AppColors.primaryDeep,
+                                fontWeight: FontWeight.w600,
                               ),
-                              const SizedBox(height: 52),
-                              _PinCodeInput(
-                                controllers: _controllers,
-                                focusNodes: _focusNodes,
-                                showError: _showError,
-                                onChanged: _onCodeChanged,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.verifyLinkInstructions,
+                              textAlign: TextAlign.center,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: AppColors.authSecondary,
                               ),
-                              const SizedBox(height: 18),
-                              if (_showError)
-                                Text(
-                                  l10n.invalidVerificationCode,
-                                  textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 28),
+                            _StatusMessage(state: state),
+                            const SizedBox(height: 12),
+                            GradientButton(
+                              label: l10n.iHaveVerified,
+                              trailingArrow: false,
+                              isLoading: state.isChecking,
+                              onPressed: _check,
+                            ),
+                            const SizedBox(height: 20),
+                            _ResendPrompt(
+                              cooldownSeconds: _resendCooldownSeconds,
+                              isResending: state.isResending,
+                              onPressed: _resend,
+                            ),
+                            const SizedBox(height: 6),
+                            Center(
+                              child: TextButton(
+                                onPressed: _useAnotherAccount,
+                                child: Text(
+                                  l10n.useAnotherAccount,
                                   style: textTheme.bodySmall?.copyWith(
-                                    color: Colors.redAccent,
+                                    color: AppColors.authPromptText,
                                     fontWeight: FontWeight.w600,
                                   ),
-                                )
-                              else
-                                _ExpirationLabel(time: _formattedTime),
-                              const SizedBox(height: 52),
-                              GradientButton(
-                                label: l10n.verifyButton,
-                                trailingArrow: false,
-                                onPressed: _verify,
+                                ),
                               ),
-                              const SizedBox(height: 24),
-                              _ResendPrompt(onPressed: _resendCode),
-                              const SizedBox(height: 96),
-                              const Icon(
-                                Icons.spa_outlined,
-                                size: 34,
-                                color: AppColors.primary,
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 56),
+                            const Icon(
+                              Icons.spa_outlined,
+                              size: 34,
+                              color: AppColors.primary,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -237,6 +209,77 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusMessage extends StatelessWidget {
+  const _StatusMessage({required this.state});
+
+  final VerifyEmailState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
+
+    final (String? text, Color color) = switch (state) {
+      VerifyEmailState(:final failure?) => (
+        failure.localize(l10n),
+        Colors.redAccent,
+      ),
+      VerifyEmailState(pendingAfterCheck: true) => (
+        l10n.notVerifiedYet,
+        AppColors.flame,
+      ),
+      VerifyEmailState(resent: true) => (l10n.emailResent, AppColors.green),
+      _ => (null, Colors.transparent),
+    };
+
+    // Altura fija para que el layout no salte al aparecer el mensaje.
+    return SizedBox(
+      height: 44,
+      child: text == null
+          ? null
+          : Text(
+              text,
+              textAlign: TextAlign.center,
+              style: textTheme.bodySmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+    );
+  }
+}
+
+class _MailIllustration extends StatelessWidget {
+  const _MailIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 96,
+        height: 96,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.82),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.18),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.mark_email_unread_outlined,
+          size: 46,
+          color: AppColors.primaryDeep,
+        ),
       ),
     );
   }
@@ -281,131 +324,22 @@ class _VerificationBrand extends StatelessWidget {
   }
 }
 
-class _PinCodeInput extends StatelessWidget {
-  const _PinCodeInput({
-    required this.controllers,
-    required this.focusNodes,
-    required this.showError,
-    required this.onChanged,
+class _ResendPrompt extends StatelessWidget {
+  const _ResendPrompt({
+    required this.cooldownSeconds,
+    required this.isResending,
+    required this.onPressed,
   });
 
-  final List<TextEditingController> controllers;
-  final List<FocusNode> focusNodes;
-  final bool showError;
-  final void Function(int index, String value) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(controllers.length, (index) {
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: index == 0 ? 0 : 5,
-              right: index == controllers.length - 1 ? 0 : 5,
-            ),
-            child: TextField(
-              controller: controllers[index],
-              focusNode: focusNodes[index],
-              keyboardType: TextInputType.number,
-              maxLength: 1,
-              maxLengthEnforcement: MaxLengthEnforcement.enforced,
-              textInputAction: index == controllers.length - 1
-                  ? TextInputAction.done
-                  : TextInputAction.next,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(
-                  1,
-                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                ),
-              ],
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppColors.primaryDeep,
-                fontWeight: FontWeight.w700,
-              ),
-              decoration: InputDecoration(
-                counterText: '',
-                hintText: '—',
-                hintStyle: TextStyle(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                ),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.78),
-                contentPadding: const EdgeInsets.symmetric(vertical: 22),
-                enabledBorder: _border(showError ? Colors.redAccent : null),
-                focusedBorder: _border(
-                  showError ? Colors.redAccent : AppColors.primaryDeep,
-                  width: 1.8,
-                ),
-              ),
-              onChanged: (value) => onChanged(index, value),
-              onSubmitted: (_) {
-                if (index == controllers.length - 1) {
-                  FocusScope.of(context).unfocus();
-                }
-              },
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  OutlineInputBorder _border(Color? color, {double width = 1}) {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(
-        color: color ?? AppColors.primary.withValues(alpha: 0.2),
-        width: width,
-      ),
-    );
-  }
-}
-
-class _ExpirationLabel extends StatelessWidget {
-  const _ExpirationLabel({required this.time});
-
-  final String time;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SizedBox(
-        width: 300,
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.shield_outlined,
-                color: AppColors.primary,
-                size: 19,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                context.l10n.codeExpiresIn(time),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.authSecondary),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ResendPrompt extends StatelessWidget {
-  const _ResendPrompt({required this.onPressed});
-
+  final int cooldownSeconds;
+  final bool isResending;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final enabled = cooldownSeconds == 0 && !isResending;
+
     return Center(
       child: SizedBox(
         width: 300,
@@ -415,19 +349,23 @@ class _ResendPrompt extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                context.l10n.codeNotReceived,
+                l10n.emailNotReceived,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.authPromptText,
                 ),
               ),
               TextButton(
-                onPressed: onPressed,
+                onPressed: enabled ? onPressed : null,
                 style: TextButton.styleFrom(
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   padding: const EdgeInsets.only(left: 4),
                 ),
-                child: Text(context.l10n.resendCode),
+                child: Text(
+                  cooldownSeconds > 0
+                      ? l10n.resendEmailIn(cooldownSeconds)
+                      : l10n.resendEmail,
+                ),
               ),
             ],
           ),

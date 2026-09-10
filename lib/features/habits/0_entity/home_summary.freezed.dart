@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HomeSummary {
 
- GeneralStreak get generalStreak; List<Ambito> get ambitos; List<Habit> get habits;/// Registros de la semana en curso (lunes a domingo).
+/// Caché de rachas; vacía si aún no se ha calculado.
+ StreaksSnapshot get streaks; List<Ambito> get ambitos;/// Hábitos activos (sin soft delete).
+ List<Habit> get habits;/// Registros de la semana en curso (lunes a domingo).
  List<HabitLog> get weekLogs;
 /// Create a copy of HomeSummary
 /// with the given fields replaced by the non-null parameter values.
@@ -26,16 +28,16 @@ $HomeSummaryCopyWith<HomeSummary> get copyWith => _$HomeSummaryCopyWithImpl<Home
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeSummary&&(identical(other.generalStreak, generalStreak) || other.generalStreak == generalStreak)&&const DeepCollectionEquality().equals(other.ambitos, ambitos)&&const DeepCollectionEquality().equals(other.habits, habits)&&const DeepCollectionEquality().equals(other.weekLogs, weekLogs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeSummary&&(identical(other.streaks, streaks) || other.streaks == streaks)&&const DeepCollectionEquality().equals(other.ambitos, ambitos)&&const DeepCollectionEquality().equals(other.habits, habits)&&const DeepCollectionEquality().equals(other.weekLogs, weekLogs));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,generalStreak,const DeepCollectionEquality().hash(ambitos),const DeepCollectionEquality().hash(habits),const DeepCollectionEquality().hash(weekLogs));
+int get hashCode => Object.hash(runtimeType,streaks,const DeepCollectionEquality().hash(ambitos),const DeepCollectionEquality().hash(habits),const DeepCollectionEquality().hash(weekLogs));
 
 @override
 String toString() {
-  return 'HomeSummary(generalStreak: $generalStreak, ambitos: $ambitos, habits: $habits, weekLogs: $weekLogs)';
+  return 'HomeSummary(streaks: $streaks, ambitos: $ambitos, habits: $habits, weekLogs: $weekLogs)';
 }
 
 
@@ -46,11 +48,11 @@ abstract mixin class $HomeSummaryCopyWith<$Res>  {
   factory $HomeSummaryCopyWith(HomeSummary value, $Res Function(HomeSummary) _then) = _$HomeSummaryCopyWithImpl;
 @useResult
 $Res call({
- GeneralStreak generalStreak, List<Ambito> ambitos, List<Habit> habits, List<HabitLog> weekLogs
+ StreaksSnapshot streaks, List<Ambito> ambitos, List<Habit> habits, List<HabitLog> weekLogs
 });
 
 
-$GeneralStreakCopyWith<$Res> get generalStreak;
+$StreaksSnapshotCopyWith<$Res> get streaks;
 
 }
 /// @nodoc
@@ -63,10 +65,10 @@ class _$HomeSummaryCopyWithImpl<$Res>
 
 /// Create a copy of HomeSummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? generalStreak = null,Object? ambitos = null,Object? habits = null,Object? weekLogs = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? streaks = null,Object? ambitos = null,Object? habits = null,Object? weekLogs = null,}) {
   return _then(_self.copyWith(
-generalStreak: null == generalStreak ? _self.generalStreak : generalStreak // ignore: cast_nullable_to_non_nullable
-as GeneralStreak,ambitos: null == ambitos ? _self.ambitos : ambitos // ignore: cast_nullable_to_non_nullable
+streaks: null == streaks ? _self.streaks : streaks // ignore: cast_nullable_to_non_nullable
+as StreaksSnapshot,ambitos: null == ambitos ? _self.ambitos : ambitos // ignore: cast_nullable_to_non_nullable
 as List<Ambito>,habits: null == habits ? _self.habits : habits // ignore: cast_nullable_to_non_nullable
 as List<Habit>,weekLogs: null == weekLogs ? _self.weekLogs : weekLogs // ignore: cast_nullable_to_non_nullable
 as List<HabitLog>,
@@ -76,10 +78,10 @@ as List<HabitLog>,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$GeneralStreakCopyWith<$Res> get generalStreak {
+$StreaksSnapshotCopyWith<$Res> get streaks {
   
-  return $GeneralStreakCopyWith<$Res>(_self.generalStreak, (value) {
-    return _then(_self.copyWith(generalStreak: value));
+  return $StreaksSnapshotCopyWith<$Res>(_self.streaks, (value) {
+    return _then(_self.copyWith(streaks: value));
   });
 }
 }
@@ -163,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( GeneralStreak generalStreak,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( StreaksSnapshot streaks,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HomeSummary() when $default != null:
-return $default(_that.generalStreak,_that.ambitos,_that.habits,_that.weekLogs);case _:
+return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
   return orElse();
 
 }
@@ -184,10 +186,10 @@ return $default(_that.generalStreak,_that.ambitos,_that.habits,_that.weekLogs);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( GeneralStreak generalStreak,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( StreaksSnapshot streaks,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)  $default,) {final _that = this;
 switch (_that) {
 case _HomeSummary():
-return $default(_that.generalStreak,_that.ambitos,_that.habits,_that.weekLogs);case _:
+return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +206,10 @@ return $default(_that.generalStreak,_that.ambitos,_that.habits,_that.weekLogs);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( GeneralStreak generalStreak,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( StreaksSnapshot streaks,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)?  $default,) {final _that = this;
 switch (_that) {
 case _HomeSummary() when $default != null:
-return $default(_that.generalStreak,_that.ambitos,_that.habits,_that.weekLogs);case _:
+return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
   return null;
 
 }
@@ -218,11 +220,12 @@ return $default(_that.generalStreak,_that.ambitos,_that.habits,_that.weekLogs);c
 /// @nodoc
 
 
-class _HomeSummary implements HomeSummary {
-  const _HomeSummary({required this.generalStreak, required final  List<Ambito> ambitos, required final  List<Habit> habits, required final  List<HabitLog> weekLogs}): _ambitos = ambitos,_habits = habits,_weekLogs = weekLogs;
+class _HomeSummary extends HomeSummary {
+  const _HomeSummary({required this.streaks, required final  List<Ambito> ambitos, required final  List<Habit> habits, required final  List<HabitLog> weekLogs}): _ambitos = ambitos,_habits = habits,_weekLogs = weekLogs,super._();
   
 
-@override final  GeneralStreak generalStreak;
+/// Caché de rachas; vacía si aún no se ha calculado.
+@override final  StreaksSnapshot streaks;
  final  List<Ambito> _ambitos;
 @override List<Ambito> get ambitos {
   if (_ambitos is EqualUnmodifiableListView) return _ambitos;
@@ -230,7 +233,9 @@ class _HomeSummary implements HomeSummary {
   return EqualUnmodifiableListView(_ambitos);
 }
 
+/// Hábitos activos (sin soft delete).
  final  List<Habit> _habits;
+/// Hábitos activos (sin soft delete).
 @override List<Habit> get habits {
   if (_habits is EqualUnmodifiableListView) return _habits;
   // ignore: implicit_dynamic_type
@@ -257,16 +262,16 @@ _$HomeSummaryCopyWith<_HomeSummary> get copyWith => __$HomeSummaryCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeSummary&&(identical(other.generalStreak, generalStreak) || other.generalStreak == generalStreak)&&const DeepCollectionEquality().equals(other._ambitos, _ambitos)&&const DeepCollectionEquality().equals(other._habits, _habits)&&const DeepCollectionEquality().equals(other._weekLogs, _weekLogs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeSummary&&(identical(other.streaks, streaks) || other.streaks == streaks)&&const DeepCollectionEquality().equals(other._ambitos, _ambitos)&&const DeepCollectionEquality().equals(other._habits, _habits)&&const DeepCollectionEquality().equals(other._weekLogs, _weekLogs));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,generalStreak,const DeepCollectionEquality().hash(_ambitos),const DeepCollectionEquality().hash(_habits),const DeepCollectionEquality().hash(_weekLogs));
+int get hashCode => Object.hash(runtimeType,streaks,const DeepCollectionEquality().hash(_ambitos),const DeepCollectionEquality().hash(_habits),const DeepCollectionEquality().hash(_weekLogs));
 
 @override
 String toString() {
-  return 'HomeSummary(generalStreak: $generalStreak, ambitos: $ambitos, habits: $habits, weekLogs: $weekLogs)';
+  return 'HomeSummary(streaks: $streaks, ambitos: $ambitos, habits: $habits, weekLogs: $weekLogs)';
 }
 
 
@@ -277,11 +282,11 @@ abstract mixin class _$HomeSummaryCopyWith<$Res> implements $HomeSummaryCopyWith
   factory _$HomeSummaryCopyWith(_HomeSummary value, $Res Function(_HomeSummary) _then) = __$HomeSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- GeneralStreak generalStreak, List<Ambito> ambitos, List<Habit> habits, List<HabitLog> weekLogs
+ StreaksSnapshot streaks, List<Ambito> ambitos, List<Habit> habits, List<HabitLog> weekLogs
 });
 
 
-@override $GeneralStreakCopyWith<$Res> get generalStreak;
+@override $StreaksSnapshotCopyWith<$Res> get streaks;
 
 }
 /// @nodoc
@@ -294,10 +299,10 @@ class __$HomeSummaryCopyWithImpl<$Res>
 
 /// Create a copy of HomeSummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? generalStreak = null,Object? ambitos = null,Object? habits = null,Object? weekLogs = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? streaks = null,Object? ambitos = null,Object? habits = null,Object? weekLogs = null,}) {
   return _then(_HomeSummary(
-generalStreak: null == generalStreak ? _self.generalStreak : generalStreak // ignore: cast_nullable_to_non_nullable
-as GeneralStreak,ambitos: null == ambitos ? _self._ambitos : ambitos // ignore: cast_nullable_to_non_nullable
+streaks: null == streaks ? _self.streaks : streaks // ignore: cast_nullable_to_non_nullable
+as StreaksSnapshot,ambitos: null == ambitos ? _self._ambitos : ambitos // ignore: cast_nullable_to_non_nullable
 as List<Ambito>,habits: null == habits ? _self._habits : habits // ignore: cast_nullable_to_non_nullable
 as List<Habit>,weekLogs: null == weekLogs ? _self._weekLogs : weekLogs // ignore: cast_nullable_to_non_nullable
 as List<HabitLog>,
@@ -308,10 +313,10 @@ as List<HabitLog>,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$GeneralStreakCopyWith<$Res> get generalStreak {
+$StreaksSnapshotCopyWith<$Res> get streaks {
   
-  return $GeneralStreakCopyWith<$Res>(_self.generalStreak, (value) {
-    return _then(_self.copyWith(generalStreak: value));
+  return $StreaksSnapshotCopyWith<$Res>(_self.streaks, (value) {
+    return _then(_self.copyWith(streaks: value));
   });
 }
 }

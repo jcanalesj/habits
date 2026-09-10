@@ -12,12 +12,16 @@ class HabitsListCard extends StatelessWidget {
     required this.habits,
     required this.weekLogs,
     required this.onToggleToday,
+    this.streakOf,
     this.onSeeAll,
     this.onHabitTap,
   });
 
   final List<Habit> habits;
   final List<HabitLog> weekLogs;
+
+  /// Racha actual por hábito (dato derivado); null o ausente → 0.
+  final int Function(String habitId)? streakOf;
   final ValueChanged<String> onToggleToday;
   final VoidCallback? onSeeAll;
   final ValueChanged<Habit>? onHabitTap;
@@ -34,10 +38,22 @@ class HabitsListCard extends StatelessWidget {
       ),
       child: Column(
         children: [
+          if (habits.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+              child: Text(
+                context.l10n.noHabitsYet,
+                textAlign: TextAlign.center,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
           for (final habit in habits)
             HabitListTile(
               habit: habit,
               weekLogs: weekLogs,
+              currentStreak: streakOf?.call(habit.id) ?? 0,
               onToggleToday: () => onToggleToday(habit.id),
               onTap: onHabitTap == null ? null : () => onHabitTap!(habit),
             ),

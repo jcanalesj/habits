@@ -1,30 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habits/features/auth/2_presentation/pages/verify_email_page.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 
-Widget _appUnderTest() {
-  return const ProviderScope(
-    child: MaterialApp(
-      locale: Locale('es'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: VerifyEmailPage(
-        email: 'ejemplo@correo.com',
-        displayName: 'constanza',
-      ),
-    ),
-  );
-}
+import '../../../helpers/auth_test_helpers.dart';
 
 void main() {
+  late AuthTestEnv env;
+
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
-  testWidgets('VerifyEmailPage muestra seis casillas y el correo', (
+  setUp(() => env = AuthTestEnv(initialUser: unverifiedUser));
+
+  Widget app() =>
+      localizedApp(const VerifyEmailPage(), overrides: env.overrides);
+
+  testWidgets('VerifyEmailPage explica el flujo por enlace con el correo', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -32,57 +28,87 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pump();
 
     expect(find.text('Verifica tu cuenta'), findsOneWidget);
-    expect(find.text('ejemplo@correo.com'), findsOneWidget);
-    expect(find.byType(TextField), findsNWidgets(6));
-    expect(find.text('Verificar'), findsOneWidget);
-    expect(find.text('Reenviar código'), findsOneWidget);
     expect(
-      tester.widget<Scaffold>(find.byType(Scaffold)).resizeToAvoidBottomInset,
-      isFalse,
+      find.text('Te hemos enviado un enlace de verificación a'),
+      findsOneWidget,
     );
+    expect(find.text(unverifiedUser.email), findsOneWidget);
+    expect(find.text('Ya he verificado mi correo'), findsOneWidget);
+    expect(find.text('Reenviar correo'), findsOneWidget);
+    expect(find.text('Usar otra cuenta'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Verificar incompleto muestra el error sin cambiar el layout', (
+  testWidgets('Comprobar sin haber verificado muestra el aviso de pendiente', (
     tester,
   ) async {
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pump();
 
-    final buttonSize = tester.getSize(find.text('Verificar'));
-    await tester.tap(find.text('Verificar'));
-    await tester.pump();
+    await tester.tap(find.text('Ya he verificado mi correo'));
+    await tester.pumpAndSettle();
 
     expect(
-      find.text('Introduce el código completo de 6 dígitos'),
+      find.textContaining('Todavía no consta como verificado'),
       findsOneWidget,
     );
-    expect(tester.getSize(find.text('Verificar')), buttonSize);
+    expect(env.auth.currentUser?.emailVerified, isFalse);
   });
 
-  testWidgets('El PIN no permite introducir mas de seis digitos', (
+  testWidgets(
+    'Reenviar envía el correo y bloquea el botón durante el cooldown',
+    (tester) async {
+      await tester.pumpWidget(app());
+      await tester.pump();
+
+      await tester.tap(find.text('Reenviar correo'));
+      await tester.pumpAndSettle();
+
+      expect(env.auth.verificationEmailsSent, [unverifiedUser.email]);
+      expect(find.textContaining('Correo reenviado'), findsOneWidget);
+      expect(find.text('Reenviar en 30 s'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Reenviar en 29 s'), findsOneWidget);
+    },
+  );
+
+  testWidgets('El sondeo automático detecta la verificación y navega', (
     tester,
   ) async {
-    await tester.pumpWidget(_appUnderTest());
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const VerifyEmailPage()),
+        GoRoute(
+          path: '/home',
+          builder: (_, _) => const Scaffold(body: Text('HOME')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: env.overrides,
+        child: MaterialApp.router(
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
     await tester.pump();
 
-    final fields = find.byType(TextField);
-    for (var index = 0; index < 5; index++) {
-      await tester.enterText(fields.at(index), '${index + 1}');
-    }
-    await tester.enterText(fields.at(5), '67');
-    await tester.pump();
+    env.auth.markEmailVerified(unverifiedUser.email);
+    await tester.pump(VerifyEmailPage.pollInterval);
+    await tester.pumpAndSettle();
 
-    final pin = List.generate(
-      6,
-      (index) => tester.widget<TextField>(fields.at(index)).controller!.text,
-    ).join();
-
-    expect(pin, '123456');
-    expect(pin, hasLength(6));
+    expect(env.auth.currentUser?.emailVerified, isTrue);
+    expect(find.text('HOME'), findsOneWidget);
   });
 }

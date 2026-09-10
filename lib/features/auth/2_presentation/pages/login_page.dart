@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/auth/1_domain/domain.dart';
 import 'package:habits/features/auth/2_presentation/controllers/login_controller.dart';
+import 'package:habits/features/auth/2_presentation/l10n/auth_failure_l10n.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -33,9 +34,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           email: _emailController.text,
           password: _passwordController.text,
         );
+    // El redirect del router lleva a verificación si el email no está
+    // verificado; en caso contrario, a la home.
     if (success && mounted) context.go('/home');
   }
 
+  /// Login social: fuera de alcance en v1.
   void _showComingSoon() {
     ScaffoldMessenger.of(
       context,
@@ -155,7 +159,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
-                                      onPressed: _showComingSoon,
+                                      onPressed: () =>
+                                          context.push('/forgot-password'),
                                       child: Text(
                                         l10n.forgotPassword,
                                         style: textTheme.bodySmall?.copyWith(
@@ -165,11 +170,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       ),
                                     ),
                                   ),
-                                  if (state.signInFailed)
+                                  if (state.failure != null)
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 8),
                                       child: Text(
-                                        l10n.signInError,
+                                        state.failure!.localize(l10n),
                                         textAlign: TextAlign.center,
                                         style: textTheme.bodySmall?.copyWith(
                                           color: Colors.redAccent,

@@ -25,5 +25,17 @@ void main() {
         DateTime(2026, 8, 24),
       );
     });
+    test('format y parse son inversos y usan YYYY-MM-DD', () {
+      final date = DateTime(2026, 1, 5, 23, 59);
+      expect(LogicalDay.format(date), '2026-01-05');
+      expect(LogicalDay.parse('2026-01-05'), DateTime(2026, 1, 5));
+      expect(() => LogicalDay.parse('05/01/2026'), throwsFormatException);
+    });
+
+    test('sundayOfWeek es seis días después del lunes', () {
+      final wednesday = DateTime(2026, 9, 9);
+      expect(LogicalDay.mondayOfWeek(wednesday), DateTime(2026, 9, 7));
+      expect(LogicalDay.sundayOfWeek(wednesday), DateTime(2026, 9, 13));
+    });
   });
 }

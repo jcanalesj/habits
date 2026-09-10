@@ -38,30 +38,38 @@ class AppBottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _NavItem(
-                icon: Icons.home_rounded,
-                label: l10n.navHome,
-                selected: currentIndex == 0,
-                onTap: () => onTap(0),
+              Expanded(
+                child: _NavItem(
+                  icon: Icons.home_rounded,
+                  label: l10n.navHome,
+                  selected: currentIndex == 0,
+                  onTap: () => onTap(0),
+                ),
               ),
-              _NavItem(
-                icon: Icons.task_alt_rounded,
-                label: l10n.navHabits,
-                selected: currentIndex == 1,
-                onTap: () => onTap(1),
+              Expanded(
+                child: _NavItem(
+                  icon: Icons.task_alt_rounded,
+                  label: l10n.navHabits,
+                  selected: currentIndex == 1,
+                  onTap: () => onTap(1),
+                ),
               ),
               _CreateButton(onTap: onCreate),
-              _NavItem(
-                icon: Icons.bar_chart_rounded,
-                label: l10n.navStats,
-                selected: currentIndex == 2,
-                onTap: () => onTap(2),
+              Expanded(
+                child: _NavItem(
+                  icon: Icons.bar_chart_rounded,
+                  label: l10n.navStats,
+                  selected: currentIndex == 2,
+                  onTap: () => onTap(2),
+                ),
               ),
-              _NavItem(
-                icon: Icons.person_outline_rounded,
-                label: l10n.navProfile,
-                selected: currentIndex == 3,
-                onTap: () => onTap(3),
+              Expanded(
+                child: _NavItem(
+                  icon: Icons.person_outline_rounded,
+                  label: l10n.navProfile,
+                  selected: currentIndex == 3,
+                  onTap: () => onTap(3),
+                ),
               ),
             ],
           ),
@@ -89,30 +97,42 @@ class _NavItem extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final color = selected ? AppColors.primary : AppColors.textSecondary;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: selected
-            ? BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-              )
-            : null,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: textTheme.labelSmall?.copyWith(
-                color: color,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              ),
+    // Align con heightFactor: el item ocupa el ancho que le da el Row
+    // (Expanded) pero solo la altura de su contenido, con el "pill"
+    // centrado y ajustado al contenido.
+    return Align(
+      heightFactor: 1,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: selected
+              ? BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                )
+              : null,
+          // Escala el contenido si la etiqueta no cabe en el ancho del
+          // item (idiomas largos, fuentes grandes) en lugar de desbordar.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: color, size: 24),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: color,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

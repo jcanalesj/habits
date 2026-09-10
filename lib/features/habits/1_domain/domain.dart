@@ -1,4 +1,13 @@
+export 'exceptions/habits_exception.dart';
 export 'repositories/habits_repository.dart';
+export 'services/habit_validation.dart';
 export 'services/logical_day.dart';
-export 'usecases/get_home_summary_usecase.dart';
+export 'usecases/create_ambito_usecase.dart';
+export 'usecases/create_habit_usecase.dart';
+export 'usecases/delete_ambito_usecase.dart';
+export 'usecases/delete_habit_usecase.dart';
+export 'usecases/get_habit_logs_usecase.dart';
 export 'usecases/toggle_habit_completion_usecase.dart';
+export 'usecases/update_ambito_usecase.dart';
+export 'usecases/update_habit_usecase.dart';
+export 'usecases/watch_home_summary_usecase.dart';

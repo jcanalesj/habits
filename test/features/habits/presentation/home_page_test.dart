@@ -4,8 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habits/features/habits/2_presentation/pages/home_page.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 
-Widget _appUnderTest({required Locale locale}) {
+import '../../../helpers/auth_test_helpers.dart';
+
+Widget _appUnderTest({required Locale locale, bool seeded = true}) {
   return ProviderScope(
+    overrides: AuthTestEnv(
+      initialUser: verifiedUser,
+      seededHabits: seeded,
+    ).overrides,
     child: MaterialApp(
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -16,8 +22,9 @@ Widget _appUnderTest({required Locale locale}) {
 }
 
 void main() {
-  testWidgets('HomePage muestra las secciones del dashboard en español',
-      (tester) async {
+  testWidgets('HomePage muestra las secciones del dashboard en español', (
+    tester,
+  ) async {
     await tester.pumpWidget(_appUnderTest(locale: const Locale('es')));
     await tester.pumpAndSettle();
 
@@ -42,5 +49,23 @@ void main() {
     expect(find.text('Overall streak'), findsOneWidget);
     expect(find.text('Streaks by area'), findsOneWidget);
     expect(find.text('consecutive days'), findsOneWidget);
+  });
+  testWidgets('HomePage sin hábitos muestra el estado vacío y rachas a cero', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _appUnderTest(locale: const Locale('es'), seeded: false),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Racha general'), findsOneWidget);
+    expect(find.text('0'), findsWidgets);
+    await tester.scrollUntilVisible(
+      find.textContaining('Aún no tienes hábitos'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('Aún no tienes hábitos'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

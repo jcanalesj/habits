@@ -1,8 +1,15 @@
 # Guía paso a paso — Conectar la app a Firebase (Auth + Firestore)
 
-> **Estado**: pendiente de empezar. Este documento es la hoja de ruta para sustituir el
+> **Estado**: fases 0–6 completadas (infraestructura, Authentication real y hábitos en Firestore).
+> Pendiente el motor de rachas (cache/rachas se lee pero aún no se escribe). Este documento es la hoja de ruta para sustituir el
 > repositorio en memoria (`InMemoryHabitsRepository`) por Firebase, siguiendo la
 > arquitectura ya montada: **solo cambia la capa `3_data`**; dominio y presentación no se tocan.
+>
+> Decisiones de backend aprobadas (10/09/2026): verificación de email por **enlace** nativo,
+> Firestore en **eur3**, hábitos con **soft delete** (`deletedAt`), reasignación a `general`
+> al borrar un ámbito, y **los registros como única fuente de verdad** (rachas = caché en
+> `users/{uid}/cache/rachas`). Las Security Rules en `firestore.rules` las hacen cumplir y
+> `firebase/rules-tests/` las prueba contra el emulador.
 >
 > Leyenda de cada paso: 🧑 lo haces tú (requiere tu cuenta/consola) · 🤖 lo puede hacer Claude Code · 🤝 juntos (comando en tu terminal con tu sesión iniciada).
 
@@ -106,13 +113,13 @@ service cloud.firestore {
 ### 3.3 Modelo de datos (ya definido en el doc funcional §9.1)
 | Colección/Documento | Contenido |
 |---|---|
-| `users/{userId}` | perfil, subscriptionStatus, trialEndsAt, timezone |
-| `users/{userId}/ambitos/{ambitoId}` | nombre, tipo, racha activa, mejor racha, comodín |
-| `users/{userId}/habitos/{habitoId}` | nombre, ambitoId, periodicidad, descansos, tarea de recuperación, color, recordatorio |
-| `users/{userId}/registros/{registroId}` | fecha (día lógico), habitoId, tipo |
-| `users/{userId}/rachaGeneral` (doc) | contador, comodín semanal, fecha último uso |
+| `users/{userId}` | email, displayName, timezone, locale, subscription (solo backend), onboardingCompleted, timestamps |
+| `users/{userId}/ambitos/{ambitoId}` | nombre, emoji, colorValue, esPredefinido, orden, timestamps (sin rachas) |
+| `users/{userId}/habitos/{habitoId}` | nombre, emoji, colorValue, ambitoId, periodicidad, historialPeriodicidad, descansosPermitidos, tareaRecuperacion, recuperacionCooldownDias, recordatorioHora, orden, deletedAt (soft delete), timestamps (sin rachas) |
+| `users/{userId}/registros/{habitoId}_{YYYY-MM-DD}` | habitoId, dia, tipo (completed/recovery/plannedRest), tz, createdAt — **fuente de verdad** |
+| `users/{userId}/cache/rachas` | general, habitos, ambitos, calculadoHasta — caché derivada, reconstruible, puede no existir |
 
-Las entidades de `0_entity` ya modelan estos campos: el trabajo es solo de mappers.
+Modelo definitivo aplicado en `firestore.rules`, `FirestoreUserProfileRepository` y `FirestoreHabitsRepository`.
 
 ### 3.4 🤖 Persistencia offline
 En iOS/Android viene activada por defecto (doc funcional §9.2, last-write-wins). Claude
@@ -163,11 +170,29 @@ Energía…) en `users/{uid}/ambitos` (doc funcional §4.4).
 
 ### 6.1 🤝 Emuladores (recomendado)
 ```bash
-firebase init emulators        # Auth + Firestore
-firebase emulators:start
+firebase emulators:start --only auth,firestore     # UI en http://127.0.0.1:4000
 ```
-🤖 Claude añade un flag (`--dart-define=USE_FIREBASE_EMULATOR=true`) para que la app
-apunte a los emuladores en desarrollo, y así probar sin tocar datos reales ni cuota.
+La app apunta a los emuladores con un flag de compilación (ver `lib/env.dart`):
+```bash
+# iOS simulator / macOS
+flutter run --dart-define=USE_FIREBASE_EMULATOR=true
+# Emulador Android (el host de la máquina es 10.0.2.2)
+flutter run --dart-define=USE_FIREBASE_EMULATOR=true --dart-define=FIREBASE_EMULATOR_HOST=10.0.2.2
+```
+En el emulador de Auth los correos no se envían: los enlaces de verificación y de
+restablecimiento se consultan en la UI del emulador (pestaña Authentication) o vía REST
+(`GET /emulator/v1/projects/constanza-dev/oobCodes`).
+
+Pruebas de las Security Rules: `cd firebase/rules-tests && npm install && npm test`.
+
+Flujo real de auth contra el emulador (simulador iOS, emuladores levantados):
+```bash
+flutter test integration_test/auth_flow_emulator_test.dart -d <device-id> \
+  --dart-define=USE_FIREBASE_EMULATOR=true
+# después, en un proceso nuevo, la persistencia de sesión:
+flutter test integration_test/session_persistence_test.dart -d <device-id> \
+  --dart-define=USE_FIREBASE_EMULATOR=true
+```
 
 ### 6.2 🤖 Tests
 - Unit tests de mappers y del repositorio con `fake_cloud_firestore` / `firebase_auth_mocks`.
@@ -184,13 +209,15 @@ apunte a los emuladores en desarrollo, y así probar sin tocar datos reales ni c
 - [x] 1.3 🧑 Crear proyecto → `constanza-dev` creado por CLI ✔
 - [x] 2.1 🤝 `flutterfire configure` ✔ (apps iOS/Android registradas, `firebase_options.dart` generado)
 - [x] 2.2–2.4 🤖 Dependencias + init en `main.dart` + minSdk 26 / iOS 14 ✔
-- [ ] 3.1 🧑 Crear Firestore (eur3, modo producción)
-- [ ] 3.2 🤖🤝 Reglas de seguridad + deploy
-- [ ] 3.4 🤖 Persistencia offline
-- [ ] 4.1 🧑 Activar Email/Password
-- [ ] 4.2 🤖 Feature auth completa
-- [ ] 5.x 🤖 FirestoreHabitsRepository + cableado + seed de ámbitos
-- [ ] 6.x 🤝 Emuladores + tests
+- [x] 3.1 🧑 Crear Firestore → `(default)` en eur3, delete protection ✔ (10/09/2026)
+- [x] 3.2 🤖🤝 Reglas de seguridad + índices desplegados ✔ (`firestore.rules`, `firestore.indexes.json`)
+- [x] 3.4 🤖 Persistencia offline explícita ✔ (`lib/firebase_setup.dart`, `Settings(persistenceEnabled: true)`)
+- [x] 4.1 🧑 Activar Email/Password ✔ (`firebase deploy --only auth`)
+- [x] 4.2 🤖 Feature auth completa ✔ (`FirebaseAuthRepository`, verificación por enlace, perfil tras verificar)
+- [x] 5.3 🤖 Seed de ámbitos ✔ (se hace al crear el perfil, `FirestoreUserProfileRepository`)
+- [x] 5.1–5.2 🤖 `FirestoreHabitsRepository` + cableado por usuario ✔ (streams por snapshots, soft delete, ids de registro deterministas)
+- [x] 6.1 🤝 Emuladores configurados en `firebase.json` (Auth 9099, Firestore 8080, UI 4000) ✔
+- [x] 6.2 🤖 Tests: unitarios/widget con fakes, reglas (`firebase/rules-tests`), integration tests contra emulador ✔
 
 **Siguiente acción**: decide el punto 0.1 (identificador) y el 0.2 (entornos), haz
 `firebase login` y crea el proyecto (1.3). A partir de ahí Claude puede continuar con

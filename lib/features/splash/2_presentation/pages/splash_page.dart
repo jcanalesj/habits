@@ -1,24 +1,27 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
+import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 
 /// Splash de arranque: logo, una frase motivacional aleatoria y barra de
-/// carga. Al completarse navega a la Home.
-class SplashPage extends StatefulWidget {
+/// carga. Al completarse, y una vez restaurada la sesión, navega a la Home;
+/// el `redirect` del router decide si toca login o verificación.
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   /// Duración total del splash antes de entrar en la app.
   static const duration = Duration(milliseconds: 2800);
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
+class _SplashPageState extends ConsumerState<SplashPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
@@ -41,11 +44,21 @@ class _SplashPageState extends State<SplashPage>
     _controller =
         AnimationController(vsync: this, duration: SplashPage.duration)
           ..addStatusListener((status) {
-            if (status == AnimationStatus.completed && mounted) {
-              context.go('/home');
-            }
+            if (status == AnimationStatus.completed) _enterApp();
           })
           ..forward();
+  }
+
+  Future<void> _enterApp() async {
+    try {
+      // Primer valor del stream de sesión (restaurada desde el almacenamiento
+      // seguro del SDK). Si falla, el redirect tratará al usuario como
+      // anónimo y lo llevará a login.
+      await ref.read(authControllerProvider.future);
+    } catch (_) {
+      // Ver comentario anterior.
+    }
+    if (mounted) context.go('/home');
   }
 
   @override

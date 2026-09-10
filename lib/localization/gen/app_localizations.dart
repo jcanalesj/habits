@@ -194,6 +194,12 @@ abstract class AppLocalizations {
   /// **'See all my habits'**
   String get seeAllMyHabits;
 
+  /// No description provided for @noHabitsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No habits yet. Create your first one with the + button.'**
+  String get noHabitsYet;
+
   /// No description provided for @nextReminder.
   ///
   /// In en, this message translates to:
@@ -482,47 +488,167 @@ abstract class AppLocalizations {
   /// **'You must accept the terms and privacy policy'**
   String get acceptTermsError;
 
+  /// No description provided for @verifyLinkSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a verification link to'**
+  String get verifyLinkSent;
+
+  /// No description provided for @verifyLinkInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Open it from your inbox and come back here to continue.'**
+  String get verifyLinkInstructions;
+
+  /// No description provided for @iHaveVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve verified my email'**
+  String get iHaveVerified;
+
+  /// No description provided for @notVerifiedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'It doesn\'t show as verified yet. Check your inbox and spam folder.'**
+  String get notVerifiedYet;
+
+  /// No description provided for @emailNotReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t get it?'**
+  String get emailNotReceived;
+
+  /// No description provided for @resendEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email'**
+  String get resendEmail;
+
+  /// No description provided for @resendEmailIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String resendEmailIn(int seconds);
+
+  /// No description provided for @emailResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Email resent. It may take a few minutes to arrive.'**
+  String get emailResent;
+
+  /// No description provided for @useAnotherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another account'**
+  String get useAnotherAccount;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recover your password'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send you a link to create a new one.'**
+  String get forgotPasswordSubtitle;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send link'**
+  String get sendResetLink;
+
+  /// No description provided for @resetLinkSent.
+  ///
+  /// In en, this message translates to:
+  /// **'If an account exists for that email, you\'ll receive a link to reset your password.'**
+  String get resetLinkSent;
+
+  /// No description provided for @backToSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to sign in'**
+  String get backToSignIn;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOut;
+
+  /// No description provided for @nicknameTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname can\'t be longer than 40 characters'**
+  String get nicknameTooLong;
+
+  /// No description provided for @authErrorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password.'**
+  String get authErrorInvalidCredentials;
+
+  /// No description provided for @authErrorEmailAlreadyInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists for that email.'**
+  String get authErrorEmailAlreadyInUse;
+
+  /// No description provided for @authErrorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'The password is too weak.'**
+  String get authErrorWeakPassword;
+
+  /// No description provided for @authErrorInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'The email address is not valid.'**
+  String get authErrorInvalidEmail;
+
+  /// No description provided for @authErrorUserDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been disabled.'**
+  String get authErrorUserDisabled;
+
+  /// No description provided for @authErrorTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a few minutes and try again.'**
+  String get authErrorTooManyRequests;
+
+  /// No description provided for @authErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Check your network and try again.'**
+  String get authErrorNetwork;
+
+  /// No description provided for @authErrorRequiresRecentLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'For security, sign in again to continue.'**
+  String get authErrorRequiresRecentLogin;
+
+  /// No description provided for @authErrorNoSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Sign in again.'**
+  String get authErrorNoSession;
+
+  /// No description provided for @authErrorUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get authErrorUnknown;
+
   /// No description provided for @verifyAccountTitle.
   ///
   /// In en, this message translates to:
   /// **'Verify your account'**
   String get verifyAccountTitle;
-
-  /// No description provided for @verificationCodeSent.
-  ///
-  /// In en, this message translates to:
-  /// **'We sent a 6-digit code to'**
-  String get verificationCodeSent;
-
-  /// No description provided for @codeExpiresIn.
-  ///
-  /// In en, this message translates to:
-  /// **'The code will expire in {time} minutes'**
-  String codeExpiresIn(String time);
-
-  /// No description provided for @verifyButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify'**
-  String get verifyButton;
-
-  /// No description provided for @codeNotReceived.
-  ///
-  /// In en, this message translates to:
-  /// **'Didn\'t receive the code?'**
-  String get codeNotReceived;
-
-  /// No description provided for @resendCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Resend code'**
-  String get resendCode;
-
-  /// No description provided for @invalidVerificationCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the complete 6-digit code'**
-  String get invalidVerificationCode;
 
   /// No description provided for @invalidEmail.
   ///
@@ -535,12 +661,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password must be at least 6 characters'**
   String get passwordTooShort;
-
-  /// No description provided for @signInError.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not sign in. Try again.'**
-  String get signInError;
 
   /// No description provided for @brandFooter.
   ///

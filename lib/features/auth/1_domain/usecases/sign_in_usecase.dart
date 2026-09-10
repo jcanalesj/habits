@@ -1,5 +1,7 @@
 import 'package:habits/features/auth/0_entity/entity.dart';
+import 'package:habits/features/auth/1_domain/exceptions/auth_exception.dart';
 import 'package:habits/features/auth/1_domain/repositories/auth_repository.dart';
+import 'package:habits/features/auth/1_domain/services/email_validator.dart';
 
 enum SignInValidationError { invalidEmail, passwordTooShort }
 
@@ -16,8 +18,8 @@ class SignInValidationFailed extends SignInResult {
 }
 
 class SignInFailed extends SignInResult {
-  final String message;
-  SignInFailed(this.message);
+  final AuthFailure failure;
+  SignInFailed(this.failure);
 }
 
 class SignInUsecase {
@@ -25,7 +27,6 @@ class SignInUsecase {
 
   SignInUsecase(this._repository);
 
-  static final _emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
   static const _minPasswordLength = 6;
 
   Future<SignInResult> execute({
@@ -33,8 +34,7 @@ class SignInUsecase {
     required String password,
   }) async {
     final errors = <SignInValidationError>{
-      if (!_emailRegex.hasMatch(email.trim()))
-        SignInValidationError.invalidEmail,
+      if (!EmailValidator.isValid(email)) SignInValidationError.invalidEmail,
       if (password.length < _minPasswordLength)
         SignInValidationError.passwordTooShort,
     };
@@ -46,8 +46,10 @@ class SignInUsecase {
         password: password,
       );
       return SignInSuccess(user);
-    } catch (e) {
-      return SignInFailed(e.toString());
+    } on AuthException catch (e) {
+      return SignInFailed(e.failure);
+    } catch (_) {
+      return SignInFailed(AuthFailure.unknown);
     }
   }
 }

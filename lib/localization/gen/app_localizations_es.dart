@@ -63,6 +63,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get seeAllMyHabits => 'Ver todos mis hábitos';
 
   @override
+  String get noHabitsYet =>
+      'Aún no tienes hábitos. Crea el primero con el botón +.';
+
+  @override
   String get nextReminder => 'Próximo recordatorio';
 
   @override
@@ -221,28 +225,98 @@ class AppLocalizationsEs extends AppLocalizations {
       'Debes aceptar los términos y la política de privacidad';
 
   @override
-  String get verifyAccountTitle => 'Verifica tu cuenta';
+  String get verifyLinkSent => 'Te hemos enviado un enlace de verificación a';
 
   @override
-  String get verificationCodeSent => 'Hemos enviado un código de 6 dígitos a';
+  String get verifyLinkInstructions =>
+      'Ábrelo desde tu correo y vuelve aquí para continuar.';
 
   @override
-  String codeExpiresIn(String time) {
-    return 'El código expirará en $time minutos';
+  String get iHaveVerified => 'Ya he verificado mi correo';
+
+  @override
+  String get notVerifiedYet =>
+      'Todavía no consta como verificado. Revisa tu bandeja de entrada y la carpeta de spam.';
+
+  @override
+  String get emailNotReceived => '¿No te ha llegado?';
+
+  @override
+  String get resendEmail => 'Reenviar correo';
+
+  @override
+  String resendEmailIn(int seconds) {
+    return 'Reenviar en $seconds s';
   }
 
   @override
-  String get verifyButton => 'Verificar';
+  String get emailResent =>
+      'Correo reenviado. Puede tardar unos minutos en llegar.';
 
   @override
-  String get codeNotReceived => '¿No recibiste el código?';
+  String get useAnotherAccount => 'Usar otra cuenta';
 
   @override
-  String get resendCode => 'Reenviar código';
+  String get forgotPasswordTitle => 'Recupera tu contraseña';
 
   @override
-  String get invalidVerificationCode =>
-      'Introduce el código completo de 6 dígitos';
+  String get forgotPasswordSubtitle =>
+      'Te enviaremos un enlace para crear una nueva.';
+
+  @override
+  String get sendResetLink => 'Enviar enlace';
+
+  @override
+  String get resetLinkSent =>
+      'Si existe una cuenta con ese correo, recibirás un enlace para restablecer tu contraseña.';
+
+  @override
+  String get backToSignIn => 'Volver a iniciar sesión';
+
+  @override
+  String get signOut => 'Cerrar sesión';
+
+  @override
+  String get nicknameTooLong =>
+      'El nickname no puede superar los 40 caracteres';
+
+  @override
+  String get authErrorInvalidCredentials => 'Correo o contraseña incorrectos.';
+
+  @override
+  String get authErrorEmailAlreadyInUse =>
+      'Ya existe una cuenta con ese correo.';
+
+  @override
+  String get authErrorWeakPassword => 'La contraseña es demasiado débil.';
+
+  @override
+  String get authErrorInvalidEmail => 'El correo no es válido.';
+
+  @override
+  String get authErrorUserDisabled => 'Esta cuenta está desactivada.';
+
+  @override
+  String get authErrorTooManyRequests =>
+      'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.';
+
+  @override
+  String get authErrorNetwork =>
+      'Sin conexión. Comprueba tu red e inténtalo de nuevo.';
+
+  @override
+  String get authErrorRequiresRecentLogin =>
+      'Por seguridad, vuelve a iniciar sesión para continuar.';
+
+  @override
+  String get authErrorNoSession =>
+      'Tu sesión ha caducado. Inicia sesión de nuevo.';
+
+  @override
+  String get authErrorUnknown => 'Algo ha ido mal. Inténtalo de nuevo.';
+
+  @override
+  String get verifyAccountTitle => 'Verifica tu cuenta';
 
   @override
   String get invalidEmail => 'Introduce un correo válido';
@@ -250,9 +324,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get passwordTooShort =>
       'La contraseña debe tener al menos 6 caracteres';
-
-  @override
-  String get signInError => 'No se pudo iniciar sesión. Inténtalo de nuevo.';
 
   @override
   String get brandFooter => 'Tu mejor versión, cada día.';

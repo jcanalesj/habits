@@ -10,6 +10,7 @@ abstract class HabitLog with _$HabitLog {
   const factory HabitLog({
     required String id,
     required String habitId,
+
     /// Día lógico: fecha normalizada a las 00:00 en zona horaria local.
     required DateTime date,
     @Default(HabitLogType.completed) HabitLogType type,

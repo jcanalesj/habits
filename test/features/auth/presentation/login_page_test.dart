@@ -1,32 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habits/components/auth_header.dart';
 import 'package:habits/features/auth/2_presentation/pages/login_page.dart';
-import 'package:habits/localization/gen/app_localizations.dart';
 
-Widget _appUnderTest() {
-  return const ProviderScope(
-    child: MaterialApp(
-      locale: Locale('es'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: LoginPage(),
-    ),
-  );
-}
+import '../../../helpers/auth_test_helpers.dart';
 
 void main() {
+  late AuthTestEnv env;
+
   setUpAll(() {
     // En tests no hay red: evita que google_fonts intente descargar fuentes.
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
+  setUp(() {
+    env = AuthTestEnv();
+    env.auth.registerAccount(verifiedUser, password: 'secreta12');
+  });
+
+  Widget app() => localizedApp(const LoginPage(), overrides: env.overrides);
+
   testWidgets('LoginPage muestra el formulario de inicio de sesión', (
     tester,
   ) async {
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pump();
 
     expect(find.text('Inicia sesión'), findsOneWidget);
@@ -50,7 +48,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pump();
 
     expect(find.text('Inicia sesión'), findsOneWidget);
@@ -64,7 +62,7 @@ void main() {
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     addTearDown(tester.view.resetViewInsets);
 
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
     final hiddenHeader = find.ancestor(
@@ -78,11 +76,9 @@ void main() {
   });
 
   testWidgets('Enviar vacío muestra errores de validación', (tester) async {
-    await tester.pumpWidget(_appUnderTest());
+    await tester.pumpWidget(app());
     await tester.pump();
 
-    await tester.ensureVisible(find.text('Continuar'));
-    await tester.pump();
     await tester.tap(find.text('Continuar'));
     await tester.pump();
 
@@ -91,5 +87,21 @@ void main() {
       find.text('La contraseña debe tener al menos 6 caracteres'),
       findsOneWidget,
     );
+    expect(env.auth.currentUser, isNull);
+  });
+
+  testWidgets('Credenciales incorrectas muestran el error localizado', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app());
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField).at(0), verifiedUser.email);
+    await tester.enterText(find.byType(TextField).at(1), 'incorrecta');
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Correo o contraseña incorrectos.'), findsOneWidget);
+    expect(env.auth.currentUser, isNull);
   });
 }

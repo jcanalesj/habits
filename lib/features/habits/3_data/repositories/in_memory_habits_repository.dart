@@ -1,32 +1,55 @@
+import 'dart:async';
+
 import 'package:habits/features/habits/0_entity/entity.dart';
+import 'package:habits/features/habits/1_domain/exceptions/habits_exception.dart';
 import 'package:habits/features/habits/1_domain/repositories/habits_repository.dart';
 import 'package:habits/features/habits/1_domain/services/logical_day.dart';
 import 'package:habits/theme/app_theme.dart';
 
-/// Implementación en memoria para desarrollo de UI, sembrada con los datos
-/// del visual de referencia. Se sustituirá por la implementación Firestore
-/// sin tocar dominio ni presentación.
+/// [HabitsRepository] en memoria con el mismo comportamiento observable que
+/// Firestore (streams reactivos, soft delete, ids de registro deterministas,
+/// reasignación a General). Para tests y arranques con datos simulados.
 class InMemoryHabitsRepository implements HabitsRepository {
-  InMemoryHabitsRepository() {
-    _seed();
+  InMemoryHabitsRepository({bool seeded = true, DateTime Function()? now})
+    : _now = now ?? DateTime.now {
+    if (seeded) _seed();
   }
 
+  final DateTime Function() _now;
   final List<Ambito> _ambitos = [];
   final List<Habit> _habits = [];
-  final List<HabitLog> _logs = [];
-  GeneralStreak _generalStreak = const GeneralStreak();
-  int _nextLogId = 0;
+  final Map<String, HabitLog> _logs = {};
+  StreaksSnapshot _streaks = StreaksSnapshot.empty;
+  int _nextId = 1;
+
+  final _ambitosController = StreamController<List<Ambito>>.broadcast();
+  final _habitsController = StreamController<List<Habit>>.broadcast();
+  final _logsController = StreamController<List<HabitLog>>.broadcast();
+  final _streaksController = StreamController<StreaksSnapshot>.broadcast();
+
+  /// Fija la caché de rachas (simula lo que escribirá la fase 5).
+  void setStreaks(StreaksSnapshot streaks) {
+    _streaks = streaks;
+    _streaksController.add(streaks);
+  }
 
   void _seed() {
     _ambitos.addAll(const [
+      Ambito(
+        id: Ambito.generalId,
+        name: 'General',
+        emoji: '✨',
+        colorValue: 0xFF7C5CE0,
+        isPredefined: true,
+        order: 0,
+      ),
       Ambito(
         id: 'salud',
         name: 'Salud',
         emoji: '💜',
         colorValue: 0xFF8B5CF6,
         isPredefined: true,
-        currentStreak: 8,
-        bestStreak: 21,
+        order: 1,
       ),
       Ambito(
         id: 'mente',
@@ -34,8 +57,7 @@ class InMemoryHabitsRepository implements HabitsRepository {
         emoji: '🧠',
         colorValue: 0xFFF16A8F,
         isPredefined: true,
-        currentStreak: 5,
-        bestStreak: 12,
+        order: 2,
       ),
       Ambito(
         id: 'desarrollo',
@@ -43,8 +65,7 @@ class InMemoryHabitsRepository implements HabitsRepository {
         emoji: '🌿',
         colorValue: 0xFF34B379,
         isPredefined: true,
-        currentStreak: 6,
-        bestStreak: 15,
+        order: 3,
       ),
       Ambito(
         id: 'energia',
@@ -52,12 +73,11 @@ class InMemoryHabitsRepository implements HabitsRepository {
         emoji: '🏋️',
         colorValue: 0xFFF59E0B,
         isPredefined: true,
-        currentStreak: 3,
-        bestStreak: 9,
+        order: 4,
       ),
     ]);
 
-    final createdAt = DateTime.now().subtract(const Duration(days: 30));
+    final createdAt = _now().subtract(const Duration(days: 30));
     _habits.addAll([
       Habit(
         id: 'agua',
@@ -67,7 +87,7 @@ class InMemoryHabitsRepository implements HabitsRepository {
         restDaysAllowed: 2,
         colorValue: AppColors.blue.toARGB32(),
         emoji: '💧',
-        currentStreak: 12,
+        order: 0,
         createdAt: createdAt,
       ),
       Habit(
@@ -78,7 +98,7 @@ class InMemoryHabitsRepository implements HabitsRepository {
         restDaysAllowed: 1,
         colorValue: AppColors.lilac.toARGB32(),
         emoji: '🧘',
-        currentStreak: 7,
+        order: 1,
         createdAt: createdAt,
       ),
       Habit(
@@ -91,7 +111,7 @@ class InMemoryHabitsRepository implements HabitsRepository {
         colorValue: AppColors.green.toARGB32(),
         emoji: '👟',
         reminderTime: '18:00',
-        currentStreak: 5,
+        order: 2,
         createdAt: createdAt,
       ),
       Habit(
@@ -101,7 +121,7 @@ class InMemoryHabitsRepository implements HabitsRepository {
         periodicity: Periodicity.daily,
         colorValue: AppColors.orange.toARGB32(),
         emoji: '📖',
-        currentStreak: 10,
+        order: 3,
         createdAt: createdAt,
       ),
       Habit(
@@ -112,100 +132,223 @@ class InMemoryHabitsRepository implements HabitsRepository {
         restDaysAllowed: 1,
         colorValue: AppColors.pink.toARGB32(),
         emoji: '💬',
-        currentStreak: 3,
+        order: 4,
         createdAt: createdAt,
       ),
     ]);
 
     // Semana en curso completada hasta ayer (hoy queda pendiente de marcar);
     // "Estudiar inglés" falló ayer para tener variedad visual.
-    final today = LogicalDay.today();
+    final today = LogicalDay.of(_now());
     final monday = LogicalDay.mondayOfWeek(today);
     for (final habit in _habits) {
-      for (var day = monday;
-          day.isBefore(today);
-          day = day.add(const Duration(days: 1))) {
-        final isYesterday =
-            LogicalDay.isSameDay(day, today.subtract(const Duration(days: 1)));
-        if (habit.id == 'ingles' && isYesterday) continue;
-        _logs.add(
-          HabitLog(id: '${_nextLogId++}', habitId: habit.id, date: day),
+      for (
+        var day = monday;
+        day.isBefore(today);
+        day = day.add(const Duration(days: 1))
+      ) {
+        final isYesterday = LogicalDay.isSameDay(
+          day,
+          today.subtract(const Duration(days: 1)),
         );
+        if (habit.id == 'ingles' && isYesterday) continue;
+        _putLog(habit.id, day, HabitLogType.completed);
       }
     }
+  }
 
-    _generalStreak = GeneralStreak(
-      count: 12,
-      comodinDisponible: true,
-      lastLogDate: today.subtract(const Duration(days: 1)),
+  // ---------------------------------------------------------------- lecturas
+
+  List<Habit> get _activeHabits =>
+      (_habits.where((h) => !h.isDeleted).toList()
+            ..sort((a, b) => a.order.compareTo(b.order)))
+          .toList(growable: false);
+
+  List<Ambito> get _sortedAmbitos => (List.of(
+    _ambitos,
+  )..sort((a, b) => a.order.compareTo(b.order))).toList(growable: false);
+
+  @override
+  Stream<List<Ambito>> watchAmbitos() async* {
+    yield _sortedAmbitos;
+    yield* _ambitosController.stream;
+  }
+
+  @override
+  Stream<List<Habit>> watchActiveHabits() async* {
+    yield _activeHabits;
+    yield* _habitsController.stream;
+  }
+
+  @override
+  Stream<List<HabitLog>> watchLogsBetween(DateTime from, DateTime to) async* {
+    List<HabitLog> select() => _logsBetween(from, to);
+    yield select();
+    yield* _logsController.stream.map((_) => select());
+  }
+
+  @override
+  Stream<StreaksSnapshot> watchStreaks() async* {
+    yield _streaks;
+    yield* _streaksController.stream;
+  }
+
+  List<HabitLog> _logsBetween(DateTime from, DateTime to) {
+    final f = LogicalDay.of(from);
+    final t = LogicalDay.of(to);
+    return (_logs.values
+            .where((l) => !l.date.isBefore(f) && !l.date.isAfter(t))
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date)))
+        .toList(growable: false);
+  }
+
+  @override
+  Future<List<HabitLog>> fetchHabitLogs(
+    String habitId, {
+    DateTime? from,
+    DateTime? to,
+  }) async {
+    return (_logs.values.where((l) {
+      if (l.habitId != habitId) return false;
+      if (from != null && l.date.isBefore(LogicalDay.of(from))) return false;
+      if (to != null && l.date.isAfter(LogicalDay.of(to))) return false;
+      return true;
+    }).toList()..sort((a, b) => a.date.compareTo(b.date))).toList(
+      growable: false,
     );
   }
 
   @override
-  Future<GeneralStreak> fetchGeneralStreak() async => _generalStreak;
-
-  @override
-  Future<List<Ambito>> fetchAmbitos() async => List.unmodifiable(_ambitos);
-
-  @override
-  Future<List<Habit>> fetchHabits() async => List.unmodifiable(_habits);
-
-  @override
-  Future<List<HabitLog>> fetchLogsBetween(DateTime from, DateTime to) async {
-    return _logs
-        .where((log) => !log.date.isBefore(from) && !log.date.isAfter(to))
-        .toList(growable: false);
+  Future<Habit?> getHabit(String habitId) async {
+    for (final habit in _habits) {
+      if (habit.id == habitId) return habit;
+    }
+    return null;
   }
+
+  // ---------------------------------------------------------------- hábitos
+
+  @override
+  Future<Habit> createHabit(HabitDraft draft) async {
+    if (!_ambitos.any((a) => a.id == draft.ambitoId)) {
+      throw const HabitsException(HabitsFailure.ambitoNotFound);
+    }
+    final now = _now();
+    final habit = Habit(
+      id: 'habit-${_nextId++}',
+      name: draft.name,
+      ambitoId: draft.ambitoId,
+      periodicity: draft.periodicity,
+      restDaysAllowed: draft.restDaysAllowed,
+      recoveryTask: draft.recoveryTask,
+      recoveryCooldownDays: draft.recoveryCooldownDays,
+      colorValue: draft.colorValue,
+      emoji: draft.emoji,
+      reminderTime: draft.reminderTime,
+      order: now.millisecondsSinceEpoch,
+      createdAt: now,
+    );
+    _habits.add(habit);
+    _habitsController.add(_activeHabits);
+    return habit;
+  }
+
+  @override
+  Future<void> updateHabit(Habit habit) async {
+    final index = _habits.indexWhere((h) => h.id == habit.id);
+    if (index == -1) throw const HabitsException(HabitsFailure.habitNotFound);
+    if (!_ambitos.any((a) => a.id == habit.ambitoId)) {
+      throw const HabitsException(HabitsFailure.ambitoNotFound);
+    }
+    _habits[index] = habit.copyWith(createdAt: _habits[index].createdAt);
+    _habitsController.add(_activeHabits);
+  }
+
+  @override
+  Future<void> softDeleteHabit(String habitId) async {
+    final index = _habits.indexWhere((h) => h.id == habitId);
+    if (index == -1) throw const HabitsException(HabitsFailure.habitNotFound);
+    _habits[index] = _habits[index].copyWith(deletedAt: _now());
+    _habitsController.add(_activeHabits);
+  }
+
+  // ---------------------------------------------------------------- ámbitos
+
+  @override
+  Future<Ambito> createAmbito(AmbitoDraft draft) async {
+    final now = _now();
+    final ambito = Ambito(
+      id: 'ambito-${_nextId++}',
+      name: draft.name,
+      emoji: draft.emoji,
+      colorValue: draft.colorValue,
+      order: now.millisecondsSinceEpoch,
+      createdAt: now,
+    );
+    _ambitos.add(ambito);
+    _ambitosController.add(_sortedAmbitos);
+    return ambito;
+  }
+
+  @override
+  Future<void> updateAmbito(Ambito ambito) async {
+    final index = _ambitos.indexWhere((a) => a.id == ambito.id);
+    if (index == -1) throw const HabitsException(HabitsFailure.ambitoNotFound);
+    _ambitos[index] = ambito.copyWith(
+      isPredefined: _ambitos[index].isPredefined,
+      createdAt: _ambitos[index].createdAt,
+    );
+    _ambitosController.add(_sortedAmbitos);
+  }
+
+  @override
+  Future<void> deleteAmbito(String ambitoId) async {
+    if (ambitoId == Ambito.generalId) {
+      throw const HabitsException(HabitsFailure.generalAmbitoProtected);
+    }
+    if (!_ambitos.any((a) => a.id == ambitoId)) {
+      throw const HabitsException(HabitsFailure.ambitoNotFound);
+    }
+    for (var i = 0; i < _habits.length; i++) {
+      if (_habits[i].ambitoId == ambitoId) {
+        _habits[i] = _habits[i].copyWith(ambitoId: Ambito.generalId);
+      }
+    }
+    _ambitos.removeWhere((a) => a.id == ambitoId);
+    _ambitosController.add(_sortedAmbitos);
+    _habitsController.add(_activeHabits);
+  }
+
+  // -------------------------------------------------------------- registros
 
   @override
   Future<void> setHabitCompletion({
     required String habitId,
     required DateTime date,
     required bool completed,
+    HabitLogType type = HabitLogType.completed,
   }) async {
-    final alreadyLogged = _logs.any(
-      (log) => log.habitId == habitId && LogicalDay.isSameDay(log.date, date),
-    );
-
-    final habitIndex = _habits.indexWhere((h) => h.id == habitId);
-    if (habitIndex == -1) throw ArgumentError('Hábito no encontrado: $habitId');
-
-    if (completed && !alreadyLogged) {
-      _logs.add(HabitLog(id: '${_nextLogId++}', habitId: habitId, date: date));
-      _habits[habitIndex] = _habits[habitIndex].copyWith(
-        currentStreak: _habits[habitIndex].currentStreak + 1,
-      );
-      _bumpGeneralStreakIfFirstOf(date);
-    } else if (!completed && alreadyLogged) {
-      _logs.removeWhere(
-        (log) => log.habitId == habitId && LogicalDay.isSameDay(log.date, date),
-      );
-      _habits[habitIndex] = _habits[habitIndex].copyWith(
-        currentStreak: (_habits[habitIndex].currentStreak - 1).clamp(0, 1 << 31),
-      );
-      _dropGeneralStreakIfEmpty(date);
+    final habit = await getHabit(habitId);
+    if (habit == null) throw const HabitsException(HabitsFailure.habitNotFound);
+    if (habit.isDeleted) {
+      throw const HabitsException(HabitsFailure.habitDeleted);
     }
+
+    final day = LogicalDay.of(date);
+    if (completed) {
+      _putLog(habitId, day, type);
+    } else {
+      _logs.remove(_logId(habitId, day));
+    }
+    _logsController.add(const []);
   }
 
-  void _bumpGeneralStreakIfFirstOf(DateTime date) {
-    final last = _generalStreak.lastLogDate;
-    if (last == null || !LogicalDay.isSameDay(last, date)) {
-      _generalStreak = _generalStreak.copyWith(
-        count: _generalStreak.count + 1,
-        lastLogDate: date,
-      );
-    }
-  }
+  static String _logId(String habitId, DateTime day) =>
+      '${habitId}_${LogicalDay.format(day)}';
 
-  void _dropGeneralStreakIfEmpty(DateTime date) {
-    final anyLogToday =
-        _logs.any((log) => LogicalDay.isSameDay(log.date, date));
-    final last = _generalStreak.lastLogDate;
-    if (!anyLogToday && last != null && LogicalDay.isSameDay(last, date)) {
-      _generalStreak = _generalStreak.copyWith(
-        count: (_generalStreak.count - 1).clamp(0, 1 << 31),
-        lastLogDate: date.subtract(const Duration(days: 1)),
-      );
-    }
+  void _putLog(String habitId, DateTime day, HabitLogType type) {
+    final id = _logId(habitId, day);
+    _logs[id] = HabitLog(id: id, habitId: habitId, date: day, type: type);
   }
 }

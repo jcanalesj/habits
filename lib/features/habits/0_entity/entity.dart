@@ -1,6 +1,10 @@
 export 'ambito.dart';
+export 'ambito_draft.dart';
 export 'general_streak.dart';
 export 'habit.dart';
+export 'habit_draft.dart';
 export 'habit_log.dart';
 export 'home_summary.dart';
 export 'periodicity.dart';
+export 'periodicity_change.dart';
+export 'streaks_snapshot.dart';

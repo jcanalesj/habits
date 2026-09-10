@@ -4,19 +4,25 @@
   "goodMorning": "Good morning, {name}! 👋",
   "@goodMorning": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "goodAfternoon": "Good afternoon, {name}! 👋",
   "@goodAfternoon": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "goodEvening": "Good evening, {name}! 👋",
   "@goodEvening": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "tagline": "Small actions, big changes.",
@@ -31,11 +37,14 @@
   "myHabits": "My habits",
   "newHabit": "New habit",
   "seeAllMyHabits": "See all my habits",
+  "noHabitsYet": "No habits yet. Create your first one with the + button.",
   "nextReminder": "Next reminder",
   "todayAt": "Today at {time}",
   "@todayAt": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "markNow": "Mark now",
@@ -46,7 +55,9 @@
   "restDaysCount": "{count, plural, =1{1 rest day} other{{count} rest days}}",
   "@restDaysCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "navHome": "Home",
@@ -58,7 +69,9 @@
   "somethingWentWrong": "Something went wrong: {error}",
   "@somethingWentWrong": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "taglineLine1": "Small actions,",
@@ -94,21 +107,42 @@
   "registerPasswordTooShort": "Password must be at least 8 characters",
   "passwordsDoNotMatch": "Passwords do not match",
   "acceptTermsError": "You must accept the terms and privacy policy",
-  "verifyAccountTitle": "Verify your account",
-  "verificationCodeSent": "We sent a 6-digit code to",
-  "codeExpiresIn": "The code will expire in {time} minutes",
-  "@codeExpiresIn": {
+  "verifyLinkSent": "We sent a verification link to",
+  "verifyLinkInstructions": "Open it from your inbox and come back here to continue.",
+  "iHaveVerified": "I've verified my email",
+  "notVerifiedYet": "It doesn't show as verified yet. Check your inbox and spam folder.",
+  "emailNotReceived": "Didn't get it?",
+  "resendEmail": "Resend email",
+  "resendEmailIn": "Resend in {seconds}s",
+  "@resendEmailIn": {
     "placeholders": {
-      "time": {"type": "String"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
-  "verifyButton": "Verify",
-  "codeNotReceived": "Didn't receive the code?",
-  "resendCode": "Resend code",
-  "invalidVerificationCode": "Enter the complete 6-digit code",
+  "emailResent": "Email resent. It may take a few minutes to arrive.",
+  "useAnotherAccount": "Use another account",
+  "forgotPasswordTitle": "Recover your password",
+  "forgotPasswordSubtitle": "We'll send you a link to create a new one.",
+  "sendResetLink": "Send link",
+  "resetLinkSent": "If an account exists for that email, you'll receive a link to reset your password.",
+  "backToSignIn": "Back to sign in",
+  "signOut": "Sign out",
+  "nicknameTooLong": "Nickname can't be longer than 40 characters",
+  "authErrorInvalidCredentials": "Incorrect email or password.",
+  "authErrorEmailAlreadyInUse": "An account already exists for that email.",
+  "authErrorWeakPassword": "The password is too weak.",
+  "authErrorInvalidEmail": "The email address is not valid.",
+  "authErrorUserDisabled": "This account has been disabled.",
+  "authErrorTooManyRequests": "Too many attempts. Wait a few minutes and try again.",
+  "authErrorNetwork": "No connection. Check your network and try again.",
+  "authErrorRequiresRecentLogin": "For security, sign in again to continue.",
+  "authErrorNoSession": "Your session has expired. Sign in again.",
+  "authErrorUnknown": "Something went wrong. Try again.",
+  "verifyAccountTitle": "Verify your account",
   "invalidEmail": "Enter a valid email address",
   "passwordTooShort": "Password must be at least 6 characters",
-  "signInError": "Could not sign in. Try again.",
   "brandFooter": "Your best version, every day.",
   "loadingYourBestVersion": "Loading your best version...",
   "splashPhrase1": "Small actions, big changes.",

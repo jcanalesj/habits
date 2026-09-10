@@ -27,15 +27,15 @@ class HomePage extends ConsumerWidget {
         bottom: false,
         child: switch (summaryAsync) {
           AsyncData(:final value) => _HomeContent(
-              summary: value,
-              greeting: _greeting(context.l10n, userName),
-            ),
+            summary: value,
+            greeting: _greeting(context.l10n, userName),
+          ),
           AsyncError(:final error) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(context.l10n.somethingWentWrong('$error')),
-              ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(context.l10n.somethingWentWrong('$error')),
             ),
+          ),
           _ => const Center(child: CircularProgressIndicator()),
         },
       ),
@@ -58,8 +58,7 @@ class _HomeContent extends ConsumerWidget {
         (log) =>
             log.habitId == habit.id && LogicalDay.isSameDay(log.date, today),
       );
-    }).toList()
-      ..sort((a, b) => a.reminderTime!.compareTo(b.reminderTime!));
+    }).toList()..sort((a, b) => a.reminderTime!.compareTo(b.reminderTime!));
     return pending.isEmpty ? null : pending.first;
   }
 
@@ -74,6 +73,7 @@ class _HomeContent extends ConsumerWidget {
       children: [
         HomeHeader(greeting: greeting),
         const SizedBox(height: 20),
+        // Rachas: caché derivada (vacía → ceros) hasta el motor de la fase 5.
         GeneralStreakCard(streak: summary.generalStreak),
         const SizedBox(height: 24),
         SectionHeader(
@@ -88,8 +88,10 @@ class _HomeContent extends ConsumerWidget {
             scrollDirection: Axis.horizontal,
             itemCount: summary.ambitos.length,
             separatorBuilder: (_, _) => const SizedBox(width: 12),
-            itemBuilder: (context, index) =>
-                AmbitoStreakCard(ambito: summary.ambitos[index]),
+            itemBuilder: (context, index) => AmbitoStreakCard(
+              ambito: summary.ambitos[index],
+              streak: summary.ambitoStreak(summary.ambitos[index].id),
+            ),
           ),
         ),
         const SizedBox(height: 24),
@@ -111,6 +113,7 @@ class _HomeContent extends ConsumerWidget {
         HabitsListCard(
           habits: summary.habits,
           weekLogs: summary.weekLogs,
+          streakOf: summary.habitStreak,
           onToggleToday: controller.toggleToday,
           onSeeAll: () {},
         ),

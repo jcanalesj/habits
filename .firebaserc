@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "constanza-dev"
-  }
+    "default": "constanza-dev",
+    "constanza": "constanza-dev"
+  },
+  "targets": {},
+  "etags": {}
 }

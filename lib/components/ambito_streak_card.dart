@@ -3,19 +3,25 @@ import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 
-/// Tarjeta del carrusel "Rachas por ámbito".
+/// Tarjeta del carrusel "Rachas por ámbito". La racha llega aparte del
+/// ámbito porque es un dato derivado (caché), no configuración.
 class AmbitoStreakCard extends StatelessWidget {
-  const AmbitoStreakCard({super.key, required this.ambito});
+  const AmbitoStreakCard({
+    super.key,
+    required this.ambito,
+    this.streak = const AmbitoStreak(),
+  });
 
   final Ambito ambito;
+  final AmbitoStreak streak;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final color = Color(ambito.colorValue);
     // Progreso hacia la mejor racha histórica, como refuerzo visual.
-    final progress = ambito.bestStreak > 0
-        ? (ambito.currentStreak / ambito.bestStreak).clamp(0.0, 1.0)
+    final progress = streak.best > 0
+        ? (streak.current / streak.best).clamp(0.0, 1.0)
         : 0.0;
 
     return Container(
@@ -43,9 +49,7 @@ class AmbitoStreakCard extends StatelessWidget {
             ambito.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 2),
           Row(
@@ -53,7 +57,7 @@ class AmbitoStreakCard extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '${ambito.currentStreak}',
+                '${streak.current}',
                 style: textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),

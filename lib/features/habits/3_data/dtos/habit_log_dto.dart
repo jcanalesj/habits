@@ -1,0 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:habits/features/habits/3_data/dtos/firestore_fields.dart';
+
+/// Documento `users/{uid}/registros/{habitoId}_{YYYY-MM-DD}`.
+class HabitLogDto {
+  const HabitLogDto({
+    required this.id,
+    required this.habitoId,
+    required this.dia,
+    required this.tipo,
+  });
+
+  final String id;
+  final String habitoId;
+
+  /// Día lógico `YYYY-MM-DD`.
+  final String dia;
+  final String tipo;
+
+  /// Id determinista del registro: marcar es `set`, desmarcar es `delete`.
+  static String idFor(String habitoId, String dia) => '${habitoId}_$dia';
+
+  factory HabitLogDto.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data() ?? const {};
+    return HabitLogDto(
+      id: doc.id,
+      habitoId: data[FirestoreFields.habitoId] as String? ?? '',
+      dia: data[FirestoreFields.dia] as String? ?? '',
+      tipo: data[FirestoreFields.tipo] as String? ?? 'completed',
+    );
+  }
+}

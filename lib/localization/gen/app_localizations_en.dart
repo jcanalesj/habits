@@ -63,6 +63,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeAllMyHabits => 'See all my habits';
 
   @override
+  String get noHabitsYet =>
+      'No habits yet. Create your first one with the + button.';
+
+  @override
   String get nextReminder => 'Next reminder';
 
   @override
@@ -220,36 +224,102 @@ class AppLocalizationsEn extends AppLocalizations {
   String get acceptTermsError => 'You must accept the terms and privacy policy';
 
   @override
-  String get verifyAccountTitle => 'Verify your account';
+  String get verifyLinkSent => 'We sent a verification link to';
 
   @override
-  String get verificationCodeSent => 'We sent a 6-digit code to';
+  String get verifyLinkInstructions =>
+      'Open it from your inbox and come back here to continue.';
 
   @override
-  String codeExpiresIn(String time) {
-    return 'The code will expire in $time minutes';
+  String get iHaveVerified => 'I\'ve verified my email';
+
+  @override
+  String get notVerifiedYet =>
+      'It doesn\'t show as verified yet. Check your inbox and spam folder.';
+
+  @override
+  String get emailNotReceived => 'Didn\'t get it?';
+
+  @override
+  String get resendEmail => 'Resend email';
+
+  @override
+  String resendEmailIn(int seconds) {
+    return 'Resend in ${seconds}s';
   }
 
   @override
-  String get verifyButton => 'Verify';
+  String get emailResent =>
+      'Email resent. It may take a few minutes to arrive.';
 
   @override
-  String get codeNotReceived => 'Didn\'t receive the code?';
+  String get useAnotherAccount => 'Use another account';
 
   @override
-  String get resendCode => 'Resend code';
+  String get forgotPasswordTitle => 'Recover your password';
 
   @override
-  String get invalidVerificationCode => 'Enter the complete 6-digit code';
+  String get forgotPasswordSubtitle =>
+      'We\'ll send you a link to create a new one.';
+
+  @override
+  String get sendResetLink => 'Send link';
+
+  @override
+  String get resetLinkSent =>
+      'If an account exists for that email, you\'ll receive a link to reset your password.';
+
+  @override
+  String get backToSignIn => 'Back to sign in';
+
+  @override
+  String get signOut => 'Sign out';
+
+  @override
+  String get nicknameTooLong => 'Nickname can\'t be longer than 40 characters';
+
+  @override
+  String get authErrorInvalidCredentials => 'Incorrect email or password.';
+
+  @override
+  String get authErrorEmailAlreadyInUse =>
+      'An account already exists for that email.';
+
+  @override
+  String get authErrorWeakPassword => 'The password is too weak.';
+
+  @override
+  String get authErrorInvalidEmail => 'The email address is not valid.';
+
+  @override
+  String get authErrorUserDisabled => 'This account has been disabled.';
+
+  @override
+  String get authErrorTooManyRequests =>
+      'Too many attempts. Wait a few minutes and try again.';
+
+  @override
+  String get authErrorNetwork =>
+      'No connection. Check your network and try again.';
+
+  @override
+  String get authErrorRequiresRecentLogin =>
+      'For security, sign in again to continue.';
+
+  @override
+  String get authErrorNoSession => 'Your session has expired. Sign in again.';
+
+  @override
+  String get authErrorUnknown => 'Something went wrong. Try again.';
+
+  @override
+  String get verifyAccountTitle => 'Verify your account';
 
   @override
   String get invalidEmail => 'Enter a valid email address';
 
   @override
   String get passwordTooShort => 'Password must be at least 6 characters';
-
-  @override
-  String get signInError => 'Could not sign in. Try again.';
 
   @override
   String get brandFooter => 'Your best version, every day.';

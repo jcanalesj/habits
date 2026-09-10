@@ -12,11 +12,15 @@ class HabitListTile extends StatelessWidget {
     required this.habit,
     required this.weekLogs,
     required this.onToggleToday,
+    this.currentStreak = 0,
     this.onTap,
   });
 
   final Habit habit;
   final List<HabitLog> weekLogs;
+
+  /// Racha actual (dato derivado de la caché de rachas; 0 si no existe).
+  final int currentStreak;
   final VoidCallback onToggleToday;
   final VoidCallback? onTap;
 
@@ -55,8 +59,10 @@ class HabitListTile extends StatelessWidget {
                     color: color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child:
-                      Text(habit.emoji, style: const TextStyle(fontSize: 20)),
+                  child: Text(
+                    habit.emoji,
+                    style: const TextStyle(fontSize: 20),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -87,7 +93,7 @@ class HabitListTile extends StatelessWidget {
                 Text('🔥', style: textTheme.bodySmall),
                 const SizedBox(width: 2),
                 Text(
-                  '${habit.currentStreak}',
+                  '$currentStreak',
                   style: textTheme.titleMedium?.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w800,

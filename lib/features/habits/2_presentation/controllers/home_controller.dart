@@ -3,47 +3,39 @@ import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 
-class HomeController extends AsyncNotifier<HomeSummary> {
+/// Estado de la Home, alimentado por snapshots del repositorio: cualquier
+/// escritura (local u otro dispositivo) se refleja sola, sin recargas.
+class HomeController extends StreamNotifier<HomeSummary> {
   @override
-  Future<HomeSummary> build() => _load();
+  Stream<HomeSummary> build() =>
+      ref.watch(watchHomeSummaryUsecaseProvider).execute();
 
-  Future<HomeSummary> _load() async {
-    final result = await ref.read(getHomeSummaryUsecaseProvider).execute();
-    return switch (result) {
-      GetHomeSummarySuccess(:final summary) => summary,
-      GetHomeSummaryFailed(:final message) => throw Exception(message),
-    };
-  }
-
-  /// Marca o desmarca el cumplimiento de hoy para [habitId].
-  Future<void> toggleToday(String habitId) async {
+  /// Marca o desmarca el cumplimiento de hoy para [habitId]. El estado
+  /// "completado" se decide por los registros, nunca por la caché de rachas.
+  Future<ToggleHabitCompletionResult?> toggleToday(String habitId) async {
     final summary = state.value;
-    if (summary == null) return;
+    if (summary == null) return null;
 
     final today = LogicalDay.today();
-    final isCompleted = summary.weekLogs.any(
-      (log) =>
-          log.habitId == habitId && LogicalDay.isSameDay(log.date, today),
-    );
+    final result = await ref
+        .read(toggleHabitCompletionUsecaseProvider)
+        .execute(
+          habitId: habitId,
+          date: today,
+          completed: !summary.isCompletedOn(habitId, today),
+        );
+    if (!ref.mounted) return result;
 
-    final result =
-        await ref.read(toggleHabitCompletionUsecaseProvider).execute(
-              habitId: habitId,
-              date: today,
-              completed: !isCompleted,
-            );
-    if (!ref.mounted) return;
-
-    switch (result) {
-      case ToggleHabitCompletionSuccess():
-        state = AsyncData(await _load());
-      case ToggleHabitCompletionFailed():
-        // El estado previo se mantiene; el fallo se reflejará vía UI cuando
-        // exista gestión de errores global (snackbar/toast).
-        break;
-    }
+    // Con éxito no hay nada que hacer: el snapshot actualizará el estado.
+    // Si falla, el estado previo se mantiene; la gestión visual de errores
+    // llegará con la infraestructura global de snackbars.
+    return result;
   }
 }
 
+/// autoDispose: muere con la Home (p. ej. al cerrar sesión) para que no
+/// queden suscripciones a Firestore ni cadenas de providers obsoletas.
 final homeControllerProvider =
-    AsyncNotifierProvider<HomeController, HomeSummary>(HomeController.new);
+    StreamNotifierProvider.autoDispose<HomeController, HomeSummary>(
+      HomeController.new,
+    );

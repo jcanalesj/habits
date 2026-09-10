@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
+import 'package:habits/features/auth/1_domain/domain.dart';
+import 'package:habits/features/auth/2_presentation/controllers/register_controller.dart';
+import 'package:habits/features/auth/2_presentation/l10n/auth_failure_l10n.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -21,7 +24,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   late final List<FocusNode> _focusNodes;
 
   bool _acceptedTerms = false;
-  bool _submitted = false;
   int _focusedField = 0;
 
   @override
@@ -50,37 +52,27 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.dispose();
   }
 
-  bool get _emailIsValid => RegExp(
-    r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
-  ).hasMatch(_emailController.text.trim());
-
-  bool get _formIsValid =>
-      _nicknameController.text.trim().isNotEmpty &&
-      _emailIsValid &&
-      _passwordController.text.length >= 8 &&
-      _passwordController.text == _confirmPasswordController.text &&
-      _acceptedTerms;
-
-  void _register() {
-    setState(() => _submitted = true);
-    if (!_formIsValid) return;
-
-    final email = _emailController.text.trim();
-    context.push(
-      Uri(
-        path: '/verify-email',
-        queryParameters: {
-          'email': email,
-          'nickname': _nicknameController.text.trim(),
-        },
-      ).toString(),
-    );
+  Future<void> _register() async {
+    final success = await ref
+        .read(registerControllerProvider.notifier)
+        .submit(
+          nickname: _nicknameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
+          confirmPassword: _confirmPasswordController.text,
+          acceptedTerms: _acceptedTerms,
+        );
+    // La cuenta queda con sesión sin verificar: el redirect del router
+    // mantiene al usuario en la verificación hasta que confirme el enlace.
+    if (success && mounted) context.go('/verify-email');
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final state = ref.watch(registerControllerProvider);
+    final errors = state.validationErrors;
     final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     final keyboardOffset = keyboardVisible
         ? switch (_focusedField) {
@@ -162,9 +154,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 hint: l10n.nicknameHint,
                                 textInputAction: TextInputAction.next,
                                 errorText:
-                                    _submitted &&
-                                        _nicknameController.text.trim().isEmpty
+                                    errors.contains(
+                                      SignUpValidationError.nicknameRequired,
+                                    )
                                     ? l10n.nicknameRequired
+                                    : errors.contains(
+                                        SignUpValidationError.nicknameTooLong,
+                                      )
+                                    ? l10n.nicknameTooLong
                                     : null,
                               ),
                               const SizedBox(height: AppDimensions.authFormGap),
@@ -176,7 +173,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 hint: l10n.emailExampleHint,
                                 keyboardType: TextInputType.emailAddress,
                                 textInputAction: TextInputAction.next,
-                                errorText: _submitted && !_emailIsValid
+                                errorText:
+                                    errors.contains(
+                                      SignUpValidationError.invalidEmail,
+                                    )
                                     ? l10n.registerInvalidEmail
                                     : null,
                               ),
@@ -190,8 +190,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 obscurable: true,
                                 textInputAction: TextInputAction.next,
                                 errorText:
-                                    _submitted &&
-                                        _passwordController.text.length < 8
+                                    errors.contains(
+                                      SignUpValidationError.passwordTooShort,
+                                    )
                                     ? l10n.registerPasswordTooShort
                                     : null,
                               ),
@@ -206,9 +207,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 textInputAction: TextInputAction.done,
                                 onSubmitted: (_) => _register(),
                                 errorText:
-                                    _submitted &&
-                                        _passwordController.text !=
-                                            _confirmPasswordController.text
+                                    errors.contains(
+                                      SignUpValidationError.passwordsDoNotMatch,
+                                    )
                                     ? l10n.passwordsDoNotMatch
                                     : null,
                               ),
@@ -217,14 +218,30 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 value: _acceptedTerms,
                                 onChanged: (value) =>
                                     setState(() => _acceptedTerms = value),
-                                errorText: _submitted && !_acceptedTerms
+                                errorText:
+                                    errors.contains(
+                                      SignUpValidationError.termsNotAccepted,
+                                    )
                                     ? l10n.acceptTermsError
                                     : null,
                               ),
                               const SizedBox(height: 24),
+                              if (state.failure != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    state.failure!.localize(l10n),
+                                    textAlign: TextAlign.center,
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                               GradientButton(
                                 label: l10n.registerButton,
                                 trailingArrow: false,
+                                isLoading: state.isSubmitting,
                                 onPressed: _register,
                               ),
                               const SizedBox(height: 24),
