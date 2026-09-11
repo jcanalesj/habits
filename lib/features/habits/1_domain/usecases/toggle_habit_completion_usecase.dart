@@ -1,36 +1,47 @@
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/exceptions/habits_exception.dart';
 import 'package:habits/features/habits/1_domain/repositories/habits_repository.dart';
-import 'package:habits/features/habits/1_domain/services/logical_day.dart';
 
 sealed class ToggleHabitCompletionResult {}
 
 class ToggleHabitCompletionSuccess extends ToggleHabitCompletionResult {}
 
-/// No se puede registrar en un día futuro.
-class ToggleHabitCompletionFutureDate extends ToggleHabitCompletionResult {}
+/// Solo se puede registrar el día de HOY. Ni ayer, ni anteayer, ni mañana,
+/// ni una fecha arbitraria (§14): si no quedó registrado durante el día,
+/// para Constanza ese día no tiene ese registro.
+class ToggleHabitCompletionNotToday extends ToggleHabitCompletionResult {
+  ToggleHabitCompletionNotToday(this.requested, this.today);
 
-class ToggleHabitCompletionFailed extends ToggleHabitCompletionResult {
-  final HabitsFailure failure;
-  ToggleHabitCompletionFailed(this.failure);
+  final LogicalDate requested;
+  final LogicalDate today;
 }
 
-/// Marca o desmarca el cumplimiento de un hábito activo en un día lógico.
-class ToggleHabitCompletionUsecase {
-  final HabitsRepository _repository;
+class ToggleHabitCompletionFailed extends ToggleHabitCompletionResult {
+  ToggleHabitCompletionFailed(this.failure);
 
-  ToggleHabitCompletionUsecase(this._repository);
+  final HabitsFailure failure;
+}
+
+/// Marca o desmarca el cumplimiento de un hábito activo.
+///
+/// [today] llega ya resuelto en la zona horaria IANA del perfil: esta es la
+/// primera de las dos capas que impiden los registros retroactivos. La
+/// segunda son las Security Rules, que acotan la fecha pero no pueden
+/// garantizar "hoy exacto" sin backend confiable (ver documentación de
+/// limitaciones conocidas).
+class ToggleHabitCompletionUsecase {
+  const ToggleHabitCompletionUsecase(this._repository);
+
+  final HabitsRepository _repository;
 
   Future<ToggleHabitCompletionResult> execute({
     required String habitId,
-    required DateTime date,
+    required LogicalDate date,
     required bool completed,
-    HabitLogType type = HabitLogType.completed,
-    DateTime? today,
+    required LogicalDate today,
   }) async {
-    final day = LogicalDay.of(date);
-    if (day.isAfter(today ?? LogicalDay.today())) {
-      return ToggleHabitCompletionFutureDate();
+    if (date != today) {
+      return ToggleHabitCompletionNotToday(date, today);
     }
 
     try {
@@ -43,9 +54,8 @@ class ToggleHabitCompletionUsecase {
       }
       await _repository.setHabitCompletion(
         habitId: habitId,
-        date: day,
+        date: date,
         completed: completed,
-        type: type,
       );
       return ToggleHabitCompletionSuccess();
     } on HabitsException catch (e) {

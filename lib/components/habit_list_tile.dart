@@ -1,47 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:habits/components/periodicity_label.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
-import 'package:habits/features/habits/1_domain/services/logical_day.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 
-/// Fila de un hábito en "Mis hábitos": emoji, nombre, racha y la semana
-/// en curso con un punto por día. El punto de hoy es interactivo.
+/// Fila de un hábito en "Mis hábitos": emoji, nombre, objetivo, progreso del
+/// periodo y la semana en curso con un punto por día.
+///
+/// Ya no muestra racha por hábito: solo existe la racha general (§1). Lo que
+/// aparece a la derecha es el PROGRESO DEL OBJETIVO ("2/3"), que es un
+/// concepto distinto (§37).
 class HabitListTile extends StatelessWidget {
   const HabitListTile({
     super.key,
     required this.habit,
     required this.weekLogs,
+    required this.today,
     required this.onToggleToday,
-    this.currentStreak = 0,
+    this.progress,
     this.onTap,
   });
 
   final Habit habit;
   final List<HabitLog> weekLogs;
+  final LogicalDate today;
 
-  /// Racha actual (dato derivado de la caché de rachas; 0 si no existe).
-  final int currentStreak;
+  /// Progreso del objetivo en el periodo actual; null si aún no se conoce.
+  final GoalProgress? progress;
   final VoidCallback onToggleToday;
   final VoidCallback? onTap;
-
-  String _subtitle(AppLocalizations l10n) {
-    final periodicity = switch (habit.periodicity) {
-      Periodicity.daily => l10n.periodicityDaily,
-      Periodicity.weekly => l10n.periodicityWeekly,
-      Periodicity.monthly => l10n.periodicityMonthly,
-      Periodicity.yearly => l10n.periodicityYearly,
-    };
-    if (habit.restDaysAllowed == 0) return periodicity;
-    return '$periodicity · ${l10n.restDaysCount(habit.restDaysAllowed)}';
-  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final l10n = context.l10n;
     final color = Color(habit.colorValue);
+    final goal = progress;
 
     // Diseño en dos líneas para que quepa en pantallas de móvil:
-    // arriba nombre + racha, debajo la semana a ancho completo.
+    // arriba nombre + progreso, debajo la semana a ancho completo.
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -79,7 +76,7 @@ class HabitListTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        _subtitle(context.l10n),
+                        PeriodicityLabel.of(l10n, habit.periodicityOn(today)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: textTheme.bodySmall?.copyWith(
@@ -90,15 +87,27 @@ class HabitListTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text('🔥', style: textTheme.bodySmall),
-                const SizedBox(width: 2),
-                Text(
-                  '$currentStreak',
-                  style: textTheme.titleMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
+                if (goal != null)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        l10n.goalProgressLabel(goal.completed, goal.goal),
+                        style: textTheme.titleMedium?.copyWith(
+                          color: goal.isMet
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        PeriodicityLabel.periodOf(l10n, goal.period.type),
+                        style: textTheme.labelSmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
                 const SizedBox(width: 4),
                 const Icon(
                   Icons.chevron_right_rounded,
@@ -112,6 +121,7 @@ class HabitListTile extends StatelessWidget {
               child: _WeekDots(
                 habitId: habit.id,
                 weekLogs: weekLogs,
+                today: today,
                 onToggleToday: onToggleToday,
               ),
             ),
@@ -126,35 +136,40 @@ class _WeekDots extends StatelessWidget {
   const _WeekDots({
     required this.habitId,
     required this.weekLogs,
+    required this.today,
     required this.onToggleToday,
   });
 
   final String habitId;
   final List<HabitLog> weekLogs;
+  final LogicalDate today;
   final VoidCallback onToggleToday;
 
   @override
   Widget build(BuildContext context) {
-    final today = LogicalDay.today();
-    final monday = LogicalDay.mondayOfWeek(today);
+    final monday = today.addDays(-(today.weekday - DateTime.monday));
     final dayLabels = context.l10n.weekdayInitials.split(',');
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(7, (index) {
-        final day = monday.add(Duration(days: index));
-        final isToday = LogicalDay.isSameDay(day, today);
+        final day = monday.addDays(index);
+        final isToday = day == today;
         final isFuture = day.isAfter(today);
         final isCompleted = weekLogs.any(
-          (log) =>
-              log.habitId == habitId && LogicalDay.isSameDay(log.date, day),
+          (log) => log.habitId == habitId && log.isActivity && log.date == day,
         );
 
         return _DayDot(
+          // Clave estable: identifica el punto de un día concreto sin tener
+          // que adivinar por posición ni por tipo de widget.
+          key: ValueKey('habit-dot-$habitId-${day.key}'),
           label: dayLabels[index],
           completed: isCompleted,
           isToday: isToday,
           isFuture: isFuture,
+          // Solo el día de hoy es interactivo: no existen registros
+          // retroactivos (§14).
           onTap: isToday ? onToggleToday : null,
         );
       }),
@@ -164,6 +179,7 @@ class _WeekDots extends StatelessWidget {
 
 class _DayDot extends StatelessWidget {
   const _DayDot({
+    super.key,
     required this.label,
     required this.completed,
     required this.isToday,

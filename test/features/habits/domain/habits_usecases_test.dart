@@ -6,34 +6,61 @@ import 'package:habits/features/habits/3_data/data.dart';
 import '../../../helpers/habits_test_helpers.dart';
 
 void main() {
-  final today = day(2026, 9, 10);
+  setUpAll(initializeTimezones);
+
+  final today = day(2026, 9, 10); // jueves
+  final nowInstant = DateTime.utc(2026, 9, 10, 12);
   late InMemoryHabitsRepository repository;
+  late InMemoryWildcardsRepository wildcards;
 
   setUp(() {
-    repository = InMemoryHabitsRepository(now: () => today);
+    repository = InMemoryHabitsRepository(
+      now: () => nowInstant,
+      today: today,
+    );
+    wildcards = InMemoryWildcardsRepository();
   });
+
+  tearDown(() async {
+    await repository.dispose();
+    await wildcards.dispose();
+  });
+
+  WatchHomeSummaryUsecase homeSummary() {
+    final calendar = LogicalCalendar('Europe/Madrid');
+    return WatchHomeSummaryUsecase(
+      habits: repository,
+      wildcards: wildcards,
+      calendar: calendar,
+      goalProgress: GoalProgressCalculator(PeriodicityResolver(calendar)),
+      clock: FixedClock(nowInstant),
+    );
+  }
 
   group('CreateHabitUsecase', () {
     test('valida nombre, emoji, cupos y hora', () async {
       final result = await CreateHabitUsecase(repository).execute(
-        HabitDraft(
+        const HabitDraft(
           name: ' ',
           ambitoId: 'salud',
-          periodicity: Periodicity.daily,
-          restDaysAllowed: -1,
-          recoveryCooldownDays: 0,
+          // 10 veces por semana es imposible: como mucho hay un registro
+          // por día.
+          periodicity: Periodicity(
+            type: PeriodicityType.weekly,
+            timesPerPeriod: 10,
+          ),
           colorValue: 1,
           emoji: '',
           reminderTime: '25:99',
         ),
+        today: today,
       );
 
       expect(result, isA<CreateHabitValidationFailed>());
       expect((result as CreateHabitValidationFailed).errors, {
         HabitValidationError.nameRequired,
         HabitValidationError.emojiRequired,
-        HabitValidationError.invalidRestDays,
-        HabitValidationError.invalidRecoveryCooldown,
+        HabitValidationError.invalidTimesPerPeriod,
         HabitValidationError.invalidReminderTime,
       });
     });
@@ -41,7 +68,7 @@ void main() {
     test('crea el hábito recortando espacios', () async {
       final result = await CreateHabitUsecase(
         repository,
-      ).execute(habitDraft(name: '  Correr  '));
+      ).execute(habitDraft(name: '  Correr  '), today: today);
 
       expect(result, isA<CreateHabitSuccess>());
       final habit = (result as CreateHabitSuccess).habit;
@@ -52,7 +79,7 @@ void main() {
     test('traduce ámbito inexistente a fallo de dominio', () async {
       final result = await CreateHabitUsecase(
         repository,
-      ).execute(habitDraft(ambitoId: 'nope'));
+      ).execute(habitDraft(ambitoId: 'nope'), today: today);
 
       expect(
         (result as CreateHabitFailed).failure,
@@ -62,33 +89,20 @@ void main() {
   });
 
   group('UpdateHabitUsecase', () {
-    test('anota el cambio de periodicidad en el historial', () async {
+    test('no toca la línea temporal de periodicidad', () async {
+      // Cambiar la periodicidad tiene su propio usecase, porque implica
+      // calcular una fecha efectiva y respetar el periodo en curso.
       final original = (await repository.watchActiveHabits().first).first;
+
       final result = await UpdateHabitUsecase(repository).execute(
-        original: original,
-        updated: original.copyWith(periodicity: Periodicity.weekly),
-        today: today,
-      );
-
-      expect(result, isA<UpdateHabitSuccess>());
-      final saved = (await repository.getHabit(original.id))!;
-      expect(saved.periodicity, Periodicity.weekly);
-      expect(saved.periodicityHistory, [
-        PeriodicityChange(periodicity: Periodicity.daily, since: today),
-      ]);
-    });
-
-    test('no toca el historial si la periodicidad no cambia', () async {
-      final original = (await repository.watchActiveHabits().first).first;
-      await UpdateHabitUsecase(repository).execute(
         original: original,
         updated: original.copyWith(name: 'Agua'),
       );
 
-      expect(
-        (await repository.getHabit(original.id))!.periodicityHistory,
-        isEmpty,
-      );
+      expect(result, isA<UpdateHabitSuccess>());
+      final saved = (await repository.getHabit(original.id))!;
+      expect(saved.name, 'Agua');
+      expect(saved.periodicityTimeline, original.periodicityTimeline);
     });
 
     test('rechaza editar un hábito eliminado', () async {
@@ -124,16 +138,20 @@ void main() {
   });
 
   group('ToggleHabitCompletionUsecase', () {
-    test('rechaza fechas futuras sin tocar el repositorio', () async {
+    test('rechaza cualquier fecha que no sea hoy', () async {
       final habit = (await repository.watchActiveHabits().first).first;
-      final result = await ToggleHabitCompletionUsecase(repository).execute(
-        habitId: habit.id,
-        date: today.add(const Duration(days: 1)),
-        completed: true,
-        today: today,
-      );
+      final usecase = ToggleHabitCompletionUsecase(repository);
 
-      expect(result, isA<ToggleHabitCompletionFutureDate>());
+      for (final fecha in [today.next, today.previous, day(2020, 1, 1)]) {
+        final result = await usecase.execute(
+          habitId: habit.id,
+          date: fecha,
+          completed: true,
+          today: today,
+        );
+        expect(result, isA<ToggleHabitCompletionNotToday>(), reason: '\$fecha');
+      }
+
       expect(await repository.fetchHabitLogs(habit.id, from: today), isEmpty);
     });
 
@@ -228,6 +246,7 @@ void main() {
       final custom = await repository.createAmbito(ambitoDraft);
       final habit = await repository.createHabit(
         habitDraft(ambitoId: custom.id),
+        today: today,
       );
 
       final protectedResult = await DeleteAmbitoUsecase(
@@ -242,34 +261,26 @@ void main() {
   });
 
   group('WatchHomeSummaryUsecase', () {
-    test(
-      'funciona sin cache/rachas y decide completado por registros',
-      () async {
-        final usecase = WatchHomeSummaryUsecase(repository);
-        final first = await usecase.execute(today: today).first;
-        final habit = first.habits.first;
+    test('calcula la racha en vivo y decide completado por registros', () async {
+      final first = await homeSummary().execute(today: today).first;
+      final habit = first.habits.first;
 
-        expect(first.streaks.isEmpty, isTrue);
-        expect(first.generalStreak.count, 0);
-        expect(first.habitStreak(habit.id), 0);
-        expect(first.isCompletedOn(habit.id, today), isFalse);
-        // La semana sembrada va de lunes a ayer.
-        expect(
-          first.isCompletedOn(
-            habit.id,
-            today.subtract(const Duration(days: 1)),
-          ),
-          isTrue,
-        );
-      },
-    );
+      expect(first.today, today);
+      expect(first.isCompletedOn(habit.id, today), isFalse);
+      // La semana sembrada va de lunes a ayer, así que la racha está
+      // intacta pero hoy queda pendiente.
+      expect(first.isCompletedOn(habit.id, today.previous), isTrue);
+      expect(first.streak.status, StreakStatus.pendingToday);
+      expect(first.streak.currentStreak, greaterThan(0));
+      expect(first.wildcards, WildcardBalance.empty);
+    });
 
-    test('emite al marcar y refleja la caché cuando aparece', () async {
-      final usecase = WatchHomeSummaryUsecase(repository);
+    test('emite al marcar y la racha sube sin tocar ninguna caché', () async {
       final emissions = <HomeSummary>[];
-      final sub = usecase.execute(today: today).listen(emissions.add);
+      final sub = homeSummary().execute(today: today).listen(emissions.add);
       await Future<void>.delayed(Duration.zero);
       final habit = emissions.first.habits.first;
+      final antes = emissions.first.streak.currentStreak;
 
       await repository.setHabitCompletion(
         habitId: habit.id,
@@ -277,22 +288,34 @@ void main() {
         completed: true,
       );
       await Future<void>.delayed(Duration.zero);
-      expect(emissions.last.isCompletedOn(habit.id, today), isTrue);
-
-      repository.setStreaks(
-        StreaksSnapshot(
-          general: const GeneralStreak(count: 7),
-          habits: {habit.id: const HabitStreak(current: 3, best: 9)},
-          calculatedThrough: today,
-        ),
-      );
-      await Future<void>.delayed(Duration.zero);
       await sub.cancel();
 
-      expect(emissions.last.generalStreak.count, 7);
-      expect(emissions.last.habitStreak(habit.id), 3);
-      // La caché no decide el cumplimiento: sigue viniendo de los registros.
       expect(emissions.last.isCompletedOn(habit.id, today), isTrue);
+      expect(emissions.last.streak.currentStreak, antes + 1);
+      expect(emissions.last.streak.status, StreakStatus.completedToday);
+      // Nadie ha escrito la caché: la racha viene de los registros.
+      expect(await repository.fetchStreakCache(), isNull);
+    });
+
+    test('incluye el progreso del objetivo de cada hábito', () async {
+      final summary = await homeSummary().execute(today: today).first;
+
+      // "Entrenar" está sembrado como 3 veces por semana.
+      final entrenar = summary.habits.firstWhere((h) => h.id == 'entrenar');
+      final progress = summary.progressOf(entrenar.id)!;
+
+      expect(progress.goal, 3);
+      expect(progress.period.type, PeriodicityType.weekly);
+      expect(progress.period.start, day(2026, 9, 7));
+      expect(progress.completed, greaterThan(0));
+    });
+
+    test('refleja el saldo de comodines y los días protegidos', () async {
+      await wildcards.ensureGranted(today.yearMonth);
+
+      final summary = await homeSummary().execute(today: today).first;
+
+      expect(summary.wildcards.available, 1);
     });
   });
 }

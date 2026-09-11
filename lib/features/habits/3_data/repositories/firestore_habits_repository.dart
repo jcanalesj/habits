@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/exceptions/habits_exception.dart';
 import 'package:habits/features/habits/1_domain/repositories/habits_repository.dart';
-import 'package:habits/features/habits/1_domain/services/logical_day.dart';
 import 'package:habits/features/habits/3_data/dtos/ambito_dto.dart';
 import 'package:habits/features/habits/3_data/dtos/firestore_fields.dart';
 import 'package:habits/features/habits/3_data/dtos/habit_dto.dart';
@@ -13,9 +12,11 @@ import 'package:habits/features/habits/3_data/mappers/habits_mappers.dart';
 /// [HabitsRepository] sobre Firestore, scoped a `users/{userId}`.
 ///
 /// Escribe exactamente los campos que aceptan las Security Rules, con marcas
-/// de tiempo del servidor. Nunca usa transacciones (no funcionan offline);
-/// cuando una operación necesita varias escrituras atómicas usa un
-/// [WriteBatch], que sí se encola y sincroniza sin red.
+/// de tiempo del servidor. Los datos normales son offline-first: nunca usa
+/// transacciones (no funcionan sin red) y cuando necesita atomicidad usa un
+/// [WriteBatch], que sí se encola y sincroniza. Los comodines, que son
+/// entitlements, viven en [FirestoreWildcardsRepository] y sí usan
+/// transacción a propósito.
 class FirestoreHabitsRepository implements HabitsRepository {
   FirestoreHabitsRepository({
     required this.userId,
@@ -101,40 +102,75 @@ class FirestoreHabitsRepository implements HabitsRepository {
   );
 
   @override
-  Stream<List<HabitLog>> watchLogsBetween(DateTime from, DateTime to) =>
+  Stream<List<HabitLog>> watchLogsBetween(LogicalDate from, LogicalDate to) =>
       _guardStream(
         _registros
-            .where(
-              FirestoreFields.dia,
-              isGreaterThanOrEqualTo: LogicalDay.format(from),
-            )
-            .where(
-              FirestoreFields.dia,
-              isLessThanOrEqualTo: LogicalDay.format(to),
-            )
+            .where(FirestoreFields.dia, isGreaterThanOrEqualTo: from.key)
+            .where(FirestoreFields.dia, isLessThanOrEqualTo: to.key)
             .orderBy(FirestoreFields.dia)
             .snapshots()
-            .map(
-              (snapshot) => snapshot.docs
-                  .map((doc) => HabitsMappers.logFromDto(doc.data()))
-                  .toList(growable: false),
-            ),
+            .map((snapshot) => _mapLogs(snapshot.docs)),
       );
 
+  /// Histórico completo de días con actividad real.
+  ///
+  /// Se suscribe a TODOS los registros: es lo que exige poder reconstruir la
+  /// racha de forma determinista desde la fuente de verdad. Tras la primera
+  /// carga, Firestore sirve desde caché local y el listener solo entrega
+  /// deltas, así que el coste recurrente es bajo. Si algún día el volumen lo
+  /// justifica, el siguiente paso sería un agregado por día; se ha
+  /// descartado ahora a propósito para no tener una segunda fuente de verdad.
   @override
-  Stream<StreaksSnapshot> watchStreaks() => _guardStream(
+  Stream<Set<LogicalDate>> watchActivityDays() => _guardStream(
+    _registros
+        .orderBy(FirestoreFields.dia)
+        .snapshots()
+        .map((snapshot) => _activityDaysOf(snapshot.docs)),
+  );
+
+  @override
+  Future<Set<LogicalDate>> fetchActivityDays() => _guard(() async {
+    final snapshot = await _registros.orderBy(FirestoreFields.dia).get();
+    return _activityDaysOf(snapshot.docs);
+  });
+
+  @override
+  Stream<StreakCacheEntry?> watchStreakCache() => _guardStream(
     _rachasRaw.snapshots().map(
       (snapshot) => snapshot.exists
-          ? HabitsMappers.streaksFromDto(StreaksDto.fromSnapshot(snapshot))
-          : StreaksSnapshot.empty,
+          ? HabitsMappers.streakCacheFromDto(StreaksDto.fromSnapshot(snapshot))
+          : null,
     ),
   );
 
   @override
+  Future<StreakCacheEntry?> fetchStreakCache() => _guard(() async {
+    final snapshot = await _rachasRaw.get();
+    if (!snapshot.exists) return null;
+    return HabitsMappers.streakCacheFromDto(StreaksDto.fromSnapshot(snapshot));
+  });
+
+  @override
+  Future<void> saveStreakCache(StreakCacheEntry entry) => _guard(() async {
+    await _rachasRaw.set({
+      FirestoreFields.rachaActual: entry.currentStreak,
+      FirestoreFields.mejorRacha: entry.bestStreak,
+      FirestoreFields.ultimoDiaActividad: entry.lastActivityDay?.key,
+      FirestoreFields.calculadoHasta: entry.calculatedThrough.key,
+      FirestoreFields.version: entry.algorithmVersion,
+      FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+    });
+  });
+
+  @override
+  Future<void> clearStreakCache() =>
+      _guard(() async => _rachasRaw.delete());
+
+  @override
   Future<List<HabitLog>> fetchHabitLogs(
     String habitId, {
-    DateTime? from,
-    DateTime? to,
+    LogicalDate? from,
+    LogicalDate? to,
   }) => _guard(() async {
     // Índice compuesto (habitoId, dia) desplegado en la fase 2.
     Query<HabitLogDto> query = _registros.where(
@@ -144,19 +180,14 @@ class FirestoreHabitsRepository implements HabitsRepository {
     if (from != null) {
       query = query.where(
         FirestoreFields.dia,
-        isGreaterThanOrEqualTo: LogicalDay.format(from),
+        isGreaterThanOrEqualTo: from.key,
       );
     }
     if (to != null) {
-      query = query.where(
-        FirestoreFields.dia,
-        isLessThanOrEqualTo: LogicalDay.format(to),
-      );
+      query = query.where(FirestoreFields.dia, isLessThanOrEqualTo: to.key);
     }
     final snapshot = await query.orderBy(FirestoreFields.dia).get();
-    return snapshot.docs
-        .map((doc) => HabitsMappers.logFromDto(doc.data()))
-        .toList(growable: false);
+    return _mapLogs(snapshot.docs);
   });
 
   @override
@@ -169,17 +200,19 @@ class FirestoreHabitsRepository implements HabitsRepository {
   // ---------------------------------------------------------------- hábitos
 
   @override
-  Future<Habit> createHabit(HabitDraft draft) => _guard(() async {
+  Future<Habit> createHabit(
+    HabitDraft draft, {
+    required LogicalDate today,
+  }) => _guard(() async {
     final ref = _habitosRaw.doc();
     final now = _now();
     final habit = Habit(
       id: ref.id,
       name: draft.name,
       ambitoId: draft.ambitoId,
-      periodicity: draft.periodicity,
-      restDaysAllowed: draft.restDaysAllowed,
-      recoveryTask: draft.recoveryTask,
-      recoveryCooldownDays: draft.recoveryCooldownDays,
+      periodicityTimeline: [
+        PeriodicityEntry(periodicity: draft.periodicity, since: today),
+      ],
       colorValue: draft.colorValue,
       emoji: draft.emoji,
       reminderTime: draft.reminderTime,
@@ -204,6 +237,10 @@ class FirestoreHabitsRepository implements HabitsRepository {
           ? null
           : Timestamp.fromDate(habit.deletedAt!),
       FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+      // Migración perezosa: cada hábito se deshace de los campos del modelo
+      // antiguo (descansos, recuperación, historial con el nombre viejo) la
+      // primera vez que se edita. Sin migración masiva ni borrado de datos.
+      ..._legacyFieldDeletions(),
     });
   });
 
@@ -214,6 +251,11 @@ class FirestoreHabitsRepository implements HabitsRepository {
       FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
     });
   });
+
+  static Map<String, dynamic> _legacyFieldDeletions() => {
+    for (final field in FirestoreFields.legacyHabitFields)
+      field: FieldValue.delete(),
+  };
 
   // ---------------------------------------------------------------- ámbitos
 
@@ -273,12 +315,10 @@ class FirestoreHabitsRepository implements HabitsRepository {
   @override
   Future<void> setHabitCompletion({
     required String habitId,
-    required DateTime date,
+    required LogicalDate date,
     required bool completed,
-    HabitLogType type = HabitLogType.completed,
   }) => _guard(() async {
-    final dia = LogicalDay.format(LogicalDay.of(date));
-    final ref = _registrosRaw.doc(HabitLogDto.idFor(habitId, dia));
+    final ref = _registrosRaw.doc(HabitLogDto.idFor(habitId, date.key));
     final existing = await _getDocOrNull(ref);
 
     if (!completed) {
@@ -287,26 +327,35 @@ class FirestoreHabitsRepository implements HabitsRepository {
       if (existing != null) await ref.delete();
       return;
     }
+    // Ya marcado: idempotente, sin escritura.
+    if (existing != null) return;
 
-    if (existing == null) {
-      await ref.set({
-        FirestoreFields.habitoId: habitId,
-        FirestoreFields.dia: dia,
-        FirestoreFields.tipo: type.name,
-        FirestoreFields.tz: _timezone ?? _now().timeZoneName,
-        FirestoreFields.createdAt: FieldValue.serverTimestamp(),
-      });
-    } else if (existing[FirestoreFields.tipo] != type.name) {
-      // Solo cambia el tipo; createdAt es inmutable para las reglas.
-      await ref.update({
-        FirestoreFields.tipo: type.name,
-        FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
-      });
-    }
-    // Ya marcado con el mismo tipo: idempotente, sin escritura.
+    await ref.set({
+      FirestoreFields.habitoId: habitId,
+      FirestoreFields.dia: date.key,
+      FirestoreFields.tipo: FirestoreFields.tipoCompleted,
+      // Se guarda la zona con la que se resolvió el día, para poder auditar
+      // cómo se decidió. No se usa para reinterpretar el día después (§13).
+      FirestoreFields.tz: _timezone ?? _now().timeZoneName,
+      FirestoreFields.createdAt: FieldValue.serverTimestamp(),
+    });
   });
 
   // ---------------------------------------------------------------- helpers
+
+  static List<HabitLog> _mapLogs(
+    List<QueryDocumentSnapshot<HabitLogDto>> docs,
+  ) => [
+    for (final doc in docs) ?HabitsMappers.logFromDto(doc.data()),
+  ];
+
+  static Set<LogicalDate> _activityDaysOf(
+    List<QueryDocumentSnapshot<HabitLogDto>> docs,
+  ) => {
+    for (final doc in docs)
+      if (HabitsMappers.logFromDto(doc.data()) case final log?)
+        if (log.isActivity) log.date,
+  };
 
   /// Datos del documento o null si no existe. Sin red usa la caché local;
   /// si tampoco está en caché se asume que no existe.

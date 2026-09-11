@@ -14,6 +14,7 @@ enum SignUpValidationError {
 
 sealed class SignUpResult {}
 
+/// Cuenta creada; queda con sesión iniciada y sin verificar.
 class SignUpSuccess extends SignUpResult {
   final AppUser user;
   SignUpSuccess(this.user);
@@ -32,10 +33,18 @@ class SignUpFailed extends SignUpResult {
 /// Alta con email/contraseña. Tras crear la cuenta envía el enlace de
 /// verificación; el perfil en Firestore NO se crea aquí sino después de
 /// verificar el email (ver EnsureUserProfileUsecase y Security Rules).
+///
+/// Registro y login están separados: si el correo ya está registrado, este
+/// usecase NO intenta iniciar sesión. Devuelve
+/// [AuthFailure.emailAlreadyInUse] y es la UI quien ofrece ir al login o a
+/// recuperar la contraseña.
 class SignUpUsecase {
   final AuthRepository _repository;
 
-  SignUpUsecase(this._repository);
+  /// Con la verificación desactivada no se envía ningún correo al alta.
+  final bool sendVerificationEmail;
+
+  SignUpUsecase(this._repository, {this.sendVerificationEmail = true});
 
   static const minPasswordLength = 8;
 
@@ -69,11 +78,12 @@ class SignUpUsecase {
         password: password,
         displayName: trimmedNickname,
       );
+      if (!sendVerificationEmail) return SignUpSuccess(user);
       try {
         await _repository.sendEmailVerification();
       } on AuthException {
-        // La cuenta ya existe: el usuario puede reenviar el correo desde la
-        // pantalla de verificación, así que no convertimos esto en fallo.
+        // El envío puede fallar (p. ej. límite de correos): la cuenta ya
+        // existe y el usuario puede reenviarlo desde la verificación.
       }
       return SignUpSuccess(user);
     } on AuthException catch (e) {

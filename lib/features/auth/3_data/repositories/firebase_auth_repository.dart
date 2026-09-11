@@ -47,7 +47,13 @@ class FirebaseAuthRepository implements AuthRepository {
       final user = credential.user;
       if (user == null) throw const AuthException(AuthFailure.unknown);
       await user.updateDisplayName(displayName);
-      return _requireUser(user).copyWith(displayName: displayName);
+      // Sin recargar, `currentUser` y el stream de sesión pueden seguir
+      // emitiendo el usuario sin nombre, y el perfil se crearía con
+      // displayName vacío.
+      await user.reload();
+      return _requireUser(
+        _auth.currentUser ?? user,
+      ).copyWith(displayName: displayName);
     });
   }
 

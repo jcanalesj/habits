@@ -16,17 +16,11 @@ class SplashLoadingIndicator extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
-          Icons.spa_outlined,
-          size: 28,
-          color: AppColors.primary,
-        ),
+        const Icon(Icons.spa_outlined, size: 28, color: AppColors.primary),
         const SizedBox(height: 12),
         Text(
           context.l10n.loadingYourBestVersion,
-          style: textTheme.bodyMedium?.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 12),
         SizedBox(

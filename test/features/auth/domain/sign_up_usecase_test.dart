@@ -70,24 +70,26 @@ void main() {
       },
     );
 
-    test(
-      'traduce email ya registrado a AuthFailure.emailAlreadyInUse',
-      () async {
-        repository.registerAccount(
-          const AppUser(id: 'u1', email: 'alex@example.com'),
-        );
+    test('un correo ya registrado falla y NO inicia sesión', () async {
+      repository.registerAccount(
+        const AppUser(id: 'u1', email: 'alex@example.com'),
+        password: 'secreta12',
+      );
 
-        final result = await usecase.execute(
-          nickname: 'Alex',
-          email: 'alex@example.com',
-          password: 'secreta12',
-          confirmPassword: 'secreta12',
-          acceptedTerms: true,
-        );
+      // Incluso acertando la contraseña de la cuenta existente, el alta
+      // no debe iniciar sesión: registro y login están separados.
+      final result = await usecase.execute(
+        nickname: 'Alex',
+        email: 'alex@example.com',
+        password: 'secreta12',
+        confirmPassword: 'secreta12',
+        acceptedTerms: true,
+      );
 
-        expect(result, isA<SignUpFailed>());
-        expect((result as SignUpFailed).failure, AuthFailure.emailAlreadyInUse);
-      },
-    );
+      expect(result, isA<SignUpFailed>());
+      expect((result as SignUpFailed).failure, AuthFailure.emailAlreadyInUse);
+      expect(repository.currentUser, isNull);
+      expect(repository.verificationEmailsSent, isEmpty);
+    });
   });
 }

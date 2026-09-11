@@ -9,4 +9,14 @@ abstract class UserProfileRepository {
   /// Crea el documento de perfil y siembra los ámbitos en una sola
   /// operación atómica.
   Future<void> create(NewUserProfile profile);
+
+  /// Zona horaria IANA guardada en el perfil (p. ej. `Europe/Madrid`).
+  ///
+  /// Es la que define el "día lógico" de todo el motor de rachas y de
+  /// objetivos (§12). Emite los cambios: si el usuario viaja y actualiza su
+  /// perfil, el concepto de "hoy" se recalcula, pero los registros
+  /// históricos NO se reinterpretan (§13).
+  ///
+  /// Emite null mientras el perfil no existe o no tiene zona.
+  Stream<String?> watchTimezone(String userId);
 }

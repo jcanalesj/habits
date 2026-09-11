@@ -7,26 +7,46 @@ rules_version = '2';
 //   1. Todo el modelo vive bajo users/{uid}. Un usuario solo accede a lo suyo
 //      y únicamente con el email verificado.
 //   2. Los REGISTROS de cumplimiento son la fuente de verdad. Los documentos
-//      canónicos (users, ambitos, habitos) NO contienen campos derivados
-//      (rachas, mejores rachas, comodines). Lo derivado vive aislado en
-//      users/{uid}/cache/rachas, que la app trata como caché reconstruible.
-//      Cuando existan Cloud Functions, basta con cerrar la escritura de ese
-//      documento al cliente para que las rachas pasen a calcularse en servidor.
+//      canónicos (users, ambitos, habitos) NO contienen campos derivados.
+//      Lo derivado vive aislado en users/{uid}/cache/rachas, que la app trata
+//      como caché reconstruible y que NUNCA decide nada. Cuando existan Cloud
+//      Functions, basta con cerrar la escritura de ese documento al cliente.
+//   2b. Solo existe la RACHA GENERAL del usuario: no hay rachas por hábito ni
+//      por ámbito, ni descansos, ni tareas de recuperación. El único mecanismo
+//      para proteger la racha es el COMODÍN.
+//   2c. El saldo de comodines (users/{uid}/comodines/saldo) y los días
+//      protegidos (users/{uid}/diasProtegidos/{dia}) SÍ son fuente de verdad,
+//      no caché: son entitlements con relación futura con anuncios y pagos.
+//      Estas reglas validan cada transición, no solo la forma.
 //   3. El cliente no puede escribir la suscripción ni alterar createdAt/email.
 //   4. Los hábitos se borran en soft delete (deletedAt); nunca hard delete,
 //      así el histórico de registros se conserva para estadísticas.
 //   5. El ámbito "general" no se puede borrar: es el destino de los hábitos
 //      cuando se elimina otro ámbito.
+//
+// LIMITACIÓN CONOCIDA — leer antes de tocar nada:
+//   Las Rules NO tienen base de datos de zonas horarias IANA, así que NO
+//   pueden comprobar "hoy según la zona del perfil". Solo pueden acotar la
+//   fecha a una ventana derivada de request.time. Un cliente manipulado puede
+//   retrodatar un registro aproximadamente 1 día. La restricción estricta
+//   exige trusted backend (Cloud Functions). Es DEUDA TÉCNICA a resolver
+//   antes de introducir nada con impacto económico o competitivo.
+//   Ver documentation/PHASE5_STREAK_ENGINE.md §8.
 // =============================================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // ----------------------------------------------------------------- helpers
+    // VERIFICACIÓN DE EMAIL DESACTIVADA (ver lib/env.dart).
+    // Los enlaces de verificación de Firebase llegan rotos en este proyecto,
+    // así que de momento basta con estar autenticado. Para reactivarla,
+    // descomentar la línea de email_verified Y poner
+    // Env.requireEmailVerification = true en la app. Las dos cosas.
     function isOwner(uid) {
       return request.auth != null
-        && request.auth.uid == uid
-        && request.auth.token.email_verified == true;
+        && request.auth.uid == uid;
+        // && request.auth.token.email_verified == true;
     }
 
     function incoming() { return request.resource.data; }
@@ -48,21 +68,54 @@ service cloud.firestore {
       return value is string
         && value.matches('^20[2-9][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
     }
-    // Un día lógico no puede estar en el futuro (tolerancia de 2 días para
-    // cubrir cualquier zona horaria y la sincronización offline).
-    function isDiaNoFuturo(value) {
-      return timestamp.date(int(value[0:4]), int(value[5:7]), int(value[8:10]))
-        <= request.time + duration.value(2, 'd');
+    // Ventana en la que un día lógico puede ser "hoy" para ALGÚN usuario.
+    //
+    // El día legítimo es date(request.time + offset) con offset entre -12h y
+    // +14h (rango real de zonas IANA). Sin poder resolver la zona del perfil,
+    // la cota más estrecha demostrable es:
+    //     request.time - 36h  <=  dia  <=  request.time + 14h
+    // Eso bloquea las fechas futuras y las claramente pasadas, pero deja un
+    // margen de aproximadamente 1 día: NO es "solo hoy". Ver LIMITACIÓN
+    // CONOCIDA arriba. El "solo hoy" exacto lo aplican el dominio y el cliente.
+    function diaAsTimestamp(value) {
+      return timestamp.date(int(value[0:4]), int(value[5:7]), int(value[8:10]));
+    }
+    function isDiaEnVentanaDeHoy(value) {
+      return diaAsTimestamp(value) >= request.time - duration.value(36, 'h')
+        && diaAsTimestamp(value) <= request.time + duration.value(14, 'h');
+    }
+    // Ventana del comodín: solo se puede proteger el día ANTERIOR a hoy, así
+    // que se desplaza 24h respecto a la anterior:
+    //     request.time - 60h  <=  dia  <=  request.time - 10h
+    function isDiaEnVentanaDeRescate(value) {
+      return diaAsTimestamp(value) >= request.time - duration.value(60, 'h')
+        && diaAsTimestamp(value) <= request.time - duration.value(10, 'h');
+    }
+    // Mes actual del servidor como entero monótono (año*12 + mes). Es la
+    // unidad de la concesión mensual de comodines.
+    function mesActual() {
+      return request.time.year() * 12 + request.time.month();
     }
     function isHora(value) {
       return value is string && value.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$');
     }
 
-    function isPeriodicidad(value) {
+    function isTipoPeriodo(value) {
       return value in ['daily', 'weekly', 'monthly', 'yearly'];
     }
+    // Periodicidad flexible: {tipo, veces}. Sin selección de días concretos.
+    function isPeriodicidad(value) {
+      return value is map
+        && value.keys().hasOnly(['tipo', 'veces'])
+        && value.keys().hasAll(['tipo', 'veces'])
+        && isTipoPeriodo(value.tipo)
+        && value.veces is int && value.veces >= 1 && value.veces <= 366;
+    }
+    // Desde la fase 5 la app solo escribe 'completed'. Los documentos
+    // antiguos con 'recovery'/'plannedRest' se conservan y se siguen leyendo,
+    // pero no cuentan como actividad y no se pueden crear nuevos.
     function isTipoRegistro(value) {
-      return value in ['completed', 'recovery', 'plannedRest'];
+      return value == 'completed';
     }
 
     // Ámbitos que la app siembra al crear la cuenta. Solo estos ids pueden
@@ -76,6 +129,12 @@ service cloud.firestore {
     }
     function habitoPath(uid, habitoId) {
       return /databases/$(database)/documents/users/$(uid)/habitos/$(habitoId);
+    }
+    function saldoPath(uid) {
+      return /databases/$(database)/documents/users/$(uid)/comodines/saldo;
+    }
+    function diaProtegidoPath(uid, dia) {
+      return /databases/$(database)/documents/users/$(uid)/diasProtegidos/$(dia);
     }
 
     // ------------------------------------------------------------ users/{uid}
@@ -178,30 +237,35 @@ service cloud.firestore {
       // Nunca hard delete: los registros históricos deben conservarse.
       allow delete: if false;
 
+      // Campos legacy (descansos, recuperación, historialPeriodicidad con el
+      // nombre antiguo): TOLERADOS en hasOnly pero NO exigidos en hasAll.
+      //
+      // No se pueden quitar de hasOnly todavía: en Firestore un update se
+      // valida contra el documento resultante COMPLETO, así que un hábito
+      // creado antes de la fase 5 dejaría de poder editarse aunque no se
+      // tocasen esos campos. El cliente los borra con FieldValue.delete() en
+      // cada escritura, de modo que cada hábito se migra solo la primera vez
+      // que se edita. Cuando no quede ninguno, se retiran de esta lista.
       function validHabito(d) {
         return d.keys().hasOnly([
             'nombre', 'emoji', 'colorValue', 'ambitoId', 'periodicidad',
-            'historialPeriodicidad', 'descansosPermitidos', 'tareaRecuperacion',
-            'recuperacionCooldownDias', 'recordatorioHora', 'orden', 'deletedAt',
-            'createdAt', 'updatedAt'
+            'cambiosPeriodicidad', 'recordatorioHora', 'orden', 'deletedAt',
+            'createdAt', 'updatedAt',
+            // legacy, solo tolerados
+            'historialPeriodicidad', 'descansosPermitidos',
+            'tareaRecuperacion', 'recuperacionCooldownDias'
           ])
           && d.keys().hasAll([
             'nombre', 'emoji', 'colorValue', 'ambitoId', 'periodicidad',
-            'historialPeriodicidad', 'descansosPermitidos',
-            'recuperacionCooldownDias', 'orden', 'deletedAt', 'createdAt', 'updatedAt'
+            'cambiosPeriodicidad', 'orden', 'deletedAt', 'createdAt', 'updatedAt'
           ])
           && isShortText(d.nombre, 60)
           && isShortText(d.emoji, 16)
           && isColor(d.colorValue)
           && isShortText(d.ambitoId, 128)
           && isPeriodicidad(d.periodicidad)
-          && d.historialPeriodicidad is list
-          && d.historialPeriodicidad.size() <= 50
-          && d.descansosPermitidos is int
-          && d.descansosPermitidos >= 0 && d.descansosPermitidos <= 366
-          && (!('tareaRecuperacion' in d) || d.tareaRecuperacion == null || isShortText(d.tareaRecuperacion, 120))
-          && d.recuperacionCooldownDias is int
-          && d.recuperacionCooldownDias >= 1 && d.recuperacionCooldownDias <= 365
+          && d.cambiosPeriodicidad is list
+          && d.cambiosPeriodicidad.size() <= 50
           && (!('recordatorioHora' in d) || d.recordatorioHora == null || isHora(d.recordatorioHora))
           && isNonNegInt(d.orden)
           && isNullOrTimestamp(d.deletedAt);
@@ -217,48 +281,169 @@ service cloud.firestore {
       allow create: if isOwner(uid)
         && validRegistro(incoming())
         && registroId == incoming().habitoId + '_' + incoming().dia
-        && isDiaNoFuturo(incoming().dia)
+        && isDiaEnVentanaDeHoy(incoming().dia)
         && isServerTime(incoming().createdAt)
-        && habitoActivo(incoming().habitoId)
-        && (incoming().tipo != 'recovery' || habitoTieneRecuperacion(incoming().habitoId));
+        && habitoActivo(incoming().habitoId);
 
-      // Solo puede cambiar el tipo (p. ej. cumplido -> recuperación).
-      allow update: if isOwner(uid)
-        && validRegistro(incoming())
-        && unchanged('habitoId')
-        && unchanged('dia')
-        && unchanged('createdAt')
-        && habitoActivo(incoming().habitoId)
-        && (incoming().tipo != 'recovery' || habitoTieneRecuperacion(incoming().habitoId));
+      // Un registro no se edita: marcar es create, desmarcar es delete. Así
+      // no hay forma de reescribir el pasado cambiando un documento ya
+      // existente, y el histórico es inmutable por construcción.
+      allow update: if false;
 
-      // Los registros de un hábito eliminado (soft delete) son inmutables.
+      // Los registros de un hábito eliminado (soft delete) son inmutables:
+      // borrar un hábito hoy no debe reescribir la racha histórica (§30).
       allow delete: if isOwner(uid) && habitoActivo(existing().habitoId);
 
       function habitoData(habitoId) { return get(habitoPath(uid, habitoId)).data; }
       function habitoActivo(habitoId) {
         return exists(habitoPath(uid, habitoId)) && habitoData(habitoId).deletedAt == null;
       }
-      function habitoTieneRecuperacion(habitoId) {
-        return 'tareaRecuperacion' in habitoData(habitoId)
-          && habitoData(habitoId).tareaRecuperacion != null;
-      }
 
       function validRegistro(d) {
-        return d.keys().hasOnly(['habitoId', 'dia', 'tipo', 'tz', 'createdAt', 'updatedAt'])
+        return d.keys().hasOnly(['habitoId', 'dia', 'tipo', 'tz', 'createdAt'])
           && d.keys().hasAll(['habitoId', 'dia', 'tipo', 'createdAt'])
           && isShortText(d.habitoId, 128)
           && isDia(d.dia)
           && isTipoRegistro(d.tipo)
-          && (!('tz' in d) || isShortText(d.tz, 64))
-          && (!('updatedAt' in d) || d.updatedAt is timestamp);
+          && (!('tz' in d) || isShortText(d.tz, 64));
+      }
+    }
+
+    // -------------------------------------- users/{uid}/diasProtegidos/{dia}
+    // Días sin actividad cuya continuidad protege un comodín.
+    //
+    // El id del documento ES el día (YYYY-MM-DD), así que proteger dos veces
+    // el mismo día es estructuralmente imposible: `create` solo aplica si el
+    // documento no existe.
+    //
+    // Un día protegido NO crea un registro falso, no marca ningún hábito y no
+    // rellena calendarios: solo mantiene la cadena, y nunca suma un día.
+    match /users/{uid}/diasProtegidos/{dia} {
+      allow read: if isOwner(uid);
+
+      // ATOMICIDAD: este create solo se permite dentro de la misma
+      // transacción/batch que decrementa el saldo. getAfter() mira el estado
+      // del saldo DESPUÉS de aplicarse toda la operación, así que no hay
+      // forma de proteger un día sin pagarlo.
+      allow create: if isOwner(uid)
+        && validDiaProtegido(incoming())
+        && incoming().dia == dia
+        && isDiaEnVentanaDeRescate(dia)
+        && isServerTime(incoming().createdAt)
+        && exists(saldoPath(uid))
+        && getAfter(saldoPath(uid)).data.saldo == get(saldoPath(uid)).data.saldo - 1
+        && getAfter(saldoPath(uid)).data.ultimoDiaProtegido == dia;
+
+      // Inmutable y no borrable: el historial de días protegidos tiene que
+      // poder auditarse y reconstruirse (§26).
+      allow update, delete: if false;
+
+      function validDiaProtegido(d) {
+        return d.keys().hasOnly(['dia', 'createdAt'])
+          && d.keys().hasAll(['dia', 'createdAt'])
+          && isDia(d.dia);
+      }
+    }
+
+    // ------------------------------------------ users/{uid}/comodines/saldo
+    // Saldo de comodines. FUENTE DE VERDAD, no caché.
+    //
+    // Solo se admiten DOS transiciones desde el cliente:
+    //   1. concesión mensual gratuita, validada contra el reloj del servidor;
+    //   2. consumo de 1, atado a la creación de un día protegido.
+    // Cualquier otra mutación se deniega. Los orígenes futuros (anuncio
+    // recompensado, compra, Premium) NO pueden pasar por aquí: requieren
+    // verificación en servidor y entrarán por Admin SDK, que salta las Rules.
+    match /users/{uid}/comodines/{docId} {
+      allow read: if isOwner(uid);
+
+      // Arranque: 1 comodín, el del mes en curso. Solo se puede crear una
+      // vez porque el delete está prohibido: no hay forma de farmear saldo
+      // borrando y recreando el documento.
+      allow create: if isOwner(uid)
+        && docId == 'saldo'
+        && validSaldo(incoming())
+        && incoming().saldo == 1
+        && incoming().ultimaConcesionYM == mesActual()
+        && incoming().concedidosTotal == 1
+        && incoming().ultimoDiaProtegido == null
+        && isServerTime(incoming().updatedAt);
+
+      allow update: if isOwner(uid)
+        && docId == 'saldo'
+        && validSaldo(incoming())
+        && isServerTime(incoming().updatedAt)
+        && (esConcesionMensual() || esConsumo(uid));
+
+      allow delete: if false;
+
+      // Concede +1 por mes transcurrido, con tope 3.
+      //
+      // Idempotente por construcción: ultimaConcesionYM es estrictamente
+      // monótono y obligado a ser el mes ACTUAL del servidor, así que no se
+      // puede conceder dos veces en el mismo mes ni adelantar meses futuros.
+      // Un usuario que no abre la app durante tres meses recupera lo que le
+      // tocaba sin pasar de 3.
+      function esConcesionMensual() {
+        return incoming().ultimaConcesionYM == mesActual()
+          && existing().ultimaConcesionYM < mesActual()
+          && incoming().saldo == saldoTrasConcesion()
+          && incoming().concedidosTotal
+               == existing().concedidosTotal + (incoming().saldo - existing().saldo)
+          && incoming().ultimoDiaProtegido == existing().ultimoDiaProtegido;
+      }
+
+      // Consumo de exactamente 1, atado al día protegido que lo justifica.
+      //
+      // El día tiene que NO existir antes y SÍ existir después: eso obliga a
+      // que las dos escrituras viajen juntas y hace imposible decrementar el
+      // saldo sin proteger nada, o reutilizar un día ya protegido.
+      function esConsumo(uid) {
+        return incoming().saldo == existing().saldo - 1
+          && incoming().saldo >= 0
+          && incoming().ultimaConcesionYM == existing().ultimaConcesionYM
+          && incoming().concedidosTotal == existing().concedidosTotal
+          && incoming().ultimoDiaProtegido is string
+          && isDia(incoming().ultimoDiaProtegido)
+          && isDiaEnVentanaDeRescate(incoming().ultimoDiaProtegido)
+          && !exists(diaProtegidoPath(uid, incoming().ultimoDiaProtegido))
+          && getAfter(diaProtegidoPath(uid, incoming().ultimoDiaProtegido)).data.dia
+               == incoming().ultimoDiaProtegido;
+      }
+
+      // Saldo tras aplicar los meses transcurridos, con tope 3.
+      // (las Rules de Firestore no tienen math.min, de ahí el ternario)
+      function totalTrasConcesion() {
+        return existing().saldo + (mesActual() - existing().ultimaConcesionYM);
+      }
+      function saldoTrasConcesion() {
+        return totalTrasConcesion() > 3 ? 3 : totalTrasConcesion();
+      }
+
+      function validSaldo(d) {
+        return d.keys().hasOnly(['saldo', 'ultimaConcesionYM', 'concedidosTotal', 'ultimoDiaProtegido', 'updatedAt'])
+          && d.keys().hasAll(['saldo', 'ultimaConcesionYM', 'concedidosTotal', 'updatedAt'])
+          && d.saldo is int && d.saldo >= 0 && d.saldo <= 3
+          && d.ultimaConcesionYM is int && d.ultimaConcesionYM > 0
+          && isNonNegInt(d.concedidosTotal)
+          && (!('ultimoDiaProtegido' in d)
+              || d.ultimoDiaProtegido == null
+              || isDia(d.ultimoDiaProtegido));
       }
     }
 
     // -------------------------------------------------- users/{uid}/cache/rachas
     // ÚNICO documento con datos derivados que el cliente puede escribir.
-    // Es una caché reconstruible desde registros + configuración; las reglas
-    // solo validan forma y tipos, no el valor. Al introducir Cloud Functions,
-    // cambiar create/update a "if false" y calcularlo en servidor.
+    //
+    // Es una PROYECCIÓN reconstruible desde registros + días protegidos. Las
+    // reglas validan forma y tipos, NO el valor: un cliente manipulado puede
+    // escribir aquí una racha falsa.
+    //
+    // Eso es aceptable mientras la racha no desbloquee nada, y es un
+    // invariante explícito del proyecto: si algún día la racha concede
+    // recompensas, este cálculo TIENE que moverse a servidor (cambiar
+    // create/update a "if false"). La app nunca lee de aquí para decidir:
+    // calcula la racha en vivo desde los registros.
     match /users/{uid}/cache/{cacheId} {
       allow read: if isOwner(uid);
 
@@ -269,21 +454,15 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
 
       function validCacheRachas(d) {
-        return d.keys().hasOnly(['general', 'habitos', 'ambitos', 'calculadoHasta', 'version', 'updatedAt'])
-          && d.keys().hasAll(['general', 'habitos', 'ambitos', 'calculadoHasta', 'updatedAt'])
-          && d.general is map
-          && d.general.keys().hasOnly(['actual', 'mejor', 'comodinDisponible', 'ultimoDiaRegistrado'])
-          && d.general.keys().hasAll(['actual', 'mejor', 'comodinDisponible'])
-          && isNonNegInt(d.general.actual)
-          && isNonNegInt(d.general.mejor)
-          && d.general.comodinDisponible is bool
-          && (!('ultimoDiaRegistrado' in d.general)
-              || d.general.ultimoDiaRegistrado == null
-              || isDia(d.general.ultimoDiaRegistrado))
-          && d.habitos is map
-          && d.ambitos is map
+        return d.keys().hasOnly(['rachaActual', 'mejorRacha', 'ultimoDiaActividad', 'calculadoHasta', 'version', 'updatedAt'])
+          && d.keys().hasAll(['rachaActual', 'mejorRacha', 'calculadoHasta', 'version', 'updatedAt'])
+          && isNonNegInt(d.rachaActual)
+          && isNonNegInt(d.mejorRacha)
+          && (!('ultimoDiaActividad' in d)
+              || d.ultimoDiaActividad == null
+              || isDia(d.ultimoDiaActividad))
           && isDia(d.calculadoHasta)
-          && (!('version' in d) || d.version is int)
+          && d.version is int
           && isServerTime(d.updatedAt);
       }
     }

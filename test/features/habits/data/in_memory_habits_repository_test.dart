@@ -9,9 +9,14 @@ void main() {
   group('InMemoryHabitsRepository', () {
     late InMemoryHabitsRepository repository;
     final today = day(2026, 9, 10); // jueves
+    final nowInstant = DateTime.utc(2026, 9, 10, 12);
 
     setUp(() {
-      repository = InMemoryHabitsRepository(seeded: false, now: () => today);
+      repository = InMemoryHabitsRepository(
+        seeded: false,
+        now: () => nowInstant,
+        today: today,
+      );
       repository.createAmbito(
         const AmbitoDraft(name: 'x', emoji: 'x', colorValue: 1),
       );
@@ -20,7 +25,10 @@ void main() {
     test(
       'la versión sembrada trae ámbitos, hábitos y registros de la semana',
       () async {
-        final seeded = InMemoryHabitsRepository(now: () => today);
+        final seeded = InMemoryHabitsRepository(
+          now: () => nowInstant,
+          today: today,
+        );
 
         expect(await seeded.watchAmbitos().first, hasLength(5));
         expect((await seeded.watchAmbitos().first).first.id, Ambito.generalId);
@@ -29,7 +37,10 @@ void main() {
             .watchLogsBetween(day(2026, 9, 7), day(2026, 9, 13))
             .first;
         expect(logs, isNotEmpty);
-        expect(await seeded.watchStreaks().first, StreaksSnapshot.empty);
+        // La caché de rachas no existe hasta que alguien la calcula: la
+        // app tiene que funcionar sin ella.
+        expect(await seeded.watchStreakCache().first, isNull);
+        expect(await seeded.fetchActivityDays(), isNotEmpty);
       },
     );
 
@@ -41,19 +52,21 @@ void main() {
       final ambitoId = (await repository.watchAmbitos().first).first.id;
       final habit = await repository.createHabit(
         habitDraft(ambitoId: ambitoId),
+        today: today,
       );
       await Future<void>.delayed(Duration.zero);
       await sub.cancel();
 
       expect(emissions.first, isEmpty);
       expect(emissions.last.map((h) => h.id), [habit.id]);
-      expect(habit.createdAt, today);
+      expect(habit.createdAt, nowInstant);
     });
 
     test('soft delete oculta el hábito y conserva sus registros', () async {
       final ambitoId = (await repository.watchAmbitos().first).first.id;
       final habit = await repository.createHabit(
         habitDraft(ambitoId: ambitoId),
+        today: today,
       );
       await repository.setHabitCompletion(
         habitId: habit.id,
@@ -66,10 +79,12 @@ void main() {
       expect(await repository.watchActiveHabits().first, isEmpty);
       expect((await repository.getHabit(habit.id))!.isDeleted, isTrue);
       expect(await repository.fetchHabitLogs(habit.id), hasLength(1));
+      // Un registro NUEVO en un hábito eliminado se rechaza, igual que lo
+      // hacen las Security Rules.
       await expectLater(
         repository.setHabitCompletion(
           habitId: habit.id,
-          date: today,
+          date: day(2026, 9, 11),
           completed: true,
         ),
         throwsA(
@@ -80,12 +95,23 @@ void main() {
           ),
         ),
       );
+      // Y su histórico es inmutable: tampoco se puede borrar.
+      await expectLater(
+        repository.setHabitCompletion(
+          habitId: habit.id,
+          date: today,
+          completed: false,
+        ),
+        throwsA(isA<HabitsException>()),
+      );
+      expect(await repository.fetchHabitLogs(habit.id), hasLength(1));
     });
 
     test('marcar es idempotente y desmarcar borra el registro', () async {
       final ambitoId = (await repository.watchAmbitos().first).first.id;
       final habit = await repository.createHabit(
         habitDraft(ambitoId: ambitoId),
+        today: today,
       );
 
       await repository.setHabitCompletion(
@@ -118,8 +144,14 @@ void main() {
 
     test('consulta registros por rango de fechas y por hábito', () async {
       final ambitoId = (await repository.watchAmbitos().first).first.id;
-      final a = await repository.createHabit(habitDraft(ambitoId: ambitoId));
-      final b = await repository.createHabit(habitDraft(ambitoId: ambitoId));
+      final a = await repository.createHabit(
+        habitDraft(ambitoId: ambitoId),
+        today: today,
+      );
+      final b = await repository.createHabit(
+        habitDraft(ambitoId: ambitoId),
+        today: today,
+      );
       for (final d in [day(2026, 9, 1), day(2026, 9, 5), day(2026, 9, 10)]) {
         await repository.setHabitCompletion(
           habitId: a.id,
@@ -154,6 +186,7 @@ void main() {
       final custom = await repository.createAmbito(ambitoDraft);
       final habit = await repository.createHabit(
         habitDraft(ambitoId: custom.id),
+        today: today,
       );
       await repository.setHabitCompletion(
         habitId: habit.id,

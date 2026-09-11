@@ -41,10 +41,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('registro → verificación → perfil → logout → login → logout', (
+  testWidgets('registro → bienvenida → perfil → logout → login', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(390, 844);
+    tester.view.physicalSize = const Size(390, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -69,24 +69,22 @@ void main() {
     await tester.tap(find.text('Registrarme'));
     await tester.pumpAndSettle();
 
-    // Sesión sin verificar: pantalla de verificación y sin perfil aún.
-    expect(find.text('Verifica tu cuenta'), findsOneWidget);
-    expect(find.text('alex@example.com'), findsOneWidget);
-    expect(env.auth.verificationEmailsSent, ['alex@example.com']);
-    expect(env.profiles.profiles, isEmpty);
+    // Bienvenida, no verificación: con la verificación desactivada no se
+    // envía ningún correo.
+    expect(find.text('Tu cambio empieza aquí'), findsOneWidget);
+    expect(
+      find.textContaining('El siguiente mejor momento es', findRichText: true),
+      findsOneWidget,
+    );
+    expect(find.textContaining('HOY.', findRichText: true), findsOneWidget);
+    expect(find.text('Verifica tu cuenta'), findsNothing);
+    expect(env.auth.verificationEmailsSent, isEmpty);
+    expect(env.auth.currentUser?.email, 'alex@example.com');
 
-    // Intentar ir a la home sin verificar vuelve a la verificación.
-    await tester.tap(find.text('Ya he verificado mi correo'));
+    // "Empezar" entra en la app y crea el perfil con sus ámbitos.
+    await tester.tap(find.text('Empezar'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Todavía no consta'), findsOneWidget);
-    expect(env.profiles.profiles, isEmpty);
 
-    // El usuario pulsa el enlace del correo y confirma en la app.
-    env.auth.markEmailVerified('alex@example.com');
-    await tester.tap(find.text('Ya he verificado mi correo'));
-    await tester.pumpAndSettle();
-
-    // Home con saludo y perfil creado con sus ámbitos.
     expect(find.text('Racha general'), findsOneWidget);
     expect(find.textContaining('Alex'), findsWidgets);
     final profile = env.profiles.profiles.values.single;
@@ -104,19 +102,24 @@ void main() {
     expect(find.text('Inicia sesión'), findsOneWidget);
     expect(env.auth.currentUser, isNull);
 
-    // Login con las credenciales creadas: home directa, perfil intacto.
+    // Login: home directa, sin pasar de nuevo por la bienvenida.
     await enterCredentials(
       tester,
       email: 'alex@example.com',
       password: 'secreta12',
     );
     expect(find.text('Racha general'), findsOneWidget);
+    expect(find.text('Tu cambio empieza aquí'), findsNothing);
     expect(env.profiles.profiles, hasLength(1));
   });
 
-  testWidgets('login de un usuario sin verificar lleva a la verificación', (
-    tester,
-  ) async {
+  testWidgets('una cuenta sin verificar entra con normalidad', (tester) async {
+    // Viewport de móvil: el de por defecto (800x600) no es representativo.
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final env = AuthTestEnv();
     env.auth.registerAccount(unverifiedUser, password: 'secreta12');
     await pumpApp(tester, env);
@@ -127,14 +130,10 @@ void main() {
       password: 'secreta12',
     );
 
-    expect(find.text('Verifica tu cuenta'), findsOneWidget);
-    expect(env.profiles.profiles, isEmpty);
-
-    // "Usar otra cuenta" cierra la sesión y vuelve al login.
-    await tester.tap(find.text('Usar otra cuenta'));
-    await tester.pumpAndSettle();
-    expect(find.text('Inicia sesión'), findsOneWidget);
-    expect(env.auth.currentUser, isNull);
+    // Con la verificación desactivada no hay pantalla intermedia.
+    expect(find.text('Racha general'), findsOneWidget);
+    expect(find.text('Verifica tu cuenta'), findsNothing);
+    expect(env.profiles.profiles.keys, [unverifiedUser.id]);
   });
 
   testWidgets('una sesión verificada restaurada entra directa a la home', (

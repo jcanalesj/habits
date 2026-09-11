@@ -1,55 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:habits/features/habits/3_data/dtos/firestore_fields.dart';
 
-/// Documento `users/{uid}/cache/rachas` (caché derivada, puede no existir).
+/// Documento `users/{uid}/cache/rachas`.
+///
+/// Es una PROYECCIÓN reconstruible, nunca una autoridad: se puede borrar
+/// entera y recalcularse desde los registros y los días protegidos (§31).
+/// Ya no cachea rachas por hábito ni por ámbito: solo existe la racha
+/// general (§1).
 class StreaksDto {
   const StreaksDto({
-    required this.generalActual,
-    required this.generalMejor,
-    required this.generalComodinDisponible,
-    required this.ultimoDiaRegistrado,
-    required this.habitos,
-    required this.ambitos,
+    required this.rachaActual,
+    required this.mejorRacha,
+    required this.ultimoDiaActividad,
     required this.calculadoHasta,
+    required this.version,
   });
 
-  final int generalActual;
-  final int generalMejor;
-  final bool generalComodinDisponible;
-  final String? ultimoDiaRegistrado;
-
-  /// `{habitoId: {actual, mejor}}`
-  final Map<String, Map<String, dynamic>> habitos;
-
-  /// `{ambitoId: {actual, mejor, comodinDisponible}}`
-  final Map<String, Map<String, dynamic>> ambitos;
+  final int rachaActual;
+  final int mejorRacha;
+  final String? ultimoDiaActividad;
   final String? calculadoHasta;
+  final int version;
 
   factory StreaksDto.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? const {};
-    final general = _asMap(data[FirestoreFields.general]);
     return StreaksDto(
-      generalActual: (general[FirestoreFields.actual] as num?)?.toInt() ?? 0,
-      generalMejor: (general[FirestoreFields.mejor] as num?)?.toInt() ?? 0,
-      generalComodinDisponible:
-          general[FirestoreFields.comodinDisponible] as bool? ?? true,
-      ultimoDiaRegistrado:
-          general[FirestoreFields.ultimoDiaRegistrado] as String?,
-      habitos: _asMapOfMaps(data['habitos']),
-      ambitos: _asMapOfMaps(data['ambitos']),
+      rachaActual: (data[FirestoreFields.rachaActual] as num?)?.toInt() ?? 0,
+      mejorRacha: (data[FirestoreFields.mejorRacha] as num?)?.toInt() ?? 0,
+      ultimoDiaActividad:
+          data[FirestoreFields.ultimoDiaActividad] as String?,
       calculadoHasta: data[FirestoreFields.calculadoHasta] as String?,
+      version: (data[FirestoreFields.version] as num?)?.toInt() ?? 0,
     );
-  }
-
-  static Map<String, dynamic> _asMap(Object? value) =>
-      value is Map ? Map<String, dynamic>.from(value) : const {};
-
-  static Map<String, Map<String, dynamic>> _asMapOfMaps(Object? value) {
-    if (value is! Map) return const {};
-    return {
-      for (final entry in value.entries)
-        if (entry.value is Map)
-          entry.key as String: Map<String, dynamic>.from(entry.value as Map),
-    };
   }
 }

@@ -24,13 +24,22 @@ class EnsureUserProfileUsecase {
   final UserProfileRepository _profiles;
   final DeviceInfoRepository _device;
 
-  EnsureUserProfileUsecase(this._profiles, this._device);
+  /// Si las Security Rules exigen `email_verified` para escribir el perfil.
+  final bool requireEmailVerification;
+
+  EnsureUserProfileUsecase(
+    this._profiles,
+    this._device, {
+    this.requireEmailVerification = true,
+  });
 
   Future<EnsureUserProfileResult> execute({
     required AppUser user,
     required String locale,
   }) async {
-    if (!user.emailVerified) return EnsureUserProfileNotVerified();
+    if (requireEmailVerification && !user.emailVerified) {
+      return EnsureUserProfileNotVerified();
+    }
 
     try {
       if (await _profiles.exists(user.id)) {

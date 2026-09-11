@@ -15,6 +15,10 @@ class HabitLogDto {
 
   /// Día lógico `YYYY-MM-DD`.
   final String dia;
+
+  /// `completed` desde la fase 5. Los documentos antiguos pueden traer
+  /// `recovery` o `plannedRest`: se conservan pero no cuentan como
+  /// actividad real.
   final String tipo;
 
   /// Id determinista del registro: marcar es `set`, desmarcar es `delete`.
@@ -26,7 +30,9 @@ class HabitLogDto {
       id: doc.id,
       habitoId: data[FirestoreFields.habitoId] as String? ?? '',
       dia: data[FirestoreFields.dia] as String? ?? '',
-      tipo: data[FirestoreFields.tipo] as String? ?? 'completed',
+      tipo:
+          data[FirestoreFields.tipo] as String? ??
+          FirestoreFields.tipoCompleted,
     );
   }
 }

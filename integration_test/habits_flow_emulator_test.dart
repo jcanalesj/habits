@@ -26,7 +26,9 @@ void main() {
   const password = 'secreta12';
   late String uid;
   late FirestoreHabitsRepository repository;
-  final today = LogicalDay.today();
+  // El día lógico se resuelve con la zona del perfil, igual que en la app.
+  late final LogicalCalendar calendar;
+  late final LogicalDate today;
 
   setUpAll(() async {
     expect(
@@ -35,6 +37,9 @@ void main() {
       reason: 'Ejecuta con --dart-define=USE_FIREBASE_EMULATOR=true',
     );
     GoogleFonts.config.allowRuntimeFetching = false;
+    initializeTimezones();
+    calendar = LogicalCalendar('Europe/Madrid');
+    today = calendar.dateOf(DateTime.now().toUtc());
     await initializeFirebase();
     await FirebaseAuth.instance.signOut();
     await EmulatorHelpers.clearAll();
@@ -99,58 +104,61 @@ void main() {
     fail('el perfil de $uid no se creó');
   }
 
-  testWidgets(
-    '1. alta + verificación dejan al usuario con ámbitos y sin hábitos',
-    (tester) async {
-      await pumpApp(tester);
-      await tester.tap(find.text('Regístrate'));
-      await settle(tester);
-      final fields = find.byType(TextField);
-      await tester.enterText(fields.at(0), 'Habitante');
-      await tester.enterText(fields.at(1), email);
-      await tester.enterText(fields.at(2), password);
-      await tester.enterText(fields.at(3), password);
-      await tester.tap(find.byType(Checkbox));
-      await tester.tap(find.text('Registrarme'));
-      await settle(tester);
-      uid = FirebaseAuth.instance.currentUser!.uid;
+  testWidgets('1. el alta deja al usuario con ámbitos y sin hábitos', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await tester.tap(find.text('Regístrate'));
+    await settle(tester);
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), 'Habitante');
+    await tester.enterText(fields.at(1), email);
+    await tester.enterText(fields.at(2), password);
+    await tester.enterText(fields.at(3), password);
+    await tester.tap(find.byType(Checkbox));
+    await tester.tap(find.text('Registrarme'));
+    await settle(tester);
+    uid = FirebaseAuth.instance.currentUser!.uid;
 
-      final code = await EmulatorHelpers.latestOobCode(
-        email,
-        requestType: 'VERIFY_EMAIL',
-      );
-      await EmulatorHelpers.openLink(code!['oobLink'] as String);
-      await tester.tap(find.text('Ya he verificado mi correo'));
-      await settle(tester);
-      expect(find.text('Racha general'), findsOneWidget);
-      await waitForProfile(tester);
+    await tester.tap(find.text('Empezar'));
+    await settle(tester);
+    expect(find.text('Racha general'), findsOneWidget);
+    await waitForProfile(tester);
 
-      repository = FirestoreHabitsRepository(userId: uid);
-      final ambitos = await run(tester, () => repository.watchAmbitos().first);
-      expect(ambitos.map((a) => a.id).toSet(), {
-        'general',
-        'salud',
-        'mente',
-        'desarrollo',
-        'energia',
-      });
-      expect(
-        await run(tester, () => repository.watchActiveHabits().first),
-        isEmpty,
-      );
-      expect(
-        await run(tester, () => repository.watchStreaks().first),
-        StreaksSnapshot.empty,
-      );
-      // Sin hábitos: estado vacío en la Home.
-      await tester.scrollUntilVisible(
-        find.textContaining('Aún no tienes hábitos'),
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(find.textContaining('Aún no tienes hábitos'), findsOneWidget);
-    },
-  );
+    repository = FirestoreHabitsRepository(userId: uid);
+    final ambitos = await run(tester, () => repository.watchAmbitos().first);
+    expect(ambitos.map((a) => a.id).toSet(), {
+      'general',
+      'salud',
+      'mente',
+      'desarrollo',
+      'energia',
+    });
+    expect(
+      await run(tester, () => repository.watchActiveHabits().first),
+      isEmpty,
+    );
+    // Sin registros no hay actividad: la racha aún no ha empezado (§3).
+    expect(await run(tester, () => repository.fetchActivityDays()), isEmpty);
+    // La caché es una PROYECCIÓN: la Home ya la ha escrito al montarse, y su
+    // contenido coincide con lo que dice la fuente de verdad (racha 0).
+    final cache = await run(tester, () => repository.fetchStreakCache());
+    if (cache != null) {
+      expect(cache.currentStreak, 0);
+      expect(cache.bestStreak, 0);
+      expect(cache.lastActivityDay, isNull);
+    }
+    // Y se puede borrar entera sin que la app deje de funcionar.
+    await run(tester, () => repository.clearStreakCache());
+    expect(await run(tester, () => repository.fetchStreakCache()), isNull);
+    // Sin hábitos: estado vacío en la Home.
+    await tester.scrollUntilVisible(
+      find.textContaining('Aún no tienes hábitos'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('Aún no tienes hábitos'), findsOneWidget);
+  });
 
   testWidgets('2. CRUD de hábitos y registros con las reglas reales', (
     tester,
@@ -162,34 +170,65 @@ void main() {
         const HabitDraft(
           name: 'Beber agua',
           ambitoId: 'salud',
-          periodicity: Periodicity.daily,
-          restDaysAllowed: 1,
           colorValue: 0xFF38BDF8,
           emoji: '💧',
           reminderTime: '18:00',
         ),
+        today: today,
       ),
     );
     var active = await run(tester, () => repository.watchActiveHabits().first);
     expect(active.map((h) => h.id), [habit.id]);
 
-    // Editar (con cambio de periodicidad anotado en el historial).
+    // Editar.
     final edited = await run(
       tester,
       () => UpdateHabitUsecase(repository).execute(
         original: habit,
-        updated: habit.copyWith(
-          name: 'Beber 2L',
-          periodicity: Periodicity.weekly,
-        ),
+        updated: habit.copyWith(name: 'Beber 2L'),
       ),
     );
     expect(edited, isA<UpdateHabitSuccess>());
+
+    // Cambiar el objetivo: el cambio es DIFERIDO al siguiente periodo
+    // natural completo del tipo nuevo, y queda escrito en Firestore.
+    final beforeChange = await run(
+      tester,
+      () => repository.getHabit(habit.id),
+    );
+    final scheduled = await run(
+      tester,
+      () => ChangeHabitPeriodicityUsecase(
+        repository,
+        PeriodicityResolver(calendar),
+      ).execute(
+        habit: beforeChange!,
+        next: const Periodicity(
+          type: PeriodicityType.weekly,
+          timesPerPeriod: 3,
+        ),
+        today: today,
+      ),
+    );
+    final effectiveFrom = (scheduled as ChangePeriodicityScheduled)
+        .effectiveFrom;
+    expect(effectiveFrom.weekday, DateTime.monday);
+    expect(effectiveFrom.isAfter(today), isTrue);
+
     final reloaded = await run(tester, () => repository.getHabit(habit.id));
     expect(reloaded!.name, 'Beber 2L');
-    expect(reloaded.periodicityHistory.single.periodicity, Periodicity.daily);
+    expect(reloaded.periodicityTimeline, hasLength(2));
+    expect(reloaded.periodicityOn(today).type, PeriodicityType.daily,
+        reason: 'el periodo en curso conserva el objetivo antiguo');
+    expect(
+      reloaded.periodicityOn(effectiveFrom).timesPerPeriod,
+      3,
+      reason: 'el nuevo objetivo arranca en la fecha efectiva',
+    );
 
-    // Marcar (idempotente), consultar por rango y desmarcar.
+    // Marcar HOY (idempotente), consultar por rango, desmarcar y volver a
+    // marcar. Todo sobre `today`: el producto no admite registros
+    // retroactivos, así que el test tampoco los escribe.
     for (var i = 0; i < 2; i++) {
       await run(
         tester,
@@ -200,23 +239,16 @@ void main() {
         ),
       );
     }
-    await run(
-      tester,
-      () => repository.setHabitCompletion(
-        habitId: habit.id,
-        date: today.subtract(const Duration(days: 1)),
-        completed: true,
-      ),
-    );
     var logs = await run(tester, () => repository.fetchHabitLogs(habit.id));
-    expect(logs, hasLength(2));
-    expect(logs.last.id, '${habit.id}_${LogicalDay.format(today)}');
+    expect(logs, hasLength(1), reason: 'marcar dos veces no duplica');
+    expect(logs.single.id, '${habit.id}_${today.key}');
     final range = await run(
       tester,
       () => repository.watchLogsBetween(today, today).first,
     );
     expect(range.map((l) => l.habitId), [habit.id]);
 
+    // Desmarcar borra el registro...
     await run(
       tester,
       () => repository.setHabitCompletion(
@@ -225,8 +257,36 @@ void main() {
         completed: false,
       ),
     );
-    logs = await run(tester, () => repository.fetchHabitLogs(habit.id));
-    expect(logs.map((l) => l.date), [today.subtract(const Duration(days: 1))]);
+    expect(await run(tester, () => repository.fetchHabitLogs(habit.id)),
+        isEmpty);
+
+    // ...y se puede volver a marcar.
+    await run(
+      tester,
+      () => repository.setHabitCompletion(
+        habitId: habit.id,
+        date: today,
+        completed: true,
+      ),
+    );
+    expect(await run(tester, () => repository.fetchHabitLogs(habit.id)),
+        hasLength(1));
+
+    // El dominio rechaza AYER de forma determinista, sin depender de la hora
+    // (las Rules solo acotan la fecha a una ventana y, según el momento del
+    // día, ayer puede caer dentro: ver la limitación conocida documentada).
+    final retro = await run(
+      tester,
+      () => ToggleHabitCompletionUsecase(repository).execute(
+        habitId: habit.id,
+        date: today.previous,
+        completed: true,
+        today: today,
+      ),
+    );
+    expect(retro, isA<ToggleHabitCompletionNotToday>());
+    expect(await run(tester, () => repository.fetchHabitLogs(habit.id)),
+        hasLength(1), reason: 'no se ha creado ningún registro de ayer');
 
     // Un día futuro lo rechazan las reglas.
     expect(
@@ -234,7 +294,7 @@ void main() {
         tester,
         () => repository.setHabitCompletion(
           habitId: habit.id,
-          date: today.add(const Duration(days: 5)),
+          date: today.addDays(5),
           completed: true,
         ),
       ),
@@ -253,13 +313,18 @@ void main() {
       await run(tester, () => repository.fetchHabitLogs(habit.id)),
       hasLength(1),
     );
+    // Su histórico es inmutable: ni siquiera se puede desmarcar lo que ya
+    // estaba registrado. (Que tampoco admita registros NUEVOS se prueba en
+    // firebase/rules-tests, donde el estado del día sí es controlable: aquí
+    // el registro de hoy ya existe y volver a marcarlo es un no-op
+    // idempotente que no llega a evaluar ninguna regla.)
     expect(
       await caught(
         tester,
         () => repository.setHabitCompletion(
           habitId: habit.id,
           date: today,
-          completed: true,
+          completed: false,
         ),
       ),
       isA<HabitsException>().having(
@@ -267,6 +332,11 @@ void main() {
         'failure',
         HabitsFailure.permissionDenied,
       ),
+    );
+    expect(
+      await run(tester, () => repository.fetchHabitLogs(habit.id)),
+      hasLength(1),
+      reason: 'el registro sigue ahí tras el intento de borrado',
     );
     final raw = await run(
       tester,
@@ -301,10 +371,10 @@ void main() {
           HabitDraft(
             name: 'Practicar',
             ambitoId: custom.id,
-            periodicity: Periodicity.daily,
             colorValue: 1,
             emoji: '🎵',
           ),
+          today: today,
         ),
       );
       await run(
@@ -370,10 +440,10 @@ void main() {
           const HabitDraft(
             name: 'Intruso',
             ambitoId: 'general',
-            periodicity: Periodicity.daily,
             colorValue: 1,
             emoji: '👾',
           ),
+          today: today,
         ),
       ),
       isA<HabitsException>().having(
@@ -405,10 +475,10 @@ void main() {
         const HabitDraft(
           name: 'Meditar',
           ambitoId: 'mente',
-          periodicity: Periodicity.daily,
           colorValue: 2,
           emoji: '🧘',
         ),
+        today: today,
       ),
     );
     await settle(tester);
@@ -429,11 +499,8 @@ void main() {
     final tile = find
         .ancestor(of: find.text('Meditar'), matching: find.byType(InkWell))
         .first;
-    final todayDot = find.descendant(
-      of: tile,
-      matching: find.byWidgetPredicate(
-        (w) => w is GestureDetector && w.onTap != null,
-      ),
+    final todayDot = find.byKey(
+      ValueKey('habit-dot-${meditar.id}-${today.key}'),
     );
     expect(todayDot, findsOneWidget);
     // La fila de puntos puede quedar bajo la barra inferior (extendBody):
@@ -459,5 +526,58 @@ void main() {
       find.descendant(of: tile, matching: find.byIcon(Icons.check_rounded)),
       findsOneWidget,
     );
+  });
+
+  testWidgets('6. crear un hábito desde la UI lo persiste en Firestore', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+
+    // Botón "Nuevo hábito" de la Home -> formulario a pantalla completa.
+    await tester.tap(find.text('Nuevo hábito').first);
+    await settle(tester);
+    expect(find.text('Nuevo hábito'), findsWidgets);
+
+    await tester.enterText(find.byType(TextField).first, 'Estirar');
+    await settle(tester);
+
+    // Objetivo: 3 veces por semana.
+    await tester.tap(find.widgetWithText(ChoiceChip, 'esta semana'));
+    await settle(tester);
+    await tester.scrollUntilVisible(
+      find.text('Crear hábito'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byIcon(Icons.add_rounded).last);
+    await settle(tester);
+    await tester.tap(find.byIcon(Icons.add_rounded).last);
+    await settle(tester);
+
+    await tester.tap(find.text('Crear hábito'));
+    await settle(tester);
+
+    // Persistido en Firestore con el objetivo flexible.
+    List<Habit> habits = const [];
+    for (var i = 0; i < 20; i++) {
+      habits = await run(tester, () => repository.watchActiveHabits().first);
+      if (habits.any((h) => h.name == 'Estirar')) break;
+      await run(
+        tester,
+        () => Future<void>.delayed(const Duration(milliseconds: 250)),
+      );
+    }
+    final estirar = habits.firstWhere((h) => h.name == 'Estirar');
+    expect(estirar.periodicityOn(today).type, PeriodicityType.weekly);
+    expect(estirar.periodicityOn(today).timesPerPeriod, 3);
+
+    // Y la Home lo muestra ya de vuelta.
+    await settle(tester);
+    await tester.scrollUntilVisible(
+      find.text('Estirar'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('3 veces por semana'), findsWidgets);
   });
 }

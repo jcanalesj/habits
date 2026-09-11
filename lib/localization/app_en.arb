@@ -28,10 +28,8 @@
   "tagline": "Small actions, big changes.",
   "generalStreak": "Overall streak",
   "consecutiveDays": "consecutive days",
-  "freeWildcardAvailable": "1 free wildcard available this week",
   "amazing": "Amazing!",
   "keepItUp": "Keep it up",
-  "streaksByAmbito": "Streaks by area",
   "seeAll": "See all",
   "days": "days",
   "myHabits": "My habits",
@@ -52,14 +50,6 @@
   "periodicityWeekly": "Weekly",
   "periodicityMonthly": "Monthly",
   "periodicityYearly": "Yearly",
-  "restDaysCount": "{count, plural, =1{1 rest day} other{{count} rest days}}",
-  "@restDaysCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "navHome": "Home",
   "navHabits": "Habits",
   "navStats": "Stats",
@@ -108,7 +98,7 @@
   "passwordsDoNotMatch": "Passwords do not match",
   "acceptTermsError": "You must accept the terms and privacy policy",
   "verifyLinkSent": "We sent a verification link to",
-  "verifyLinkInstructions": "Open it from your inbox and come back here to continue.",
+  "verifyLinkInstructions": "Open it from your inbox and come back here to continue. If you can't see it, check your spam folder.",
   "iHaveVerified": "I've verified my email",
   "notVerifiedYet": "It doesn't show as verified yet. Check your inbox and spam folder.",
   "emailNotReceived": "Didn't get it?",
@@ -123,6 +113,13 @@
   },
   "emailResent": "Email resent. It may take a few minutes to arrive.",
   "useAnotherAccount": "Use another account",
+  "pendingVerificationTitle": "Your account isn't verified yet",
+  "pendingVerificationBody": "This is the only step left. Open the link we sent you or request a new one; check your spam folder too.",
+  "signInCta": "Sign in",
+  "welcomeTitle": "Your change starts here",
+  "welcomeMessage": "The best day to start was months ago.\nThe next best moment is ",
+  "welcomeMessageHighlight": "TODAY.",
+  "welcomeStart": "Get started",
   "forgotPasswordTitle": "Recover your password",
   "forgotPasswordSubtitle": "We'll send you a link to create a new one.",
   "sendResetLink": "Send link",
@@ -131,7 +128,7 @@
   "signOut": "Sign out",
   "nicknameTooLong": "Nickname can't be longer than 40 characters",
   "authErrorInvalidCredentials": "Incorrect email or password.",
-  "authErrorEmailAlreadyInUse": "An account already exists for that email.",
+  "authErrorEmailAlreadyInUse": "An account already exists with this email.",
   "authErrorWeakPassword": "The password is too weak.",
   "authErrorInvalidEmail": "The email address is not valid.",
   "authErrorUserDisabled": "This account has been disabled.",
@@ -153,5 +150,133 @@
   "weekdayInitials": "M,T,W,T,F,S,S",
   "@weekdayInitials": {
     "description": "Single-letter initials for Monday through Sunday, comma-separated"
-  }
+  },
+  "streakAtRisk": "Your streak is at risk",
+  "streakAtRiskBody": "You didn't complete any habit yesterday. You can protect it with a wildcard until the end of the day.",
+  "streakSafeToday": "Today already counts. Keep it up!",
+  "streakPendingToday": "You haven't completed anything today yet.",
+  "streakStartToday": "Complete a habit to start your streak.",
+  "useWildcard": "Use wildcard",
+  "wildcardsAvailable": "{count, plural, =0{No wildcards} =1{1 wildcard available} other{{count} wildcards available}}",
+  "@wildcardsAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noWildcardsLeft": "You have no wildcards left. You'll get a new one next month.",
+  "wildcardProtectsNotAdds": "A wildcard protects your streak, but it doesn't add a day or mark any habit.",
+  "wildcardConfirmTitle": "Use a wildcard?",
+  "wildcardConfirmBody": "You'll protect {day} and your {streak}-day streak will stay alive.",
+  "@wildcardConfirmBody": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "wildcardUsed": "Streak protected. Keep going!",
+  "wildcardErrorWindowClosed": "That day can no longer be protected.",
+  "wildcardErrorNone": "You have no wildcards left.",
+  "wildcardErrorConnection": "You need a connection to use a wildcard.",
+  "wildcardErrorGeneric": "The wildcard couldn't be used. Please try again.",
+  "cancel": "Cancel",
+  "goalProgressLabel": "{completed} / {goal}",
+  "@goalProgressLabel": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "goalPeriodWeek": "this week",
+  "goalPeriodMonth": "this month",
+  "goalPeriodYear": "this year",
+  "goalPeriodDay": "today",
+  "periodicityDailyLabel": "Every day",
+  "periodicityWeeklyLabel": "{count, plural, =1{1 time per week} other{{count} times per week}}",
+  "@periodicityWeeklyLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "periodicityMonthlyLabel": "{count, plural, =1{1 time per month} other{{count} times per month}}",
+  "@periodicityMonthlyLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "periodicityYearlyLabel": "{count, plural, =1{1 time per year} other{{count} times per year}}",
+  "@periodicityYearlyLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frequencyChangeDeferred": "This change will apply on {date}. Until then your current goal stays the same.",
+  "@frequencyChangeDeferred": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "logNotTodayError": "You can only mark habits for today.",
+  "bestStreakLabel": "Best streak: {count}",
+  "@bestStreakLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "newHabitTitle": "New habit",
+  "editHabitTitle": "Edit habit",
+  "habitNameLabel": "Name",
+  "habitNameHint": "E.g. Drink water",
+  "habitEmojiLabel": "Emoji",
+  "habitColorLabel": "Color",
+  "habitAmbitoLabel": "Area",
+  "habitPeriodicityLabel": "Goal",
+  "habitTimesLabel": "Times per period",
+  "habitReminderLabel": "Reminder",
+  "habitReminderNone": "No reminder",
+  "habitReminderSet": "Every day at {time}",
+  "@habitReminderSet": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "saveHabit": "Save",
+  "createHabit": "Create habit",
+  "deleteHabit": "Delete habit",
+  "deleteHabitConfirmTitle": "Delete this habit?",
+  "deleteHabitConfirmBody": "It will disappear from your lists, but its history is kept and the days you already completed still count towards your streak.",
+  "delete": "Delete",
+  "habitCreated": "Habit created",
+  "habitSaved": "Changes saved",
+  "habitDeleted": "Habit deleted",
+  "habitNotFound": "This habit no longer exists",
+  "errorNameRequired": "Enter a name",
+  "errorNameTooLong": "The name is too long",
+  "errorEmojiRequired": "Pick an emoji",
+  "errorTimesInvalid": "That number doesn't fit in the period",
+  "errorReminderInvalid": "Invalid time",
+  "errorSaveFailed": "Couldn't save. Please try again.",
+  "noHabitsYetLong": "You don't have any habits yet.\nCreate your first one and start your streak.",
+  "allHabitsTitle": "My habits"
 }

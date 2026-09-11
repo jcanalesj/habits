@@ -5,14 +5,11 @@ HabitDraft habitDraft({
   String name = 'Beber agua',
   String ambitoId = 'salud',
   Periodicity periodicity = Periodicity.daily,
-  String? recoveryTask,
   String? reminderTime,
 }) => HabitDraft(
   name: name,
   ambitoId: ambitoId,
   periodicity: periodicity,
-  restDaysAllowed: 1,
-  recoveryTask: recoveryTask,
   colorValue: 0xFF38BDF8,
   emoji: '💧',
   reminderTime: reminderTime,
@@ -25,4 +22,5 @@ const ambitoDraft = AmbitoDraft(
   colorValue: 0xFFF16A8F,
 );
 
-DateTime day(int y, int m, int d) => DateTime(y, m, d);
+/// Día lógico a partir de sus componentes.
+LogicalDate day(int y, int m, int d) => LogicalDate(y, m, d);

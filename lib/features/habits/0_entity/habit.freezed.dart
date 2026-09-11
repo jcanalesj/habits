@@ -14,16 +14,21 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Habit {
 
- String get id; String get name;/// Un hábito pertenece a un único ámbito (decisión cerrada, sección 4.4).
- String get ambitoId; Periodicity get periodicity;/// Cambios de periodicidad anteriores, en orden cronológico.
- List<PeriodicityChange> get periodicityHistory;/// Cupo de descansos planificados dentro del periodo (ej. 2 de cada 7).
- int get restDaysAllowed;/// Tarea alternativa más ligera que salva la racha del ámbito.
- String? get recoveryTask;/// Límite de uso de la tarea de recuperación: 1 vez cada X días.
- int get recoveryCooldownDays;/// Color asignado de la paleta al crear el hábito, editable.
+ String get id; String get name;/// Un hábito pertenece a un único ámbito. Los ámbitos organizan, pero
+/// no tienen racha propia (§29).
+ String get ambitoId;/// Línea temporal de objetivos, ordenada por `since` ascendente. La
+/// primera entrada es la configuración inicial; las entradas con
+/// `since` futura son cambios ya decididos pero todavía no vigentes.
+///
+/// Es la fuente de verdad de la periodicidad: no hay campo "actual"
+/// denormalizado que pueda quedarse obsoleto (§10/§11), y conserva qué
+/// objetivo había en cada fecha para las estadísticas y el futuro
+/// sistema de rangos (§7).
+ List<PeriodicityEntry> get periodicityTimeline;/// Color asignado de la paleta al crear el hábito, editable.
  int get colorValue; String get emoji;/// Hora fija de recordatorio en formato "HH:mm" (v1), opcional.
  String? get reminderTime;/// Posición en las listas.
  int get order; DateTime get createdAt;/// Soft delete: los hábitos borrados conservan su histórico de registros
-/// y no aparecen en las consultas normales.
+/// y no aparecen en las consultas normales (§30).
  DateTime? get deletedAt;
 /// Create a copy of Habit
 /// with the given fields replaced by the non-null parameter values.
@@ -35,16 +40,16 @@ $HabitCopyWith<Habit> get copyWith => _$HabitCopyWithImpl<Habit>(this as Habit, 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Habit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ambitoId, ambitoId) || other.ambitoId == ambitoId)&&(identical(other.periodicity, periodicity) || other.periodicity == periodicity)&&const DeepCollectionEquality().equals(other.periodicityHistory, periodicityHistory)&&(identical(other.restDaysAllowed, restDaysAllowed) || other.restDaysAllowed == restDaysAllowed)&&(identical(other.recoveryTask, recoveryTask) || other.recoveryTask == recoveryTask)&&(identical(other.recoveryCooldownDays, recoveryCooldownDays) || other.recoveryCooldownDays == recoveryCooldownDays)&&(identical(other.colorValue, colorValue) || other.colorValue == colorValue)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.order, order) || other.order == order)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Habit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ambitoId, ambitoId) || other.ambitoId == ambitoId)&&const DeepCollectionEquality().equals(other.periodicityTimeline, periodicityTimeline)&&(identical(other.colorValue, colorValue) || other.colorValue == colorValue)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.order, order) || other.order == order)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,ambitoId,periodicity,const DeepCollectionEquality().hash(periodicityHistory),restDaysAllowed,recoveryTask,recoveryCooldownDays,colorValue,emoji,reminderTime,order,createdAt,deletedAt);
+int get hashCode => Object.hash(runtimeType,id,name,ambitoId,const DeepCollectionEquality().hash(periodicityTimeline),colorValue,emoji,reminderTime,order,createdAt,deletedAt);
 
 @override
 String toString() {
-  return 'Habit(id: $id, name: $name, ambitoId: $ambitoId, periodicity: $periodicity, periodicityHistory: $periodicityHistory, restDaysAllowed: $restDaysAllowed, recoveryTask: $recoveryTask, recoveryCooldownDays: $recoveryCooldownDays, colorValue: $colorValue, emoji: $emoji, reminderTime: $reminderTime, order: $order, createdAt: $createdAt, deletedAt: $deletedAt)';
+  return 'Habit(id: $id, name: $name, ambitoId: $ambitoId, periodicityTimeline: $periodicityTimeline, colorValue: $colorValue, emoji: $emoji, reminderTime: $reminderTime, order: $order, createdAt: $createdAt, deletedAt: $deletedAt)';
 }
 
 
@@ -55,7 +60,7 @@ abstract mixin class $HabitCopyWith<$Res>  {
   factory $HabitCopyWith(Habit value, $Res Function(Habit) _then) = _$HabitCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String ambitoId, Periodicity periodicity, List<PeriodicityChange> periodicityHistory, int restDaysAllowed, String? recoveryTask, int recoveryCooldownDays, int colorValue, String emoji, String? reminderTime, int order, DateTime createdAt, DateTime? deletedAt
+ String id, String name, String ambitoId, List<PeriodicityEntry> periodicityTimeline, int colorValue, String emoji, String? reminderTime, int order, DateTime createdAt, DateTime? deletedAt
 });
 
 
@@ -72,17 +77,13 @@ class _$HabitCopyWithImpl<$Res>
 
 /// Create a copy of Habit
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? ambitoId = null,Object? periodicity = null,Object? periodicityHistory = null,Object? restDaysAllowed = null,Object? recoveryTask = freezed,Object? recoveryCooldownDays = null,Object? colorValue = null,Object? emoji = null,Object? reminderTime = freezed,Object? order = null,Object? createdAt = null,Object? deletedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? ambitoId = null,Object? periodicityTimeline = null,Object? colorValue = null,Object? emoji = null,Object? reminderTime = freezed,Object? order = null,Object? createdAt = null,Object? deletedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,ambitoId: null == ambitoId ? _self.ambitoId : ambitoId // ignore: cast_nullable_to_non_nullable
-as String,periodicity: null == periodicity ? _self.periodicity : periodicity // ignore: cast_nullable_to_non_nullable
-as Periodicity,periodicityHistory: null == periodicityHistory ? _self.periodicityHistory : periodicityHistory // ignore: cast_nullable_to_non_nullable
-as List<PeriodicityChange>,restDaysAllowed: null == restDaysAllowed ? _self.restDaysAllowed : restDaysAllowed // ignore: cast_nullable_to_non_nullable
-as int,recoveryTask: freezed == recoveryTask ? _self.recoveryTask : recoveryTask // ignore: cast_nullable_to_non_nullable
-as String?,recoveryCooldownDays: null == recoveryCooldownDays ? _self.recoveryCooldownDays : recoveryCooldownDays // ignore: cast_nullable_to_non_nullable
-as int,colorValue: null == colorValue ? _self.colorValue : colorValue // ignore: cast_nullable_to_non_nullable
+as String,periodicityTimeline: null == periodicityTimeline ? _self.periodicityTimeline : periodicityTimeline // ignore: cast_nullable_to_non_nullable
+as List<PeriodicityEntry>,colorValue: null == colorValue ? _self.colorValue : colorValue // ignore: cast_nullable_to_non_nullable
 as int,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,reminderTime: freezed == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
 as String?,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
@@ -173,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  List<PeriodicityChange> periodicityHistory,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String ambitoId,  List<PeriodicityEntry> periodicityTimeline,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Habit() when $default != null:
-return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.periodicityHistory,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
+return $default(_that.id,_that.name,_that.ambitoId,_that.periodicityTimeline,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
   return orElse();
 
 }
@@ -194,10 +195,10 @@ return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.perio
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  List<PeriodicityChange> periodicityHistory,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String ambitoId,  List<PeriodicityEntry> periodicityTimeline,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Habit():
-return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.periodicityHistory,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
+return $default(_that.id,_that.name,_that.ambitoId,_that.periodicityTimeline,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -214,10 +215,10 @@ return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.perio
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String ambitoId,  Periodicity periodicity,  List<PeriodicityChange> periodicityHistory,  int restDaysAllowed,  String? recoveryTask,  int recoveryCooldownDays,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String ambitoId,  List<PeriodicityEntry> periodicityTimeline,  int colorValue,  String emoji,  String? reminderTime,  int order,  DateTime createdAt,  DateTime? deletedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Habit() when $default != null:
-return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.periodicityHistory,_that.restDaysAllowed,_that.recoveryTask,_that.recoveryCooldownDays,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
+return $default(_that.id,_that.name,_that.ambitoId,_that.periodicityTimeline,_that.colorValue,_that.emoji,_that.reminderTime,_that.order,_that.createdAt,_that.deletedAt);case _:
   return null;
 
 }
@@ -229,29 +230,37 @@ return $default(_that.id,_that.name,_that.ambitoId,_that.periodicity,_that.perio
 
 
 class _Habit extends Habit {
-  const _Habit({required this.id, required this.name, required this.ambitoId, required this.periodicity, final  List<PeriodicityChange> periodicityHistory = const [], this.restDaysAllowed = 0, this.recoveryTask, this.recoveryCooldownDays = 7, required this.colorValue, required this.emoji, this.reminderTime, this.order = 0, required this.createdAt, this.deletedAt}): _periodicityHistory = periodicityHistory,super._();
+  const _Habit({required this.id, required this.name, required this.ambitoId, required final  List<PeriodicityEntry> periodicityTimeline, required this.colorValue, required this.emoji, this.reminderTime, this.order = 0, required this.createdAt, this.deletedAt}): _periodicityTimeline = periodicityTimeline,super._();
   
 
 @override final  String id;
 @override final  String name;
-/// Un hábito pertenece a un único ámbito (decisión cerrada, sección 4.4).
+/// Un hábito pertenece a un único ámbito. Los ámbitos organizan, pero
+/// no tienen racha propia (§29).
 @override final  String ambitoId;
-@override final  Periodicity periodicity;
-/// Cambios de periodicidad anteriores, en orden cronológico.
- final  List<PeriodicityChange> _periodicityHistory;
-/// Cambios de periodicidad anteriores, en orden cronológico.
-@override@JsonKey() List<PeriodicityChange> get periodicityHistory {
-  if (_periodicityHistory is EqualUnmodifiableListView) return _periodicityHistory;
+/// Línea temporal de objetivos, ordenada por `since` ascendente. La
+/// primera entrada es la configuración inicial; las entradas con
+/// `since` futura son cambios ya decididos pero todavía no vigentes.
+///
+/// Es la fuente de verdad de la periodicidad: no hay campo "actual"
+/// denormalizado que pueda quedarse obsoleto (§10/§11), y conserva qué
+/// objetivo había en cada fecha para las estadísticas y el futuro
+/// sistema de rangos (§7).
+ final  List<PeriodicityEntry> _periodicityTimeline;
+/// Línea temporal de objetivos, ordenada por `since` ascendente. La
+/// primera entrada es la configuración inicial; las entradas con
+/// `since` futura son cambios ya decididos pero todavía no vigentes.
+///
+/// Es la fuente de verdad de la periodicidad: no hay campo "actual"
+/// denormalizado que pueda quedarse obsoleto (§10/§11), y conserva qué
+/// objetivo había en cada fecha para las estadísticas y el futuro
+/// sistema de rangos (§7).
+@override List<PeriodicityEntry> get periodicityTimeline {
+  if (_periodicityTimeline is EqualUnmodifiableListView) return _periodicityTimeline;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_periodicityHistory);
+  return EqualUnmodifiableListView(_periodicityTimeline);
 }
 
-/// Cupo de descansos planificados dentro del periodo (ej. 2 de cada 7).
-@override@JsonKey() final  int restDaysAllowed;
-/// Tarea alternativa más ligera que salva la racha del ámbito.
-@override final  String? recoveryTask;
-/// Límite de uso de la tarea de recuperación: 1 vez cada X días.
-@override@JsonKey() final  int recoveryCooldownDays;
 /// Color asignado de la paleta al crear el hábito, editable.
 @override final  int colorValue;
 @override final  String emoji;
@@ -261,7 +270,7 @@ class _Habit extends Habit {
 @override@JsonKey() final  int order;
 @override final  DateTime createdAt;
 /// Soft delete: los hábitos borrados conservan su histórico de registros
-/// y no aparecen en las consultas normales.
+/// y no aparecen en las consultas normales (§30).
 @override final  DateTime? deletedAt;
 
 /// Create a copy of Habit
@@ -274,16 +283,16 @@ _$HabitCopyWith<_Habit> get copyWith => __$HabitCopyWithImpl<_Habit>(this, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Habit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ambitoId, ambitoId) || other.ambitoId == ambitoId)&&(identical(other.periodicity, periodicity) || other.periodicity == periodicity)&&const DeepCollectionEquality().equals(other._periodicityHistory, _periodicityHistory)&&(identical(other.restDaysAllowed, restDaysAllowed) || other.restDaysAllowed == restDaysAllowed)&&(identical(other.recoveryTask, recoveryTask) || other.recoveryTask == recoveryTask)&&(identical(other.recoveryCooldownDays, recoveryCooldownDays) || other.recoveryCooldownDays == recoveryCooldownDays)&&(identical(other.colorValue, colorValue) || other.colorValue == colorValue)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.order, order) || other.order == order)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Habit&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ambitoId, ambitoId) || other.ambitoId == ambitoId)&&const DeepCollectionEquality().equals(other._periodicityTimeline, _periodicityTimeline)&&(identical(other.colorValue, colorValue) || other.colorValue == colorValue)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime)&&(identical(other.order, order) || other.order == order)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,ambitoId,periodicity,const DeepCollectionEquality().hash(_periodicityHistory),restDaysAllowed,recoveryTask,recoveryCooldownDays,colorValue,emoji,reminderTime,order,createdAt,deletedAt);
+int get hashCode => Object.hash(runtimeType,id,name,ambitoId,const DeepCollectionEquality().hash(_periodicityTimeline),colorValue,emoji,reminderTime,order,createdAt,deletedAt);
 
 @override
 String toString() {
-  return 'Habit(id: $id, name: $name, ambitoId: $ambitoId, periodicity: $periodicity, periodicityHistory: $periodicityHistory, restDaysAllowed: $restDaysAllowed, recoveryTask: $recoveryTask, recoveryCooldownDays: $recoveryCooldownDays, colorValue: $colorValue, emoji: $emoji, reminderTime: $reminderTime, order: $order, createdAt: $createdAt, deletedAt: $deletedAt)';
+  return 'Habit(id: $id, name: $name, ambitoId: $ambitoId, periodicityTimeline: $periodicityTimeline, colorValue: $colorValue, emoji: $emoji, reminderTime: $reminderTime, order: $order, createdAt: $createdAt, deletedAt: $deletedAt)';
 }
 
 
@@ -294,7 +303,7 @@ abstract mixin class _$HabitCopyWith<$Res> implements $HabitCopyWith<$Res> {
   factory _$HabitCopyWith(_Habit value, $Res Function(_Habit) _then) = __$HabitCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String ambitoId, Periodicity periodicity, List<PeriodicityChange> periodicityHistory, int restDaysAllowed, String? recoveryTask, int recoveryCooldownDays, int colorValue, String emoji, String? reminderTime, int order, DateTime createdAt, DateTime? deletedAt
+ String id, String name, String ambitoId, List<PeriodicityEntry> periodicityTimeline, int colorValue, String emoji, String? reminderTime, int order, DateTime createdAt, DateTime? deletedAt
 });
 
 
@@ -311,17 +320,13 @@ class __$HabitCopyWithImpl<$Res>
 
 /// Create a copy of Habit
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? ambitoId = null,Object? periodicity = null,Object? periodicityHistory = null,Object? restDaysAllowed = null,Object? recoveryTask = freezed,Object? recoveryCooldownDays = null,Object? colorValue = null,Object? emoji = null,Object? reminderTime = freezed,Object? order = null,Object? createdAt = null,Object? deletedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? ambitoId = null,Object? periodicityTimeline = null,Object? colorValue = null,Object? emoji = null,Object? reminderTime = freezed,Object? order = null,Object? createdAt = null,Object? deletedAt = freezed,}) {
   return _then(_Habit(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,ambitoId: null == ambitoId ? _self.ambitoId : ambitoId // ignore: cast_nullable_to_non_nullable
-as String,periodicity: null == periodicity ? _self.periodicity : periodicity // ignore: cast_nullable_to_non_nullable
-as Periodicity,periodicityHistory: null == periodicityHistory ? _self._periodicityHistory : periodicityHistory // ignore: cast_nullable_to_non_nullable
-as List<PeriodicityChange>,restDaysAllowed: null == restDaysAllowed ? _self.restDaysAllowed : restDaysAllowed // ignore: cast_nullable_to_non_nullable
-as int,recoveryTask: freezed == recoveryTask ? _self.recoveryTask : recoveryTask // ignore: cast_nullable_to_non_nullable
-as String?,recoveryCooldownDays: null == recoveryCooldownDays ? _self.recoveryCooldownDays : recoveryCooldownDays // ignore: cast_nullable_to_non_nullable
-as int,colorValue: null == colorValue ? _self.colorValue : colorValue // ignore: cast_nullable_to_non_nullable
+as String,periodicityTimeline: null == periodicityTimeline ? _self._periodicityTimeline : periodicityTimeline // ignore: cast_nullable_to_non_nullable
+as List<PeriodicityEntry>,colorValue: null == colorValue ? _self.colorValue : colorValue // ignore: cast_nullable_to_non_nullable
 as int,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,reminderTime: freezed == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
 as String?,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable

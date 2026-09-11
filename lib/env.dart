@@ -23,4 +23,18 @@ abstract final class Env {
 
   static const authEmulatorPort = 9099;
   static const firestoreEmulatorPort = 8080;
+
+  /// Verificación de email obligatoria para entrar y para acceder a los
+  /// datos del usuario.
+  ///
+  /// DESACTIVADA temporalmente: los enlaces que genera Firebase en
+  /// `constanza-dev` llegan con `apiKey` vacío y su página de verificación
+  /// falla, por un defecto de creación del proyecto que no es reparable
+  /// desde fuera (ver documentation/FIREBASE_SETUP.md §3.5).
+  ///
+  /// Para reactivarla hay que hacer DOS cosas, no solo esta:
+  ///   1. Poner esto a `true`.
+  ///   2. Volver a exigir `email_verified` en `firestore.rules` (hay un
+  ///      comentario marcándolo) y desplegar las reglas.
+  static const requireEmailVerification = false;
 }

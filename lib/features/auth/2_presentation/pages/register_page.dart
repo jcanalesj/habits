@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
+import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/domain.dart';
 import 'package:habits/features/auth/2_presentation/controllers/register_controller.dart';
 import 'package:habits/features/auth/2_presentation/l10n/auth_failure_l10n.dart';
@@ -62,10 +63,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           confirmPassword: _confirmPasswordController.text,
           acceptedTerms: _acceptedTerms,
         );
-    // La cuenta queda con sesión sin verificar: el redirect del router
-    // mantiene al usuario en la verificación hasta que confirme el enlace.
-    if (success && mounted) context.go('/verify-email');
+    if (!mounted) return;
+
+    // Cuenta creada: bienvenida antes de entrar. El redirect del router
+    // ancla ahí hasta que el usuario pulse "Empezar".
+    if (success) context.go('/welcome');
   }
+
+  /// Ruta con el correo escrito precargado.
+  String _withEmail(String path) => Uri(
+    path: path,
+    queryParameters: {'email': _emailController.text.trim()},
+  ).toString();
 
   @override
   Widget build(BuildContext context) {
@@ -236,6 +245,47 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                       color: Colors.redAccent,
                                       fontWeight: FontWeight.w600,
                                     ),
+                                  ),
+                                ),
+                              // El correo ya tiene cuenta: el registro no
+                              // inicia sesión, se ofrece el login (con el
+                              // correo precargado) y la recuperación.
+                              if (state.failure ==
+                                  AuthFailure.emailAlreadyInUse)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: Column(
+                                    children: [
+                                      OutlinedButton(
+                                        onPressed: () =>
+                                            context.go(_withEmail('/login')),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor:
+                                              AppColors.primaryDeep,
+                                          side: BorderSide(
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.4,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                            vertical: 12,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(l10n.signInCta),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => context.push(
+                                          _withEmail('/forgot-password'),
+                                        ),
+                                        child: Text(l10n.forgotPassword),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               GradientButton(

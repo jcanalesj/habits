@@ -1,70 +1,112 @@
 import 'package:habits/features/habits/0_entity/entity.dart';
-import 'package:habits/features/habits/1_domain/services/logical_day.dart';
+import 'package:habits/features/habits/1_domain/repositories/habits_repository.dart';
 import 'package:habits/features/habits/3_data/dtos/ambito_dto.dart';
 import 'package:habits/features/habits/3_data/dtos/firestore_fields.dart';
 import 'package:habits/features/habits/3_data/dtos/habit_dto.dart';
 import 'package:habits/features/habits/3_data/dtos/habit_log_dto.dart';
 import 'package:habits/features/habits/3_data/dtos/streaks_dto.dart';
+import 'package:habits/features/habits/3_data/dtos/wildcard_balance_dto.dart';
 
 /// Conversión DTO ⇄ entidad. Los DTOs nunca salen de `3_data`.
 abstract final class HabitsMappers {
-  static Periodicity periodicityFromString(String value) => Periodicity.values
-      .firstWhere((p) => p.name == value, orElse: () => Periodicity.daily);
+  static PeriodicityType periodicityTypeFromString(String value) =>
+      PeriodicityType.values.firstWhere(
+        (type) => type.name == value,
+        orElse: () => PeriodicityType.daily,
+      );
 
-  static HabitLogType logTypeFromString(String value) => HabitLogType.values
-      .firstWhere((t) => t.name == value, orElse: () => HabitLogType.completed);
+  /// Solo `completed` es actividad real. Cualquier otro valor (los
+  /// `recovery` y `plannedRest` heredados del modelo antiguo) se marca como
+  /// legacy y NO cuenta para la racha.
+  static HabitLogType logTypeFromString(String value) =>
+      value == FirestoreFields.tipoCompleted
+      ? HabitLogType.completed
+      : HabitLogType.legacy;
 
-  static Habit habitFromDto(HabitDto dto) => Habit(
-    id: dto.id,
-    name: dto.nombre,
-    emoji: dto.emoji,
-    colorValue: dto.colorValue,
-    ambitoId: dto.ambitoId,
-    periodicity: periodicityFromString(dto.periodicidad),
-    periodicityHistory: dto.historialPeriodicidad
-        .map(
-          (e) => PeriodicityChange(
-            periodicity: periodicityFromString(
-              e[FirestoreFields.periodicidad] as String? ?? 'daily',
-            ),
-            since: _parseDayOr(e[FirestoreFields.desde] as String?),
-          ),
-        )
-        .toList(),
-    restDaysAllowed: dto.descansosPermitidos,
-    recoveryTask: dto.tareaRecuperacion,
-    recoveryCooldownDays: dto.recuperacionCooldownDias,
-    reminderTime: dto.recordatorioHora,
-    order: dto.orden,
+  static Periodicity periodicityFromMap(Map<String, dynamic> map) =>
+      Periodicity(
+        type: periodicityTypeFromString(
+          map[FirestoreFields.tipo] as String? ?? 'daily',
+        ),
+        timesPerPeriod: (map[FirestoreFields.veces] as num?)?.toInt() ?? 1,
+      );
+
+  static Map<String, dynamic> periodicityToMap(Periodicity periodicity) => {
+    FirestoreFields.tipo: periodicity.type.name,
+    FirestoreFields.veces: periodicity.timesPerPeriod,
+  };
+
+  static Habit habitFromDto(HabitDto dto) {
     // Con una escritura local pendiente el serverTimestamp aún es null: el
     // hábito acaba de crearse en este dispositivo.
-    createdAt: dto.createdAt ?? DateTime.now(),
-    deletedAt: dto.deletedAt,
-  );
+    final createdAt = dto.createdAt ?? DateTime.now();
+    final initial = periodicityFromMap(dto.periodicidad);
 
-  static HabitDto habitToDto(Habit habit) => HabitDto(
-    id: habit.id,
-    nombre: habit.name,
-    emoji: habit.emoji,
-    colorValue: habit.colorValue,
-    ambitoId: habit.ambitoId,
-    periodicidad: habit.periodicity.name,
-    historialPeriodicidad: habit.periodicityHistory
-        .map(
-          (change) => <String, dynamic>{
-            FirestoreFields.periodicidad: change.periodicity.name,
-            FirestoreFields.desde: LogicalDay.format(change.since),
+    // La línea temporal siempre arranca con la configuración inicial, cuyo
+    // `since` es el día de creación del hábito. Así `configAt()` tiene
+    // respuesta para cualquier fecha, sin casos especiales.
+    final createdDay = LogicalDate(
+      createdAt.year,
+      createdAt.month,
+      createdAt.day,
+    );
+    final timeline = <PeriodicityEntry>[
+      PeriodicityEntry(periodicity: initial, since: createdDay),
+    ];
+    for (final change in dto.cambiosPeriodicidad) {
+      final since = LogicalDate.tryParse(
+        change[FirestoreFields.desde] as String?,
+      );
+      if (since == null) continue;
+      timeline.add(
+        PeriodicityEntry(
+          periodicity: periodicityFromMap(change),
+          since: since,
+        ),
+      );
+    }
+    timeline.sort((a, b) => a.since.compareTo(b.since));
+
+    return Habit(
+      id: dto.id,
+      name: dto.nombre,
+      emoji: dto.emoji,
+      colorValue: dto.colorValue,
+      ambitoId: dto.ambitoId,
+      periodicityTimeline: timeline,
+      reminderTime: dto.recordatorioHora,
+      order: dto.orden,
+      createdAt: createdAt,
+      deletedAt: dto.deletedAt,
+    );
+  }
+
+  static HabitDto habitToDto(Habit habit) {
+    final timeline = habit.periodicityTimeline;
+    return HabitDto(
+      id: habit.id,
+      nombre: habit.name,
+      emoji: habit.emoji,
+      colorValue: habit.colorValue,
+      ambitoId: habit.ambitoId,
+      periodicidad: periodicityToMap(
+        timeline.isEmpty ? Periodicity.daily : timeline.first.periodicity,
+      ),
+      // La primera entrada es la configuración inicial y ya viaja en
+      // `periodicidad`: solo se persisten los cambios posteriores.
+      cambiosPeriodicidad: [
+        for (final entry in timeline.skip(1))
+          <String, dynamic>{
+            ...periodicityToMap(entry.periodicity),
+            FirestoreFields.desde: entry.since.key,
           },
-        )
-        .toList(),
-    descansosPermitidos: habit.restDaysAllowed,
-    tareaRecuperacion: habit.recoveryTask,
-    recuperacionCooldownDias: habit.recoveryCooldownDays,
-    recordatorioHora: habit.reminderTime,
-    orden: habit.order,
-    createdAt: habit.createdAt,
-    deletedAt: habit.deletedAt,
-  );
+      ],
+      recordatorioHora: habit.reminderTime,
+      orden: habit.order,
+      createdAt: habit.createdAt,
+      deletedAt: habit.deletedAt,
+    );
+  }
 
   static Ambito ambitoFromDto(AmbitoDto dto) => Ambito(
     id: dto.id,
@@ -86,48 +128,36 @@ abstract final class HabitsMappers {
     createdAt: ambito.createdAt,
   );
 
-  static HabitLog logFromDto(HabitLogDto dto) => HabitLog(
-    id: dto.id,
-    habitId: dto.habitoId,
-    date: _parseDayOr(dto.dia),
-    type: logTypeFromString(dto.tipo),
-  );
-
-  static StreaksSnapshot streaksFromDto(StreaksDto dto) => StreaksSnapshot(
-    general: GeneralStreak(
-      count: dto.generalActual,
-      comodinDisponible: dto.generalComodinDisponible,
-      lastLogDate: dto.ultimoDiaRegistrado == null
-          ? null
-          : _parseDayOr(dto.ultimoDiaRegistrado),
-    ),
-    habits: {
-      for (final entry in dto.habitos.entries)
-        entry.key: HabitStreak(
-          current: (entry.value[FirestoreFields.actual] as num?)?.toInt() ?? 0,
-          best: (entry.value[FirestoreFields.mejor] as num?)?.toInt() ?? 0,
-        ),
-    },
-    ambitos: {
-      for (final entry in dto.ambitos.entries)
-        entry.key: AmbitoStreak(
-          current: (entry.value[FirestoreFields.actual] as num?)?.toInt() ?? 0,
-          best: (entry.value[FirestoreFields.mejor] as num?)?.toInt() ?? 0,
-          comodinDisponible:
-              entry.value[FirestoreFields.comodinDisponible] as bool? ?? true,
-        ),
-    },
-    calculatedThrough: dto.calculadoHasta == null
-        ? null
-        : _parseDayOr(dto.calculadoHasta),
-  );
-
-  static DateTime _parseDayOr(String? day) {
-    if (day == null) return DateTime.fromMillisecondsSinceEpoch(0);
-    try {
-      return LogicalDay.parse(day);
-    } on FormatException {
-      return DateTime.fromMillisecondsSinceEpoch(0);
-    }
+  /// Devuelve null si el día no es parseable: un documento corrupto no debe
+  /// tumbar la Home ni contarse como actividad.
+  static HabitLog? logFromDto(HabitLogDto dto) {
+    final date = LogicalDate.tryParse(dto.dia);
+    if (date == null) return null;
+    return HabitLog(
+      id: dto.id,
+      habitId: dto.habitoId,
+      date: date,
+      type: logTypeFromString(dto.tipo),
+    );
   }
+
+  static StreakCacheEntry? streakCacheFromDto(StreaksDto dto) {
+    final calculatedThrough = LogicalDate.tryParse(dto.calculadoHasta);
+    if (calculatedThrough == null) return null;
+    return StreakCacheEntry(
+      currentStreak: dto.rachaActual,
+      bestStreak: dto.mejorRacha,
+      lastActivityDay: LogicalDate.tryParse(dto.ultimoDiaActividad),
+      calculatedThrough: calculatedThrough,
+      algorithmVersion: dto.version,
+    );
+  }
+
+  static WildcardBalance wildcardBalanceFromDto(WildcardBalanceDto dto) =>
+      WildcardBalance(
+        available: dto.saldo,
+        lastGrantYearMonth: dto.ultimaConcesionYM,
+        grantedTotal: dto.concedidosTotal,
+        lastProtectedDay: LogicalDate.tryParse(dto.ultimoDiaProtegido),
+      );
 }

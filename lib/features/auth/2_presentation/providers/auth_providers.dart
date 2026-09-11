@@ -1,8 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habits/env.dart';
 import 'package:habits/features/auth/1_domain/domain.dart';
 // Los ficheros de providers son la capa de inyección de dependencias:
 // único punto de 2_presentation autorizado a importar 3_data.
 import 'package:habits/features/auth/3_data/data.dart';
+
+/// Si la app exige verificar el email. Aislado en un provider para poder
+/// probar los dos caminos sin recompilar (ver [Env.requireEmailVerification]).
+final requireEmailVerificationProvider = Provider<bool>(
+  (ref) => Env.requireEmailVerification,
+);
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return FirebaseAuthRepository();
@@ -21,7 +28,10 @@ final signInUsecaseProvider = Provider<SignInUsecase>((ref) {
 });
 
 final signUpUsecaseProvider = Provider<SignUpUsecase>((ref) {
-  return SignUpUsecase(ref.watch(authRepositoryProvider));
+  return SignUpUsecase(
+    ref.watch(authRepositoryProvider),
+    sendVerificationEmail: ref.watch(requireEmailVerificationProvider),
+  );
 });
 
 final signOutUsecaseProvider = Provider<SignOutUsecase>((ref) {
@@ -51,5 +61,6 @@ final ensureUserProfileUsecaseProvider = Provider<EnsureUserProfileUsecase>((
   return EnsureUserProfileUsecase(
     ref.watch(userProfileRepositoryProvider),
     ref.watch(deviceInfoRepositoryProvider),
+    requireEmailVerification: ref.watch(requireEmailVerificationProvider),
   );
 });

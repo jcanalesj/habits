@@ -140,12 +140,6 @@ abstract class AppLocalizations {
   /// **'consecutive days'**
   String get consecutiveDays;
 
-  /// No description provided for @freeWildcardAvailable.
-  ///
-  /// In en, this message translates to:
-  /// **'1 free wildcard available this week'**
-  String get freeWildcardAvailable;
-
   /// No description provided for @amazing.
   ///
   /// In en, this message translates to:
@@ -157,12 +151,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep it up'**
   String get keepItUp;
-
-  /// No description provided for @streaksByAmbito.
-  ///
-  /// In en, this message translates to:
-  /// **'Streaks by area'**
-  String get streaksByAmbito;
 
   /// No description provided for @seeAll.
   ///
@@ -241,12 +229,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Yearly'**
   String get periodicityYearly;
-
-  /// No description provided for @restDaysCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 rest day} other{{count} rest days}}'**
-  String restDaysCount(int count);
 
   /// No description provided for @navHome.
   ///
@@ -497,7 +479,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyLinkInstructions.
   ///
   /// In en, this message translates to:
-  /// **'Open it from your inbox and come back here to continue.'**
+  /// **'Open it from your inbox and come back here to continue. If you can\'t see it, check your spam folder.'**
   String get verifyLinkInstructions;
 
   /// No description provided for @iHaveVerified.
@@ -541,6 +523,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use another account'**
   String get useAnotherAccount;
+
+  /// No description provided for @pendingVerificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account isn\'t verified yet'**
+  String get pendingVerificationTitle;
+
+  /// No description provided for @pendingVerificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the only step left. Open the link we sent you or request a new one; check your spam folder too.'**
+  String get pendingVerificationBody;
+
+  /// No description provided for @signInCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signInCta;
+
+  /// No description provided for @welcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your change starts here'**
+  String get welcomeTitle;
+
+  /// No description provided for @welcomeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The best day to start was months ago.\nThe next best moment is '**
+  String get welcomeMessage;
+
+  /// No description provided for @welcomeMessageHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY.'**
+  String get welcomeMessageHighlight;
+
+  /// No description provided for @welcomeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get welcomeStart;
 
   /// No description provided for @forgotPasswordTitle.
   ///
@@ -593,7 +617,7 @@ abstract class AppLocalizations {
   /// No description provided for @authErrorEmailAlreadyInUse.
   ///
   /// In en, this message translates to:
-  /// **'An account already exists for that email.'**
+  /// **'An account already exists with this email.'**
   String get authErrorEmailAlreadyInUse;
 
   /// No description provided for @authErrorWeakPassword.
@@ -709,6 +733,360 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'M,T,W,T,F,S,S'**
   String get weekdayInitials;
+
+  /// No description provided for @streakAtRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Your streak is at risk'**
+  String get streakAtRisk;
+
+  /// No description provided for @streakAtRiskBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You didn\'t complete any habit yesterday. You can protect it with a wildcard until the end of the day.'**
+  String get streakAtRiskBody;
+
+  /// No description provided for @streakSafeToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today already counts. Keep it up!'**
+  String get streakSafeToday;
+
+  /// No description provided for @streakPendingToday.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t completed anything today yet.'**
+  String get streakPendingToday;
+
+  /// No description provided for @streakStartToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a habit to start your streak.'**
+  String get streakStartToday;
+
+  /// No description provided for @useWildcard.
+  ///
+  /// In en, this message translates to:
+  /// **'Use wildcard'**
+  String get useWildcard;
+
+  /// No description provided for @wildcardsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No wildcards} =1{1 wildcard available} other{{count} wildcards available}}'**
+  String wildcardsAvailable(int count);
+
+  /// No description provided for @noWildcardsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no wildcards left. You\'ll get a new one next month.'**
+  String get noWildcardsLeft;
+
+  /// No description provided for @wildcardProtectsNotAdds.
+  ///
+  /// In en, this message translates to:
+  /// **'A wildcard protects your streak, but it doesn\'t add a day or mark any habit.'**
+  String get wildcardProtectsNotAdds;
+
+  /// No description provided for @wildcardConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a wildcard?'**
+  String get wildcardConfirmTitle;
+
+  /// No description provided for @wildcardConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll protect {day} and your {streak}-day streak will stay alive.'**
+  String wildcardConfirmBody(String day, int streak);
+
+  /// No description provided for @wildcardUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak protected. Keep going!'**
+  String get wildcardUsed;
+
+  /// No description provided for @wildcardErrorWindowClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'That day can no longer be protected.'**
+  String get wildcardErrorWindowClosed;
+
+  /// No description provided for @wildcardErrorNone.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no wildcards left.'**
+  String get wildcardErrorNone;
+
+  /// No description provided for @wildcardErrorConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'You need a connection to use a wildcard.'**
+  String get wildcardErrorConnection;
+
+  /// No description provided for @wildcardErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'The wildcard couldn\'t be used. Please try again.'**
+  String get wildcardErrorGeneric;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @goalProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} / {goal}'**
+  String goalProgressLabel(int completed, int goal);
+
+  /// No description provided for @goalPeriodWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'this week'**
+  String get goalPeriodWeek;
+
+  /// No description provided for @goalPeriodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'this month'**
+  String get goalPeriodMonth;
+
+  /// No description provided for @goalPeriodYear.
+  ///
+  /// In en, this message translates to:
+  /// **'this year'**
+  String get goalPeriodYear;
+
+  /// No description provided for @goalPeriodDay.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get goalPeriodDay;
+
+  /// No description provided for @periodicityDailyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get periodicityDailyLabel;
+
+  /// No description provided for @periodicityWeeklyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 time per week} other{{count} times per week}}'**
+  String periodicityWeeklyLabel(int count);
+
+  /// No description provided for @periodicityMonthlyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 time per month} other{{count} times per month}}'**
+  String periodicityMonthlyLabel(int count);
+
+  /// No description provided for @periodicityYearlyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 time per year} other{{count} times per year}}'**
+  String periodicityYearlyLabel(int count);
+
+  /// No description provided for @frequencyChangeDeferred.
+  ///
+  /// In en, this message translates to:
+  /// **'This change will apply on {date}. Until then your current goal stays the same.'**
+  String frequencyChangeDeferred(String date);
+
+  /// No description provided for @logNotTodayError.
+  ///
+  /// In en, this message translates to:
+  /// **'You can only mark habits for today.'**
+  String get logNotTodayError;
+
+  /// No description provided for @bestStreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best streak: {count}'**
+  String bestStreakLabel(int count);
+
+  /// No description provided for @newHabitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New habit'**
+  String get newHabitTitle;
+
+  /// No description provided for @editHabitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit habit'**
+  String get editHabitTitle;
+
+  /// No description provided for @habitNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get habitNameLabel;
+
+  /// No description provided for @habitNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. Drink water'**
+  String get habitNameHint;
+
+  /// No description provided for @habitEmojiLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Emoji'**
+  String get habitEmojiLabel;
+
+  /// No description provided for @habitColorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get habitColorLabel;
+
+  /// No description provided for @habitAmbitoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Area'**
+  String get habitAmbitoLabel;
+
+  /// No description provided for @habitPeriodicityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get habitPeriodicityLabel;
+
+  /// No description provided for @habitTimesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Times per period'**
+  String get habitTimesLabel;
+
+  /// No description provided for @habitReminderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get habitReminderLabel;
+
+  /// No description provided for @habitReminderNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder'**
+  String get habitReminderNone;
+
+  /// No description provided for @habitReminderSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day at {time}'**
+  String habitReminderSet(String time);
+
+  /// No description provided for @saveHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveHabit;
+
+  /// No description provided for @createHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Create habit'**
+  String get createHabit;
+
+  /// No description provided for @deleteHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete habit'**
+  String get deleteHabit;
+
+  /// No description provided for @deleteHabitConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this habit?'**
+  String get deleteHabitConfirmTitle;
+
+  /// No description provided for @deleteHabitConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It will disappear from your lists, but its history is kept and the days you already completed still count towards your streak.'**
+  String get deleteHabitConfirmBody;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @habitCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit created'**
+  String get habitCreated;
+
+  /// No description provided for @habitSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes saved'**
+  String get habitSaved;
+
+  /// No description provided for @habitDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit deleted'**
+  String get habitDeleted;
+
+  /// No description provided for @habitNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This habit no longer exists'**
+  String get habitNotFound;
+
+  /// No description provided for @errorNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name'**
+  String get errorNameRequired;
+
+  /// No description provided for @errorNameTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The name is too long'**
+  String get errorNameTooLong;
+
+  /// No description provided for @errorEmojiRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick an emoji'**
+  String get errorEmojiRequired;
+
+  /// No description provided for @errorTimesInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That number doesn\'t fit in the period'**
+  String get errorTimesInvalid;
+
+  /// No description provided for @errorReminderInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid time'**
+  String get errorReminderInvalid;
+
+  /// No description provided for @errorSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save. Please try again.'**
+  String get errorSaveFailed;
+
+  /// No description provided for @noHabitsYetLong.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any habits yet.\nCreate your first one and start your streak.'**
+  String get noHabitsYetLong;
+
+  /// No description provided for @allHabitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My habits'**
+  String get allHabitsTitle;
 }
 
 class _AppLocalizationsDelegate

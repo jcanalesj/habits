@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Constanza</title>
+    <style>
+      :root {
+        --primary: #7c5ce0;
+        --primary-deep: #6d28d9;
+        --gradient-start: #a78bfa;
+        --gradient-end: #7c3aed;
+        --heading: #1d1766;
+        --text: #231e38;
+        --muted: #6e6a82;
+        --bg: #f3f1fb;
+        --ok: #34b379;
+        --error: #e05260;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Inter, Helvetica, Arial, sans-serif;
+      }
+      .card {
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border-radius: 24px;
+        padding: 32px 28px;
+        text-align: center;
+        box-shadow: 0 18px 48px rgba(124, 92, 224, 0.18);
+      }
+      .badge {
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 34px;
+        background: rgba(124, 92, 224, 0.12);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 24px;
+        line-height: 1.25;
+        color: var(--heading);
+      }
+      p { margin: 0 0 8px; color: var(--muted); line-height: 1.5; }
+      .email { color: var(--primary-deep); font-weight: 600; }
+      form { margin-top: 20px; text-align: left; }
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--heading);
+        margin-bottom: 6px;
+      }
+      input {
+        width: 100%;
+        padding: 14px 16px;
+        font-size: 16px;
+        border: 1px solid rgba(124, 92, 224, 0.25);
+        border-radius: 14px;
+        outline: none;
+      }
+      input:focus { border-color: var(--primary-deep); }
+      button {
+        width: 100%;
+        margin-top: 16px;
+        padding: 16px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        border: 0;
+        border-radius: 16px;
+        cursor: pointer;
+        background: linear-gradient(
+          to right,
+          var(--gradient-start),
+          var(--gradient-end)
+        );
+      }
+      button[disabled] { opacity: 0.6; cursor: default; }
+      .msg { margin-top: 12px; font-size: 14px; font-weight: 600; }
+      .msg.error { color: var(--error); }
+      .brand {
+        margin-top: 24px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="badge" id="badge">✉️</div>
+      <h1 id="title">Un momento…</h1>
+      <p id="body"></p>
+
+      <form id="reset-form" hidden>
+        <label for="password">Nueva contraseña</label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          required
+        />
+        <button id="submit" type="submit">Guardar contraseña</button>
+      </form>
+
+      <p class="msg" id="msg" hidden></p>
+      <p class="brand">Constanza · Tu mejor versión, cada día.</p>
+    </main>
+
+    <script>
+      // Gestor de acciones de correo propio.
+      //
+      // Existe porque Firebase envía sus enlaces con `apiKey=` vacío en este
+      // proyecto (creado por CLI), y su página alojada no puede resolver el
+      // proyecto sin esa clave. Aquí la clave va explícita: es la clave de
+      // navegador del proyecto, que es pública por diseño.
+      const API_KEY = "AIzaSyCHWqyF4xbxB8GOhD8wKC-o3ygZk5PFkbY";
+      const ENDPOINT = "https://identitytoolkit.googleapis.com/v1";
+
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get("mode");
+      const oobCode = params.get("oobCode");
+
+      // Idioma: manda el del dispositivo de quien lee; el `lang` del enlace
+      // es el de la plantilla de Firebase y puede no coincidir.
+      const isEnglish = (
+        navigator.language ||
+        params.get("lang") ||
+        "es"
+      )
+        .toLowerCase()
+        .startsWith("en");
+
+      const T = {
+        es: {
+          working: "Un momento…",
+          verifiedTitle: "¡Cuenta verificada!",
+          verifiedBody:
+            "Ya puedes volver a la app y empezar a construir tus hábitos.",
+          resetTitle: "Elige una contraseña nueva",
+          resetBody: "Vas a cambiar la contraseña de",
+          resetDoneTitle: "Contraseña actualizada",
+          resetDoneBody: "Vuelve a la app e inicia sesión con la nueva.",
+          recoveredTitle: "Correo restaurado",
+          recoveredBody: "Hemos deshecho el cambio de correo de tu cuenta.",
+          invalidTitle: "Este enlace ya no sirve",
+          invalidBody:
+            "Puede que haya caducado o que ya lo hayas usado. Pide uno nuevo desde la app.",
+          badModeTitle: "Enlace no reconocido",
+          badModeBody: "Abre el enlace más reciente que te hemos enviado.",
+          networkTitle: "No hemos podido conectar",
+          networkBody: "Comprueba tu conexión e inténtalo de nuevo.",
+          passwordLabel: "Nueva contraseña",
+          passwordShort: "La contraseña debe tener al menos 8 caracteres.",
+          save: "Guardar contraseña",
+          saving: "Guardando…",
+        },
+        en: {
+          working: "One moment…",
+          verifiedTitle: "Account verified!",
+          verifiedBody: "You can go back to the app and start building habits.",
+          resetTitle: "Choose a new password",
+          resetBody: "You're changing the password for",
+          resetDoneTitle: "Password updated",
+          resetDoneBody: "Go back to the app and sign in with the new one.",
+          recoveredTitle: "Email restored",
+          recoveredBody: "We've undone the email change on your account.",
+          invalidTitle: "This link no longer works",
+          invalidBody:
+            "It may have expired or already been used. Request a new one from the app.",
+          badModeTitle: "Unrecognized link",
+          badModeBody: "Open the most recent link we sent you.",
+          networkTitle: "We couldn't connect",
+          networkBody: "Check your connection and try again.",
+          passwordLabel: "New password",
+          passwordShort: "Password must be at least 8 characters.",
+          save: "Save password",
+          saving: "Saving…",
+        },
+      }[isEnglish ? "en" : "es"];
+
+      const el = {
+        badge: document.getElementById("badge"),
+        title: document.getElementById("title"),
+        body: document.getElementById("body"),
+        form: document.getElementById("reset-form"),
+        password: document.getElementById("password"),
+        submit: document.getElementById("submit"),
+        msg: document.getElementById("msg"),
+      };
+
+      document.documentElement.lang = isEnglish ? "en" : "es";
+      el.title.textContent = T.working;
+      document.querySelector("label").textContent = T.passwordLabel;
+      el.submit.textContent = T.save;
+
+      function render(badge, title, body, emailLine) {
+        el.badge.textContent = badge;
+        el.title.textContent = title;
+        el.body.innerHTML = emailLine
+          ? `${body} <span class="email">${emailLine}</span>`
+          : body;
+      }
+
+      function showMessage(text) {
+        el.msg.textContent = text;
+        el.msg.hidden = false;
+      }
+
+      async function call(path, payload) {
+        const response = await fetch(`${ENDPOINT}/${path}?key=${API_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const error = new Error(data?.error?.message || "REQUEST_FAILED");
+          error.code = data?.error?.message;
+          throw error;
+        }
+        return data;
+      }
+
+      function fail(error) {
+        // Sin respuesta del servidor es un problema de red; con respuesta,
+        // el código es inválido, caducado o ya usado.
+        const network = !error.code;
+        render(
+          "⚠️",
+          network ? T.networkTitle : T.invalidTitle,
+          network ? T.networkBody : T.invalidBody,
+        );
+        el.form.hidden = true;
+      }
+
+      async function handleVerifyEmail() {
+        await call("accounts:update", { oobCode });
+        render("✅", T.verifiedTitle, T.verifiedBody);
+      }
+
+      async function handleRecoverEmail() {
+        await call("accounts:update", { oobCode });
+        render("✅", T.recoveredTitle, T.recoveredBody);
+      }
+
+      async function handleResetPassword() {
+        // Sin newPassword el endpoint solo valida el código y devuelve el
+        // correo asociado, que mostramos para dar contexto.
+        const info = await call("accounts:resetPassword", { oobCode });
+        render("🔑", T.resetTitle, T.resetBody, info.email || "");
+        el.form.hidden = false;
+        el.password.focus();
+
+        el.form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          el.msg.hidden = true;
+          if (el.password.value.length < 8) {
+            el.msg.className = "msg error";
+            showMessage(T.passwordShort);
+            return;
+          }
+          el.submit.disabled = true;
+          el.submit.textContent = T.saving;
+          try {
+            await call("accounts:resetPassword", {
+              oobCode,
+              newPassword: el.password.value,
+            });
+            el.form.hidden = true;
+            el.msg.hidden = true;
+            render("✅", T.resetDoneTitle, T.resetDoneBody);
+          } catch (error) {
+            fail(error);
+          }
+        });
+      }
+
+      async function main() {
+        if (!oobCode) return render("⚠️", T.badModeTitle, T.badModeBody);
+        try {
+          if (mode === "verifyEmail" || mode === "verifyAndChangeEmail") {
+            await handleVerifyEmail();
+          } else if (mode === "resetPassword") {
+            await handleResetPassword();
+          } else if (mode === "recoverEmail") {
+            await handleRecoverEmail();
+          } else {
+            render("⚠️", T.badModeTitle, T.badModeBody);
+          }
+        } catch (error) {
+          fail(error);
+        }
+      }
+
+      main();
+    </script>
+  </body>
+</html>

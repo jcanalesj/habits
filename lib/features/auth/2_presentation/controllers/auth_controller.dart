@@ -43,7 +43,11 @@ final ensureUserProfileProvider = FutureProvider.autoDispose
           return (id: user.id, verified: user.emailVerified);
         }),
       );
-      if (identity == null || !identity.verified) return null;
+      // Con la verificación desactivada basta con tener sesión; las reglas
+      // tampoco exigen `email_verified` en ese caso.
+      final requiresVerification = ref.watch(requireEmailVerificationProvider);
+      if (identity == null) return null;
+      if (requiresVerification && !identity.verified) return null;
 
       final user = ref.read(authControllerProvider).value;
       if (user == null) return null;

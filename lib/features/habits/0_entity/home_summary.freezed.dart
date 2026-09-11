@@ -14,9 +14,12 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HomeSummary {
 
-/// Caché de rachas; vacía si aún no se ha calculado.
- StreaksSnapshot get streaks; List<Ambito> get ambitos;/// Hábitos activos (sin soft delete).
- List<Habit> get habits;/// Registros de la semana en curso (lunes a domingo).
+/// Día lógico de hoy en la zona horaria del perfil.
+ LogicalDate get today;/// Racha general, calculada en vivo desde el histórico completo.
+ StreakState get streak; WildcardBalance get wildcards; List<Ambito> get ambitos;/// Hábitos activos (sin soft delete).
+ List<Habit> get habits;/// Progreso del objetivo de cada hábito activo en su periodo actual.
+ List<GoalProgress> get progress;/// Registros de la semana en curso (lunes a domingo), para pintar los
+/// puntos de la semana y decidir qué está marcado hoy.
  List<HabitLog> get weekLogs;
 /// Create a copy of HomeSummary
 /// with the given fields replaced by the non-null parameter values.
@@ -28,16 +31,16 @@ $HomeSummaryCopyWith<HomeSummary> get copyWith => _$HomeSummaryCopyWithImpl<Home
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeSummary&&(identical(other.streaks, streaks) || other.streaks == streaks)&&const DeepCollectionEquality().equals(other.ambitos, ambitos)&&const DeepCollectionEquality().equals(other.habits, habits)&&const DeepCollectionEquality().equals(other.weekLogs, weekLogs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeSummary&&(identical(other.today, today) || other.today == today)&&(identical(other.streak, streak) || other.streak == streak)&&(identical(other.wildcards, wildcards) || other.wildcards == wildcards)&&const DeepCollectionEquality().equals(other.ambitos, ambitos)&&const DeepCollectionEquality().equals(other.habits, habits)&&const DeepCollectionEquality().equals(other.progress, progress)&&const DeepCollectionEquality().equals(other.weekLogs, weekLogs));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,streaks,const DeepCollectionEquality().hash(ambitos),const DeepCollectionEquality().hash(habits),const DeepCollectionEquality().hash(weekLogs));
+int get hashCode => Object.hash(runtimeType,today,streak,wildcards,const DeepCollectionEquality().hash(ambitos),const DeepCollectionEquality().hash(habits),const DeepCollectionEquality().hash(progress),const DeepCollectionEquality().hash(weekLogs));
 
 @override
 String toString() {
-  return 'HomeSummary(streaks: $streaks, ambitos: $ambitos, habits: $habits, weekLogs: $weekLogs)';
+  return 'HomeSummary(today: $today, streak: $streak, wildcards: $wildcards, ambitos: $ambitos, habits: $habits, progress: $progress, weekLogs: $weekLogs)';
 }
 
 
@@ -48,11 +51,11 @@ abstract mixin class $HomeSummaryCopyWith<$Res>  {
   factory $HomeSummaryCopyWith(HomeSummary value, $Res Function(HomeSummary) _then) = _$HomeSummaryCopyWithImpl;
 @useResult
 $Res call({
- StreaksSnapshot streaks, List<Ambito> ambitos, List<Habit> habits, List<HabitLog> weekLogs
+ LogicalDate today, StreakState streak, WildcardBalance wildcards, List<Ambito> ambitos, List<Habit> habits, List<GoalProgress> progress, List<HabitLog> weekLogs
 });
 
 
-$StreaksSnapshotCopyWith<$Res> get streaks;
+$StreakStateCopyWith<$Res> get streak;$WildcardBalanceCopyWith<$Res> get wildcards;
 
 }
 /// @nodoc
@@ -65,12 +68,15 @@ class _$HomeSummaryCopyWithImpl<$Res>
 
 /// Create a copy of HomeSummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? streaks = null,Object? ambitos = null,Object? habits = null,Object? weekLogs = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? today = null,Object? streak = null,Object? wildcards = null,Object? ambitos = null,Object? habits = null,Object? progress = null,Object? weekLogs = null,}) {
   return _then(_self.copyWith(
-streaks: null == streaks ? _self.streaks : streaks // ignore: cast_nullable_to_non_nullable
-as StreaksSnapshot,ambitos: null == ambitos ? _self.ambitos : ambitos // ignore: cast_nullable_to_non_nullable
+today: null == today ? _self.today : today // ignore: cast_nullable_to_non_nullable
+as LogicalDate,streak: null == streak ? _self.streak : streak // ignore: cast_nullable_to_non_nullable
+as StreakState,wildcards: null == wildcards ? _self.wildcards : wildcards // ignore: cast_nullable_to_non_nullable
+as WildcardBalance,ambitos: null == ambitos ? _self.ambitos : ambitos // ignore: cast_nullable_to_non_nullable
 as List<Ambito>,habits: null == habits ? _self.habits : habits // ignore: cast_nullable_to_non_nullable
-as List<Habit>,weekLogs: null == weekLogs ? _self.weekLogs : weekLogs // ignore: cast_nullable_to_non_nullable
+as List<Habit>,progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
+as List<GoalProgress>,weekLogs: null == weekLogs ? _self.weekLogs : weekLogs // ignore: cast_nullable_to_non_nullable
 as List<HabitLog>,
   ));
 }
@@ -78,10 +84,19 @@ as List<HabitLog>,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$StreaksSnapshotCopyWith<$Res> get streaks {
+$StreakStateCopyWith<$Res> get streak {
   
-  return $StreaksSnapshotCopyWith<$Res>(_self.streaks, (value) {
-    return _then(_self.copyWith(streaks: value));
+  return $StreakStateCopyWith<$Res>(_self.streak, (value) {
+    return _then(_self.copyWith(streak: value));
+  });
+}/// Create a copy of HomeSummary
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$WildcardBalanceCopyWith<$Res> get wildcards {
+  
+  return $WildcardBalanceCopyWith<$Res>(_self.wildcards, (value) {
+    return _then(_self.copyWith(wildcards: value));
   });
 }
 }
@@ -165,10 +180,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( StreaksSnapshot streaks,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LogicalDate today,  StreakState streak,  WildcardBalance wildcards,  List<Ambito> ambitos,  List<Habit> habits,  List<GoalProgress> progress,  List<HabitLog> weekLogs)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HomeSummary() when $default != null:
-return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
+return $default(_that.today,_that.streak,_that.wildcards,_that.ambitos,_that.habits,_that.progress,_that.weekLogs);case _:
   return orElse();
 
 }
@@ -186,10 +201,10 @@ return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( StreaksSnapshot streaks,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LogicalDate today,  StreakState streak,  WildcardBalance wildcards,  List<Ambito> ambitos,  List<Habit> habits,  List<GoalProgress> progress,  List<HabitLog> weekLogs)  $default,) {final _that = this;
 switch (_that) {
 case _HomeSummary():
-return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
+return $default(_that.today,_that.streak,_that.wildcards,_that.ambitos,_that.habits,_that.progress,_that.weekLogs);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +221,10 @@ return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( StreaksSnapshot streaks,  List<Ambito> ambitos,  List<Habit> habits,  List<HabitLog> weekLogs)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LogicalDate today,  StreakState streak,  WildcardBalance wildcards,  List<Ambito> ambitos,  List<Habit> habits,  List<GoalProgress> progress,  List<HabitLog> weekLogs)?  $default,) {final _that = this;
 switch (_that) {
 case _HomeSummary() when $default != null:
-return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
+return $default(_that.today,_that.streak,_that.wildcards,_that.ambitos,_that.habits,_that.progress,_that.weekLogs);case _:
   return null;
 
 }
@@ -221,11 +236,14 @@ return $default(_that.streaks,_that.ambitos,_that.habits,_that.weekLogs);case _:
 
 
 class _HomeSummary extends HomeSummary {
-  const _HomeSummary({required this.streaks, required final  List<Ambito> ambitos, required final  List<Habit> habits, required final  List<HabitLog> weekLogs}): _ambitos = ambitos,_habits = habits,_weekLogs = weekLogs,super._();
+  const _HomeSummary({required this.today, required this.streak, required this.wildcards, required final  List<Ambito> ambitos, required final  List<Habit> habits, required final  List<GoalProgress> progress, required final  List<HabitLog> weekLogs}): _ambitos = ambitos,_habits = habits,_progress = progress,_weekLogs = weekLogs,super._();
   
 
-/// Caché de rachas; vacía si aún no se ha calculado.
-@override final  StreaksSnapshot streaks;
+/// Día lógico de hoy en la zona horaria del perfil.
+@override final  LogicalDate today;
+/// Racha general, calculada en vivo desde el histórico completo.
+@override final  StreakState streak;
+@override final  WildcardBalance wildcards;
  final  List<Ambito> _ambitos;
 @override List<Ambito> get ambitos {
   if (_ambitos is EqualUnmodifiableListView) return _ambitos;
@@ -242,9 +260,20 @@ class _HomeSummary extends HomeSummary {
   return EqualUnmodifiableListView(_habits);
 }
 
-/// Registros de la semana en curso (lunes a domingo).
+/// Progreso del objetivo de cada hábito activo en su periodo actual.
+ final  List<GoalProgress> _progress;
+/// Progreso del objetivo de cada hábito activo en su periodo actual.
+@override List<GoalProgress> get progress {
+  if (_progress is EqualUnmodifiableListView) return _progress;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_progress);
+}
+
+/// Registros de la semana en curso (lunes a domingo), para pintar los
+/// puntos de la semana y decidir qué está marcado hoy.
  final  List<HabitLog> _weekLogs;
-/// Registros de la semana en curso (lunes a domingo).
+/// Registros de la semana en curso (lunes a domingo), para pintar los
+/// puntos de la semana y decidir qué está marcado hoy.
 @override List<HabitLog> get weekLogs {
   if (_weekLogs is EqualUnmodifiableListView) return _weekLogs;
   // ignore: implicit_dynamic_type
@@ -262,16 +291,16 @@ _$HomeSummaryCopyWith<_HomeSummary> get copyWith => __$HomeSummaryCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeSummary&&(identical(other.streaks, streaks) || other.streaks == streaks)&&const DeepCollectionEquality().equals(other._ambitos, _ambitos)&&const DeepCollectionEquality().equals(other._habits, _habits)&&const DeepCollectionEquality().equals(other._weekLogs, _weekLogs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeSummary&&(identical(other.today, today) || other.today == today)&&(identical(other.streak, streak) || other.streak == streak)&&(identical(other.wildcards, wildcards) || other.wildcards == wildcards)&&const DeepCollectionEquality().equals(other._ambitos, _ambitos)&&const DeepCollectionEquality().equals(other._habits, _habits)&&const DeepCollectionEquality().equals(other._progress, _progress)&&const DeepCollectionEquality().equals(other._weekLogs, _weekLogs));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,streaks,const DeepCollectionEquality().hash(_ambitos),const DeepCollectionEquality().hash(_habits),const DeepCollectionEquality().hash(_weekLogs));
+int get hashCode => Object.hash(runtimeType,today,streak,wildcards,const DeepCollectionEquality().hash(_ambitos),const DeepCollectionEquality().hash(_habits),const DeepCollectionEquality().hash(_progress),const DeepCollectionEquality().hash(_weekLogs));
 
 @override
 String toString() {
-  return 'HomeSummary(streaks: $streaks, ambitos: $ambitos, habits: $habits, weekLogs: $weekLogs)';
+  return 'HomeSummary(today: $today, streak: $streak, wildcards: $wildcards, ambitos: $ambitos, habits: $habits, progress: $progress, weekLogs: $weekLogs)';
 }
 
 
@@ -282,11 +311,11 @@ abstract mixin class _$HomeSummaryCopyWith<$Res> implements $HomeSummaryCopyWith
   factory _$HomeSummaryCopyWith(_HomeSummary value, $Res Function(_HomeSummary) _then) = __$HomeSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- StreaksSnapshot streaks, List<Ambito> ambitos, List<Habit> habits, List<HabitLog> weekLogs
+ LogicalDate today, StreakState streak, WildcardBalance wildcards, List<Ambito> ambitos, List<Habit> habits, List<GoalProgress> progress, List<HabitLog> weekLogs
 });
 
 
-@override $StreaksSnapshotCopyWith<$Res> get streaks;
+@override $StreakStateCopyWith<$Res> get streak;@override $WildcardBalanceCopyWith<$Res> get wildcards;
 
 }
 /// @nodoc
@@ -299,12 +328,15 @@ class __$HomeSummaryCopyWithImpl<$Res>
 
 /// Create a copy of HomeSummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? streaks = null,Object? ambitos = null,Object? habits = null,Object? weekLogs = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? today = null,Object? streak = null,Object? wildcards = null,Object? ambitos = null,Object? habits = null,Object? progress = null,Object? weekLogs = null,}) {
   return _then(_HomeSummary(
-streaks: null == streaks ? _self.streaks : streaks // ignore: cast_nullable_to_non_nullable
-as StreaksSnapshot,ambitos: null == ambitos ? _self._ambitos : ambitos // ignore: cast_nullable_to_non_nullable
+today: null == today ? _self.today : today // ignore: cast_nullable_to_non_nullable
+as LogicalDate,streak: null == streak ? _self.streak : streak // ignore: cast_nullable_to_non_nullable
+as StreakState,wildcards: null == wildcards ? _self.wildcards : wildcards // ignore: cast_nullable_to_non_nullable
+as WildcardBalance,ambitos: null == ambitos ? _self._ambitos : ambitos // ignore: cast_nullable_to_non_nullable
 as List<Ambito>,habits: null == habits ? _self._habits : habits // ignore: cast_nullable_to_non_nullable
-as List<Habit>,weekLogs: null == weekLogs ? _self._weekLogs : weekLogs // ignore: cast_nullable_to_non_nullable
+as List<Habit>,progress: null == progress ? _self._progress : progress // ignore: cast_nullable_to_non_nullable
+as List<GoalProgress>,weekLogs: null == weekLogs ? _self._weekLogs : weekLogs // ignore: cast_nullable_to_non_nullable
 as List<HabitLog>,
   ));
 }
@@ -313,10 +345,19 @@ as List<HabitLog>,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$StreaksSnapshotCopyWith<$Res> get streaks {
+$StreakStateCopyWith<$Res> get streak {
   
-  return $StreaksSnapshotCopyWith<$Res>(_self.streaks, (value) {
-    return _then(_self.copyWith(streaks: value));
+  return $StreakStateCopyWith<$Res>(_self.streak, (value) {
+    return _then(_self.copyWith(streak: value));
+  });
+}/// Create a copy of HomeSummary
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$WildcardBalanceCopyWith<$Res> get wildcards {
+  
+  return $WildcardBalanceCopyWith<$Res>(_self.wildcards, (value) {
+    return _then(_self.copyWith(wildcards: value));
   });
 }
 }

@@ -4,10 +4,5 @@ import 'package:habits/features/splash/2_presentation/pages/splash_page.dart';
 
 /// Rutas de la feature de splash.
 final splashRoutesProvider = Provider<List<GoRoute>>((ref) {
-  return [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const SplashPage(),
-    ),
-  ];
+  return [GoRoute(path: '/', builder: (context, state) => const SplashPage())];
 });

@@ -55,4 +55,9 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
 
     await batch.commit();
   }
+
+  @override
+  Stream<String?> watchTimezone(String userId) => _userRef(userId)
+      .snapshots()
+      .map((snapshot) => snapshot.data()?['timezone'] as String?);
 }

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
-import 'package:habits/features/habits/1_domain/services/logical_day.dart';
+import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/localization/l10n.dart';
@@ -51,15 +52,42 @@ class _HomeContent extends ConsumerWidget {
 
   /// Hábito con recordatorio hoy aún sin completar y con hora más próxima.
   Habit? get _nextReminderHabit {
-    final today = LogicalDay.today();
     final pending = summary.habits.where((habit) {
       if (habit.reminderTime == null) return false;
-      return !summary.weekLogs.any(
-        (log) =>
-            log.habitId == habit.id && LogicalDay.isSameDay(log.date, today),
-      );
+      return !summary.isCompletedOn(habit.id, summary.today);
     }).toList()..sort((a, b) => a.reminderTime!.compareTo(b.reminderTime!));
     return pending.isEmpty ? null : pending.first;
+  }
+
+  Future<void> _useWildcard(BuildContext context, WidgetRef ref) async {
+    final rescue = summary.streak.rescue;
+    if (rescue == null) return;
+
+    final confirmed = await WildcardRescueSheet.show(
+      context,
+      rescue: rescue,
+      available: summary.wildcards.available,
+    );
+    if (!confirmed || !context.mounted) return;
+
+    final result = await ref.read(homeControllerProvider.notifier).useWildcard();
+    if (!context.mounted) return;
+
+    final l10n = context.l10n;
+    final message = switch (result) {
+      UseWildcardSuccess() => l10n.wildcardUsed,
+      UseWildcardFailed(:final failure) => switch (failure) {
+        WildcardFailure.noneAvailable => l10n.wildcardErrorNone,
+        WildcardFailure.rescueWindowClosed => l10n.wildcardErrorWindowClosed,
+        WildcardFailure.requiresConnection => l10n.wildcardErrorConnection,
+        _ => l10n.wildcardErrorGeneric,
+      },
+      null => null,
+    };
+    if (message == null) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -73,33 +101,21 @@ class _HomeContent extends ConsumerWidget {
       children: [
         HomeHeader(greeting: greeting),
         const SizedBox(height: 20),
-        // Rachas: caché derivada (vacía → ceros) hasta el motor de la fase 5.
-        GeneralStreakCard(streak: summary.generalStreak),
-        const SizedBox(height: 24),
-        SectionHeader(
-          title: l10n.streaksByAmbito,
-          actionLabel: l10n.seeAll,
-          onAction: () {},
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 172,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: summary.ambitos.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
-            itemBuilder: (context, index) => AmbitoStreakCard(
-              ambito: summary.ambitos[index],
-              streak: summary.ambitoStreak(summary.ambitos[index].id),
-            ),
-          ),
+        // Única racha de la app: la general del usuario. Ya no hay rachas
+        // por ámbito ni por hábito (§1/§29).
+        GeneralStreakCard(
+          streak: summary.streak,
+          wildcards: summary.wildcards,
+          onUseWildcard: summary.streak.canRescue && summary.wildcards.hasAny
+              ? () => _useWildcard(context, ref)
+              : null,
         ),
         const SizedBox(height: 24),
         Row(
           children: [
             Expanded(child: SectionHeader(title: l10n.myHabits)),
             FilledButton.tonalIcon(
-              onPressed: () {},
+              onPressed: () => context.push('/habit/new'),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Theme.of(context).colorScheme.primary,
@@ -113,9 +129,13 @@ class _HomeContent extends ConsumerWidget {
         HabitsListCard(
           habits: summary.habits,
           weekLogs: summary.weekLogs,
-          streakOf: summary.habitStreak,
+          today: summary.today,
+          progressOf: summary.progressOf,
           onToggleToday: controller.toggleToday,
-          onSeeAll: () {},
+          onHabitTap: (habit) => context.push('/habit/${habit.id}'),
+          // "Ver todos" cambia a la pestaña Hábitos del shell, no apila
+          // una pantalla encima.
+          onSeeAll: () => context.go('/habits'),
         ),
         if (nextReminder != null) ...[
           const SizedBox(height: 16),

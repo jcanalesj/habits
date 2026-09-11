@@ -12,4 +12,8 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   Future<void> create(NewUserProfile profile) async {
     profiles[profile.userId] = profile;
   }
+
+  @override
+  Stream<String?> watchTimezone(String userId) =>
+      Stream.value(profiles[userId]?.timezone);
 }

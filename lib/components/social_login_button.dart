@@ -29,14 +29,15 @@ class SocialLoginButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.12),
-          ),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
         ),
         child: switch (provider) {
           SocialProvider.google => const _GoogleGlyph(size: 24),
-          SocialProvider.apple =>
-            const Icon(Icons.apple, size: 28, color: Colors.black),
+          SocialProvider.apple => const Icon(
+            Icons.apple,
+            size: 28,
+            color: Colors.black,
+          ),
         },
       ),
     );
@@ -51,10 +52,7 @@ class _GoogleGlyph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size.square(size),
-      painter: _GoogleGPainter(),
-    );
+    return CustomPaint(size: Size.square(size), painter: _GoogleGPainter());
   }
 }
 
@@ -87,8 +85,12 @@ class _GoogleGPainter extends CustomPainter {
     // Barra horizontal de la G.
     final barPaint = Paint()..color = _blue;
     canvas.drawRect(
-      Rect.fromLTWH(center.dx, center.dy - stroke / 2, radius + stroke / 2,
-          stroke),
+      Rect.fromLTWH(
+        center.dx,
+        center.dy - stroke / 2,
+        radius + stroke / 2,
+        stroke,
+      ),
       barPaint,
     );
   }

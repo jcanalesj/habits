@@ -14,8 +14,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HabitLog {
 
- String get id; String get habitId;/// Día lógico: fecha normalizada a las 00:00 en zona horaria local.
- DateTime get date; HabitLogType get type;
+ String get id; String get habitId;/// Día lógico, ya resuelto en la zona horaria del perfil en el momento
+/// de crear el registro. Es inmutable: un cambio posterior de zona
+/// horaria no reinterpreta el pasado (§13).
+ LogicalDate get date; HabitLogType get type;
 /// Create a copy of HabitLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -46,7 +48,7 @@ abstract mixin class $HabitLogCopyWith<$Res>  {
   factory $HabitLogCopyWith(HabitLog value, $Res Function(HabitLog) _then) = _$HabitLogCopyWithImpl;
 @useResult
 $Res call({
- String id, String habitId, DateTime date, HabitLogType type
+ String id, String habitId, LogicalDate date, HabitLogType type
 });
 
 
@@ -68,7 +70,7 @@ class _$HabitLogCopyWithImpl<$Res>
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,habitId: null == habitId ? _self.habitId : habitId // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as DateTime,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as LogicalDate,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as HabitLogType,
   ));
 }
@@ -154,7 +156,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String habitId,  DateTime date,  HabitLogType type)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String habitId,  LogicalDate date,  HabitLogType type)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HabitLog() when $default != null:
 return $default(_that.id,_that.habitId,_that.date,_that.type);case _:
@@ -175,7 +177,7 @@ return $default(_that.id,_that.habitId,_that.date,_that.type);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String habitId,  DateTime date,  HabitLogType type)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String habitId,  LogicalDate date,  HabitLogType type)  $default,) {final _that = this;
 switch (_that) {
 case _HabitLog():
 return $default(_that.id,_that.habitId,_that.date,_that.type);case _:
@@ -195,7 +197,7 @@ return $default(_that.id,_that.habitId,_that.date,_that.type);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String habitId,  DateTime date,  HabitLogType type)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String habitId,  LogicalDate date,  HabitLogType type)?  $default,) {final _that = this;
 switch (_that) {
 case _HabitLog() when $default != null:
 return $default(_that.id,_that.habitId,_that.date,_that.type);case _:
@@ -209,14 +211,16 @@ return $default(_that.id,_that.habitId,_that.date,_that.type);case _:
 /// @nodoc
 
 
-class _HabitLog implements HabitLog {
-  const _HabitLog({required this.id, required this.habitId, required this.date, this.type = HabitLogType.completed});
+class _HabitLog extends HabitLog {
+  const _HabitLog({required this.id, required this.habitId, required this.date, this.type = HabitLogType.completed}): super._();
   
 
 @override final  String id;
 @override final  String habitId;
-/// Día lógico: fecha normalizada a las 00:00 en zona horaria local.
-@override final  DateTime date;
+/// Día lógico, ya resuelto en la zona horaria del perfil en el momento
+/// de crear el registro. Es inmutable: un cambio posterior de zona
+/// horaria no reinterpreta el pasado (§13).
+@override final  LogicalDate date;
 @override@JsonKey() final  HabitLogType type;
 
 /// Create a copy of HabitLog
@@ -249,7 +253,7 @@ abstract mixin class _$HabitLogCopyWith<$Res> implements $HabitLogCopyWith<$Res>
   factory _$HabitLogCopyWith(_HabitLog value, $Res Function(_HabitLog) _then) = __$HabitLogCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String habitId, DateTime date, HabitLogType type
+ String id, String habitId, LogicalDate date, HabitLogType type
 });
 
 
@@ -271,7 +275,7 @@ class __$HabitLogCopyWithImpl<$Res>
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,habitId: null == habitId ? _self.habitId : habitId // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as DateTime,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as LogicalDate,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as HabitLogType,
   ));
 }

@@ -10,7 +10,11 @@ import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.initialEmail});
+
+  /// Correo con el que llegar precargado, p. ej. al venir del registro con
+  /// un correo que ya tenía cuenta.
+  final String? initialEmail;
 
   @override
   ConsumerState<LoginPage> createState() => _LoginPageState();
@@ -21,6 +25,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _emailController.text = widget.initialEmail ?? '';
+  }
+
+  /// go_router reutiliza esta página cuando solo cambia el `?email=`, así
+  /// que el State sobrevive y hay que resincronizar el campo a mano.
+  @override
+  void didUpdateWidget(LoginPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final email = widget.initialEmail;
+    if (email != null && email != oldWidget.initialEmail) {
+      _emailController.text = email;
+    }
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -28,15 +49,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _submit() async {
-    final success = await ref
+    final outcome = await ref
         .read(loginControllerProvider.notifier)
         .submit(
           email: _emailController.text,
           password: _passwordController.text,
         );
-    // El redirect del router lleva a verificación si el email no está
-    // verificado; en caso contrario, a la home.
-    if (success && mounted) context.go('/home');
+    if (!mounted) return;
+
+    switch (outcome) {
+      case LoginOutcome.verified:
+        context.go('/home');
+      // La cuenta existe pero falta verificarla. El `redirect` del router
+      // también lo impone; navegamos explícitamente para no depender de él.
+      case LoginOutcome.needsVerification:
+        context.go('/verify-email');
+      case LoginOutcome.failed:
+        break;
+    }
   }
 
   /// Login social: fuera de alcance en v1.

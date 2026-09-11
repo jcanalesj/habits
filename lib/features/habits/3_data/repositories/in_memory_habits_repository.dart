@@ -3,35 +3,36 @@ import 'dart:async';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/exceptions/habits_exception.dart';
 import 'package:habits/features/habits/1_domain/repositories/habits_repository.dart';
-import 'package:habits/features/habits/1_domain/services/logical_day.dart';
 import 'package:habits/theme/app_theme.dart';
 
 /// [HabitsRepository] en memoria con el mismo comportamiento observable que
 /// Firestore (streams reactivos, soft delete, ids de registro deterministas,
 /// reasignación a General). Para tests y arranques con datos simulados.
 class InMemoryHabitsRepository implements HabitsRepository {
-  InMemoryHabitsRepository({bool seeded = true, DateTime Function()? now})
-    : _now = now ?? DateTime.now {
+  InMemoryHabitsRepository({
+    bool seeded = true,
+    DateTime Function()? now,
+    LogicalDate? today,
+  }) : _now = now ?? DateTime.now,
+       _today = today ?? _dayOf((now ?? DateTime.now)()) {
     if (seeded) _seed();
   }
 
+  static LogicalDate _dayOf(DateTime instant) =>
+      LogicalDate(instant.year, instant.month, instant.day);
+
   final DateTime Function() _now;
+  final LogicalDate _today;
   final List<Ambito> _ambitos = [];
   final List<Habit> _habits = [];
   final Map<String, HabitLog> _logs = {};
-  StreaksSnapshot _streaks = StreaksSnapshot.empty;
+  StreakCacheEntry? _streakCache;
   int _nextId = 1;
 
   final _ambitosController = StreamController<List<Ambito>>.broadcast();
   final _habitsController = StreamController<List<Habit>>.broadcast();
   final _logsController = StreamController<List<HabitLog>>.broadcast();
-  final _streaksController = StreamController<StreaksSnapshot>.broadcast();
-
-  /// Fija la caché de rachas (simula lo que escribirá la fase 5).
-  void setStreaks(StreaksSnapshot streaks) {
-    _streaks = streaks;
-    _streaksController.add(streaks);
-  }
+  final _cacheController = StreamController<StreakCacheEntry?>.broadcast();
 
   void _seed() {
     _ambitos.addAll(const [
@@ -78,43 +79,63 @@ class InMemoryHabitsRepository implements HabitsRepository {
     ]);
 
     final createdAt = _now().subtract(const Duration(days: 30));
+    final since = _today.addDays(-30);
+    Habit seedHabit({
+      required String id,
+      required String name,
+      required String ambitoId,
+      required Periodicity periodicity,
+      required int colorValue,
+      required String emoji,
+      required int order,
+      String? reminderTime,
+    }) => Habit(
+      id: id,
+      name: name,
+      ambitoId: ambitoId,
+      periodicityTimeline: [
+        PeriodicityEntry(periodicity: periodicity, since: since),
+      ],
+      colorValue: colorValue,
+      emoji: emoji,
+      reminderTime: reminderTime,
+      order: order,
+      createdAt: createdAt,
+    );
+
     _habits.addAll([
-      Habit(
+      seedHabit(
         id: 'agua',
         name: 'Beber agua',
         ambitoId: 'salud',
         periodicity: Periodicity.daily,
-        restDaysAllowed: 2,
         colorValue: AppColors.blue.toARGB32(),
         emoji: '💧',
         order: 0,
-        createdAt: createdAt,
       ),
-      Habit(
+      seedHabit(
         id: 'meditacion',
         name: 'Meditación',
         ambitoId: 'mente',
         periodicity: Periodicity.daily,
-        restDaysAllowed: 1,
         colorValue: AppColors.lilac.toARGB32(),
         emoji: '🧘',
         order: 1,
-        createdAt: createdAt,
       ),
-      Habit(
+      seedHabit(
         id: 'entrenar',
         name: 'Entrenar',
         ambitoId: 'energia',
-        periodicity: Periodicity.daily,
-        restDaysAllowed: 2,
-        recoveryTask: '10 flexiones',
+        periodicity: const Periodicity(
+          type: PeriodicityType.weekly,
+          timesPerPeriod: 3,
+        ),
         colorValue: AppColors.green.toARGB32(),
         emoji: '👟',
         reminderTime: '18:00',
         order: 2,
-        createdAt: createdAt,
       ),
-      Habit(
+      seedHabit(
         id: 'leer',
         name: 'Leer 20 min',
         ambitoId: 'desarrollo',
@@ -122,37 +143,29 @@ class InMemoryHabitsRepository implements HabitsRepository {
         colorValue: AppColors.orange.toARGB32(),
         emoji: '📖',
         order: 3,
-        createdAt: createdAt,
       ),
-      Habit(
+      seedHabit(
         id: 'ingles',
         name: 'Estudiar inglés',
         ambitoId: 'desarrollo',
-        periodicity: Periodicity.daily,
-        restDaysAllowed: 1,
+        periodicity: const Periodicity(
+          type: PeriodicityType.monthly,
+          timesPerPeriod: 12,
+        ),
         colorValue: AppColors.pink.toARGB32(),
         emoji: '💬',
         order: 4,
-        createdAt: createdAt,
       ),
     ]);
 
     // Semana en curso completada hasta ayer (hoy queda pendiente de marcar);
     // "Estudiar inglés" falló ayer para tener variedad visual.
-    final today = LogicalDay.of(_now());
-    final monday = LogicalDay.mondayOfWeek(today);
+    final monday = _today.addDays(-(_today.weekday - DateTime.monday));
+    final yesterday = _today.previous;
     for (final habit in _habits) {
-      for (
-        var day = monday;
-        day.isBefore(today);
-        day = day.add(const Duration(days: 1))
-      ) {
-        final isYesterday = LogicalDay.isSameDay(
-          day,
-          today.subtract(const Duration(days: 1)),
-        );
-        if (habit.id == 'ingles' && isYesterday) continue;
-        _putLog(habit.id, day, HabitLogType.completed);
+      for (var day = monday; day.isBefore(_today); day = day.next) {
+        if (habit.id == 'ingles' && day == yesterday) continue;
+        _putLog(habit.id, day);
       }
     }
   }
@@ -181,38 +194,67 @@ class InMemoryHabitsRepository implements HabitsRepository {
   }
 
   @override
-  Stream<List<HabitLog>> watchLogsBetween(DateTime from, DateTime to) async* {
+  Stream<List<HabitLog>> watchLogsBetween(
+    LogicalDate from,
+    LogicalDate to,
+  ) async* {
     List<HabitLog> select() => _logsBetween(from, to);
     yield select();
     yield* _logsController.stream.map((_) => select());
   }
 
   @override
-  Stream<StreaksSnapshot> watchStreaks() async* {
-    yield _streaks;
-    yield* _streaksController.stream;
+  Stream<Set<LogicalDate>> watchActivityDays() async* {
+    yield _activityDays();
+    yield* _logsController.stream.map((_) => _activityDays());
   }
 
-  List<HabitLog> _logsBetween(DateTime from, DateTime to) {
-    final f = LogicalDay.of(from);
-    final t = LogicalDay.of(to);
-    return (_logs.values
-            .where((l) => !l.date.isBefore(f) && !l.date.isAfter(t))
-            .toList()
-          ..sort((a, b) => a.date.compareTo(b.date)))
-        .toList(growable: false);
+  @override
+  Future<Set<LogicalDate>> fetchActivityDays() async => _activityDays();
+
+  Set<LogicalDate> _activityDays() => {
+    for (final log in _logs.values)
+      if (log.isActivity) log.date,
+  };
+
+  @override
+  Stream<StreakCacheEntry?> watchStreakCache() async* {
+    yield _streakCache;
+    yield* _cacheController.stream;
   }
+
+  @override
+  Future<StreakCacheEntry?> fetchStreakCache() async => _streakCache;
+
+  @override
+  Future<void> saveStreakCache(StreakCacheEntry entry) async {
+    _streakCache = entry;
+    _cacheController.add(entry);
+  }
+
+  @override
+  Future<void> clearStreakCache() async {
+    _streakCache = null;
+    _cacheController.add(null);
+  }
+
+  List<HabitLog> _logsBetween(LogicalDate from, LogicalDate to) =>
+      (_logs.values
+              .where((l) => l.date.isAtOrAfter(from) && l.date.isAtOrBefore(to))
+              .toList()
+            ..sort((a, b) => a.date.compareTo(b.date)))
+          .toList(growable: false);
 
   @override
   Future<List<HabitLog>> fetchHabitLogs(
     String habitId, {
-    DateTime? from,
-    DateTime? to,
+    LogicalDate? from,
+    LogicalDate? to,
   }) async {
     return (_logs.values.where((l) {
       if (l.habitId != habitId) return false;
-      if (from != null && l.date.isBefore(LogicalDay.of(from))) return false;
-      if (to != null && l.date.isAfter(LogicalDay.of(to))) return false;
+      if (from != null && l.date.isBefore(from)) return false;
+      if (to != null && l.date.isAfter(to)) return false;
       return true;
     }).toList()..sort((a, b) => a.date.compareTo(b.date))).toList(
       growable: false,
@@ -227,79 +269,76 @@ class InMemoryHabitsRepository implements HabitsRepository {
     return null;
   }
 
-  // ---------------------------------------------------------------- hábitos
+  // ---------------------------------------------------------------- escritura
 
   @override
-  Future<Habit> createHabit(HabitDraft draft) async {
+  Future<Habit> createHabit(
+    HabitDraft draft, {
+    required LogicalDate today,
+  }) async {
+    // Las Security Rules exigen que el ámbito exista (exists(ambitoPath)).
     if (!_ambitos.any((a) => a.id == draft.ambitoId)) {
       throw const HabitsException(HabitsFailure.ambitoNotFound);
     }
-    final now = _now();
     final habit = Habit(
-      id: 'habit-${_nextId++}',
+      id: 'h${_nextId++}',
       name: draft.name,
       ambitoId: draft.ambitoId,
-      periodicity: draft.periodicity,
-      restDaysAllowed: draft.restDaysAllowed,
-      recoveryTask: draft.recoveryTask,
-      recoveryCooldownDays: draft.recoveryCooldownDays,
+      periodicityTimeline: [
+        PeriodicityEntry(periodicity: draft.periodicity, since: today),
+      ],
       colorValue: draft.colorValue,
       emoji: draft.emoji,
       reminderTime: draft.reminderTime,
-      order: now.millisecondsSinceEpoch,
-      createdAt: now,
+      order: _habits.length,
+      createdAt: _now(),
     );
     _habits.add(habit);
-    _habitsController.add(_activeHabits);
+    _emitHabits();
     return habit;
   }
 
   @override
   Future<void> updateHabit(Habit habit) async {
     final index = _habits.indexWhere((h) => h.id == habit.id);
-    if (index == -1) throw const HabitsException(HabitsFailure.habitNotFound);
-    if (!_ambitos.any((a) => a.id == habit.ambitoId)) {
-      throw const HabitsException(HabitsFailure.ambitoNotFound);
-    }
-    _habits[index] = habit.copyWith(createdAt: _habits[index].createdAt);
-    _habitsController.add(_activeHabits);
+    if (index < 0) throw const HabitsException(HabitsFailure.habitNotFound);
+    _habits[index] = habit;
+    _emitHabits();
   }
 
   @override
   Future<void> softDeleteHabit(String habitId) async {
     final index = _habits.indexWhere((h) => h.id == habitId);
-    if (index == -1) throw const HabitsException(HabitsFailure.habitNotFound);
+    if (index < 0) throw const HabitsException(HabitsFailure.habitNotFound);
     _habits[index] = _habits[index].copyWith(deletedAt: _now());
-    _habitsController.add(_activeHabits);
+    _emitHabits();
   }
-
-  // ---------------------------------------------------------------- ámbitos
 
   @override
   Future<Ambito> createAmbito(AmbitoDraft draft) async {
-    final now = _now();
     final ambito = Ambito(
-      id: 'ambito-${_nextId++}',
+      id: 'a${_nextId++}',
       name: draft.name,
       emoji: draft.emoji,
       colorValue: draft.colorValue,
-      order: now.millisecondsSinceEpoch,
-      createdAt: now,
+      order: _ambitos.length,
+      createdAt: _now(),
     );
     _ambitos.add(ambito);
-    _ambitosController.add(_sortedAmbitos);
+    _emitAmbitos();
     return ambito;
   }
 
   @override
   Future<void> updateAmbito(Ambito ambito) async {
     final index = _ambitos.indexWhere((a) => a.id == ambito.id);
-    if (index == -1) throw const HabitsException(HabitsFailure.ambitoNotFound);
+    if (index < 0) throw const HabitsException(HabitsFailure.ambitoNotFound);
+    // `esPredefinido` es inmutable para las reglas: se conserva el valor
+    // guardado aunque el cliente envíe otro.
     _ambitos[index] = ambito.copyWith(
       isPredefined: _ambitos[index].isPredefined,
-      createdAt: _ambitos[index].createdAt,
     );
-    _ambitosController.add(_sortedAmbitos);
+    _emitAmbitos();
   }
 
   @override
@@ -307,48 +346,60 @@ class InMemoryHabitsRepository implements HabitsRepository {
     if (ambitoId == Ambito.generalId) {
       throw const HabitsException(HabitsFailure.generalAmbitoProtected);
     }
-    if (!_ambitos.any((a) => a.id == ambitoId)) {
-      throw const HabitsException(HabitsFailure.ambitoNotFound);
-    }
+    final index = _ambitos.indexWhere((a) => a.id == ambitoId);
+    if (index < 0) throw const HabitsException(HabitsFailure.ambitoNotFound);
+    // Los hábitos (activos y eliminados) pasan a General, como en Firestore.
     for (var i = 0; i < _habits.length; i++) {
       if (_habits[i].ambitoId == ambitoId) {
         _habits[i] = _habits[i].copyWith(ambitoId: Ambito.generalId);
       }
     }
-    _ambitos.removeWhere((a) => a.id == ambitoId);
-    _ambitosController.add(_sortedAmbitos);
-    _habitsController.add(_activeHabits);
+    _ambitos.removeAt(index);
+    _emitAmbitos();
+    _emitHabits();
   }
-
-  // -------------------------------------------------------------- registros
 
   @override
   Future<void> setHabitCompletion({
     required String habitId,
-    required DateTime date,
+    required LogicalDate date,
     required bool completed,
-    HabitLogType type = HabitLogType.completed,
   }) async {
-    final habit = await getHabit(habitId);
-    if (habit == null) throw const HabitsException(HabitsFailure.habitNotFound);
-    if (habit.isDeleted) {
-      throw const HabitsException(HabitsFailure.habitDeleted);
-    }
-
-    final day = LogicalDay.of(date);
+    final key = '${habitId}_${date.key}';
     if (completed) {
-      _putLog(habitId, day, type);
+      if (_logs.containsKey(key)) return; // idempotente, sin escritura
+      _requireActiveHabit(habitId);
+      _putLog(habitId, date);
     } else {
-      _logs.remove(_logId(habitId, day));
+      if (!_logs.containsKey(key)) return; // nada que borrar
+      _requireActiveHabit(habitId);
+      _logs.remove(key);
     }
-    _logsController.add(const []);
+    _logsController.add(_logs.values.toList(growable: false));
   }
 
-  static String _logId(String habitId, DateTime day) =>
-      '${habitId}_${LogicalDay.format(day)}';
+  /// Mismo comportamiento que las Security Rules: un hábito eliminado con
+  /// soft delete no admite registros nuevos y su histórico es inmutable.
+  void _requireActiveHabit(String habitId) {
+    final index = _habits.indexWhere((h) => h.id == habitId);
+    if (index < 0) throw const HabitsException(HabitsFailure.habitNotFound);
+    if (_habits[index].isDeleted) {
+      throw const HabitsException(HabitsFailure.habitDeleted);
+    }
+  }
 
-  void _putLog(String habitId, DateTime day, HabitLogType type) {
-    final id = _logId(habitId, day);
-    _logs[id] = HabitLog(id: id, habitId: habitId, date: day, type: type);
+  void _putLog(String habitId, LogicalDate date) {
+    final key = '${habitId}_${date.key}';
+    _logs[key] = HabitLog(id: key, habitId: habitId, date: date);
+  }
+
+  void _emitHabits() => _habitsController.add(_activeHabits);
+  void _emitAmbitos() => _ambitosController.add(_sortedAmbitos);
+
+  Future<void> dispose() async {
+    await _ambitosController.close();
+    await _habitsController.close();
+    await _logsController.close();
+    await _cacheController.close();
   }
 }

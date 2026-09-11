@@ -1,42 +1,50 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:habits/features/habits/0_entity/ambito.dart';
-import 'package:habits/features/habits/0_entity/general_streak.dart';
+import 'package:habits/features/habits/0_entity/goal_progress.dart';
 import 'package:habits/features/habits/0_entity/habit.dart';
 import 'package:habits/features/habits/0_entity/habit_log.dart';
-import 'package:habits/features/habits/0_entity/streaks_snapshot.dart';
+import 'package:habits/features/habits/0_entity/logical_date.dart';
+import 'package:habits/features/habits/0_entity/streak_state.dart';
+import 'package:habits/features/habits/0_entity/wildcard_balance.dart';
 
 part 'home_summary.freezed.dart';
 
-/// Agregado de solo lectura con todo lo que necesita el dashboard de inicio.
-/// Si un hábito está completado se decide SIEMPRE por [weekLogs], nunca por
-/// la caché de rachas.
+/// Agregado de solo lectura con todo lo que muestra la Home.
+///
+/// Si un hábito está completado se decide SIEMPRE por [weekLogs] (los
+/// registros), nunca por una caché.
 @freezed
 abstract class HomeSummary with _$HomeSummary {
   const factory HomeSummary({
-    /// Caché de rachas; vacía si aún no se ha calculado.
-    required StreaksSnapshot streaks,
+    /// Día lógico de hoy en la zona horaria del perfil.
+    required LogicalDate today,
+
+    /// Racha general, calculada en vivo desde el histórico completo.
+    required StreakState streak,
+    required WildcardBalance wildcards,
     required List<Ambito> ambitos,
 
     /// Hábitos activos (sin soft delete).
     required List<Habit> habits,
 
-    /// Registros de la semana en curso (lunes a domingo).
+    /// Progreso del objetivo de cada hábito activo en su periodo actual.
+    required List<GoalProgress> progress,
+
+    /// Registros de la semana en curso (lunes a domingo), para pintar los
+    /// puntos de la semana y decidir qué está marcado hoy.
     required List<HabitLog> weekLogs,
   }) = _HomeSummary;
 
   const HomeSummary._();
 
-  GeneralStreak get generalStreak => streaks.general;
+  GoalProgress? progressOf(String habitId) {
+    for (final item in progress) {
+      if (item.habitId == habitId) return item;
+    }
+    return null;
+  }
 
-  int habitStreak(String habitId) => streaks.habitStreak(habitId).current;
-
-  AmbitoStreak ambitoStreak(String ambitoId) => streaks.ambitoStreak(ambitoId);
-
-  bool isCompletedOn(String habitId, DateTime day) => weekLogs.any(
-    (log) =>
-        log.habitId == habitId &&
-        log.date.year == day.year &&
-        log.date.month == day.month &&
-        log.date.day == day.day,
+  bool isCompletedOn(String habitId, LogicalDate day) => weekLogs.any(
+    (log) => log.habitId == habitId && log.isActivity && log.date == day,
   );
 }

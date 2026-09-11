@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
+import 'package:habits/features/auth/2_presentation/controllers/verification_origin.dart';
 import 'package:habits/features/auth/2_presentation/controllers/verify_email_controller.dart';
 import 'package:habits/features/auth/2_presentation/l10n/auth_failure_l10n.dart';
 import 'package:habits/localization/l10n.dart';
@@ -38,7 +39,23 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
   @override
   void initState() {
     super.initState();
+    // El alta ya envía el enlace; al llegar desde el login o con la sesión
+    // restaurada lo enviamos aquí, para que el usuario tenga siempre un
+    // correo reciente sin tener que pedirlo. En ambos casos se arranca la
+    // espera del reenvío manual para no duplicar correos.
+    _resendCooldownSeconds = VerifyEmailPage.resendCooldown.inSeconds;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureSent());
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _onTick());
+  }
+
+  /// Envío automático al abrir la pantalla, una sola vez por sesión.
+  Future<void> _ensureSent() async {
+    final alreadySent =
+        ref.read(verificationOriginProvider) ==
+        VerificationOrigin.justRegistered;
+    await ref
+        .read(verifyEmailControllerProvider.notifier)
+        .ensureVerificationSent(alreadySent: alreadySent);
   }
 
   @override
@@ -87,6 +104,11 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
     final textTheme = Theme.of(context).textTheme;
     final state = ref.watch(verifyEmailControllerProvider);
     final email = ref.watch(authControllerProvider).value?.email ?? '';
+    // La cuenta ya existía (login o sesión restaurada): se explica que solo
+    // falta este paso, en lugar de dar por hecho que acabamos de enviarlo.
+    final pendingAccount =
+        ref.watch(verificationOriginProvider) ==
+        VerificationOrigin.existingAccount;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -165,6 +187,10 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                                 color: AppColors.authSecondary,
                               ),
                             ),
+                            if (pendingAccount) ...[
+                              const SizedBox(height: 16),
+                              const _PendingVerificationNotice(),
+                            ],
                             const SizedBox(height: 28),
                             _StatusMessage(state: state),
                             const SizedBox(height: 12),
@@ -206,6 +232,58 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                   ),
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Aviso para una cuenta que ya existía y sigue pendiente de verificar.
+class _PendingVerificationNotice extends StatelessWidget {
+  const _PendingVerificationNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            size: 20,
+            color: AppColors.primaryDeep,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.pendingVerificationTitle,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.authHeading,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.pendingVerificationBody,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: AppColors.authSecondary,
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

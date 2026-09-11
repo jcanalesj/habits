@@ -31,7 +31,7 @@ void main() {
 
     final restored = FirebaseAuth.instance.currentUser;
     expect(restored, isNotNull, reason: 'el SDK no restauró la sesión');
-    expect(restored!.emailVerified, isTrue);
+    expect(restored!.email, isNotEmpty);
 
     await tester.pumpWidget(const ProviderScope(child: HabitsApp()));
     await tester.pump(SplashPage.duration + const Duration(milliseconds: 300));

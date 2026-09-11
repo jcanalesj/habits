@@ -36,16 +36,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get consecutiveDays => 'días consecutivos';
 
   @override
-  String get freeWildcardAvailable => '1 comodín gratis disponible esta semana';
-
-  @override
   String get amazing => '¡Increíble!';
 
   @override
   String get keepItUp => 'Sigue así';
-
-  @override
-  String get streaksByAmbito => 'Rachas por ámbito';
 
   @override
   String get seeAll => 'Ver todos';
@@ -88,17 +82,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get periodicityYearly => 'Anual';
-
-  @override
-  String restDaysCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count descansos',
-      one: '1 descanso',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get navHome => 'Inicio';
@@ -229,7 +212,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get verifyLinkInstructions =>
-      'Ábrelo desde tu correo y vuelve aquí para continuar.';
+      'Ábrelo desde tu correo y vuelve aquí para continuar. Si no lo ves, mira en la carpeta de spam.';
 
   @override
   String get iHaveVerified => 'Ya he verificado mi correo';
@@ -255,6 +238,29 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get useAnotherAccount => 'Usar otra cuenta';
+
+  @override
+  String get pendingVerificationTitle => 'Tu cuenta todavía no está verificada';
+
+  @override
+  String get pendingVerificationBody =>
+      'Solo falta este paso para entrar. Abre el enlace que te enviamos o pide uno nuevo; revisa también la carpeta de spam.';
+
+  @override
+  String get signInCta => 'Iniciar sesión';
+
+  @override
+  String get welcomeTitle => 'Tu cambio empieza aquí';
+
+  @override
+  String get welcomeMessage =>
+      'El mejor día para empezar fue hace unos meses.\nEl siguiente mejor momento es ';
+
+  @override
+  String get welcomeMessageHighlight => 'HOY.';
+
+  @override
+  String get welcomeStart => 'Empezar';
 
   @override
   String get forgotPasswordTitle => 'Recupera tu contraseña';
@@ -285,7 +291,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authErrorEmailAlreadyInUse =>
-      'Ya existe una cuenta con ese correo.';
+      'Ya existe una cuenta con este correo.';
 
   @override
   String get authErrorWeakPassword => 'La contraseña es demasiado débil.';
@@ -348,4 +354,231 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get weekdayInitials => 'L,M,X,J,V,S,D';
+
+  @override
+  String get streakAtRisk => 'Tu racha está en peligro';
+
+  @override
+  String get streakAtRiskBody =>
+      'Ayer no completaste ningún hábito. Puedes protegerlo con un comodín hasta el final del día.';
+
+  @override
+  String get streakSafeToday => '¡Hoy ya cuenta! Sigue así.';
+
+  @override
+  String get streakPendingToday => 'Aún no has completado nada hoy.';
+
+  @override
+  String get streakStartToday => 'Completa un hábito para empezar tu racha.';
+
+  @override
+  String get useWildcard => 'Usar comodín';
+
+  @override
+  String wildcardsAvailable(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count comodines disponibles',
+      one: '1 comodín disponible',
+      zero: 'Sin comodines',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noWildcardsLeft =>
+      'No te quedan comodines. Recibirás uno nuevo el mes que viene.';
+
+  @override
+  String get wildcardProtectsNotAdds =>
+      'Un comodín protege tu racha, pero no suma un día ni marca ningún hábito.';
+
+  @override
+  String get wildcardConfirmTitle => '¿Usar un comodín?';
+
+  @override
+  String wildcardConfirmBody(String day, int streak) {
+    return 'Protegerás el $day y tu racha de $streak días seguirá viva.';
+  }
+
+  @override
+  String get wildcardUsed => 'Racha protegida. ¡Sigue adelante!';
+
+  @override
+  String get wildcardErrorWindowClosed => 'Ese día ya no se puede proteger.';
+
+  @override
+  String get wildcardErrorNone => 'No te quedan comodines.';
+
+  @override
+  String get wildcardErrorConnection =>
+      'Necesitas conexión para usar un comodín.';
+
+  @override
+  String get wildcardErrorGeneric =>
+      'No se ha podido usar el comodín. Inténtalo de nuevo.';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String goalProgressLabel(int completed, int goal) {
+    return '$completed / $goal';
+  }
+
+  @override
+  String get goalPeriodWeek => 'esta semana';
+
+  @override
+  String get goalPeriodMonth => 'este mes';
+
+  @override
+  String get goalPeriodYear => 'este año';
+
+  @override
+  String get goalPeriodDay => 'hoy';
+
+  @override
+  String get periodicityDailyLabel => 'Todos los días';
+
+  @override
+  String periodicityWeeklyLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count veces por semana',
+      one: '1 vez por semana',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String periodicityMonthlyLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count veces al mes',
+      one: '1 vez al mes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String periodicityYearlyLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count veces al año',
+      one: '1 vez al año',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String frequencyChangeDeferred(String date) {
+    return 'Este cambio se aplicará el $date. Hasta entonces se mantiene tu objetivo actual.';
+  }
+
+  @override
+  String get logNotTodayError => 'Solo puedes marcar hábitos del día de hoy.';
+
+  @override
+  String bestStreakLabel(int count) {
+    return 'Mejor racha: $count';
+  }
+
+  @override
+  String get newHabitTitle => 'Nuevo hábito';
+
+  @override
+  String get editHabitTitle => 'Editar hábito';
+
+  @override
+  String get habitNameLabel => 'Nombre';
+
+  @override
+  String get habitNameHint => 'Ej. Beber agua';
+
+  @override
+  String get habitEmojiLabel => 'Emoji';
+
+  @override
+  String get habitColorLabel => 'Color';
+
+  @override
+  String get habitAmbitoLabel => 'Ámbito';
+
+  @override
+  String get habitPeriodicityLabel => 'Objetivo';
+
+  @override
+  String get habitTimesLabel => 'Veces por periodo';
+
+  @override
+  String get habitReminderLabel => 'Recordatorio';
+
+  @override
+  String get habitReminderNone => 'Sin recordatorio';
+
+  @override
+  String habitReminderSet(String time) {
+    return 'Todos los días a las $time';
+  }
+
+  @override
+  String get saveHabit => 'Guardar';
+
+  @override
+  String get createHabit => 'Crear hábito';
+
+  @override
+  String get deleteHabit => 'Eliminar hábito';
+
+  @override
+  String get deleteHabitConfirmTitle => '¿Eliminar este hábito?';
+
+  @override
+  String get deleteHabitConfirmBody =>
+      'Dejará de aparecer en tus listas, pero su historial se conserva y los días que ya completaste siguen contando para tu racha.';
+
+  @override
+  String get delete => 'Eliminar';
+
+  @override
+  String get habitCreated => 'Hábito creado';
+
+  @override
+  String get habitSaved => 'Cambios guardados';
+
+  @override
+  String get habitDeleted => 'Hábito eliminado';
+
+  @override
+  String get habitNotFound => 'Este hábito ya no existe';
+
+  @override
+  String get errorNameRequired => 'Escribe un nombre';
+
+  @override
+  String get errorNameTooLong => 'El nombre es demasiado largo';
+
+  @override
+  String get errorEmojiRequired => 'Elige un emoji';
+
+  @override
+  String get errorTimesInvalid => 'Ese número no cabe en el periodo';
+
+  @override
+  String get errorReminderInvalid => 'Hora no válida';
+
+  @override
+  String get errorSaveFailed => 'No se ha podido guardar. Inténtalo de nuevo.';
+
+  @override
+  String get noHabitsYetLong =>
+      'Aún no tienes hábitos.\nCrea el primero y empieza tu racha.';
+
+  @override
+  String get allHabitsTitle => 'Mis hábitos';
 }

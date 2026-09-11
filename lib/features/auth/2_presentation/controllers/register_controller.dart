@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/domain.dart';
+import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
+import 'package:habits/features/auth/2_presentation/controllers/post_registration.dart';
+import 'package:habits/features/auth/2_presentation/controllers/verification_origin.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
 
 /// Estado de la pantalla de registro.
@@ -35,6 +38,10 @@ class RegisterController extends Notifier<RegisterState> {
 
   /// Crea la cuenta. Devuelve true si tuvo éxito: el usuario queda con
   /// sesión sin verificar y el router lo llevará a la verificación.
+  ///
+  /// Si el correo ya está registrado NO se intenta iniciar sesión: el fallo
+  /// queda en el estado y la página ofrece ir al login o a recuperar la
+  /// contraseña.
   Future<bool> submit({
     required String nickname,
     required String email,
@@ -47,6 +54,10 @@ class RegisterController extends Notifier<RegisterState> {
       validationErrors: {},
       clearFailure: true,
     );
+    // Antes de crear la cuenta: el cambio de sesión llega DURANTE el alta y
+    // el redirect no debe pasar por la home ni un solo frame. Si lo hiciera,
+    // el perfil se crearía antes de tener el nombre.
+    ref.read(justRegisteredProvider.notifier).markRegistered();
 
     final result = await ref
         .read(signUpUsecaseProvider)
@@ -60,13 +71,23 @@ class RegisterController extends Notifier<RegisterState> {
     if (!ref.mounted) return false;
 
     switch (result) {
-      case SignUpSuccess():
+      case SignUpSuccess(:final user):
+        // El nombre se fija justo después de crear la cuenta y el stream de
+        // sesión puede no haberlo emitido todavía; lo publicamos aquí para
+        // que el perfil no se cree con el displayName vacío.
+        ref.read(authControllerProvider.notifier).setUser(user);
+        ref
+            .read(verificationOriginProvider.notifier)
+            .set(VerificationOrigin.justRegistered);
+        ref.read(justRegisteredProvider.notifier).markRegistered();
         state = state.copyWith(isSubmitting: false);
         return true;
       case SignUpValidationFailed(:final errors):
+        ref.read(justRegisteredProvider.notifier).clear();
         state = state.copyWith(isSubmitting: false, validationErrors: errors);
         return false;
       case SignUpFailed(:final failure):
+        ref.read(justRegisteredProvider.notifier).clear();
         state = state.copyWith(isSubmitting: false, failure: failure);
         return false;
     }

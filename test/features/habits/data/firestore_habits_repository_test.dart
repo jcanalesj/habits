@@ -11,6 +11,7 @@ void main() {
   group('FirestoreHabitsRepository', () {
     const uid = 'uid-1';
     final today = day(2026, 9, 10);
+    final nowInstant = DateTime.utc(2026, 9, 10, 12);
     late FakeFirebaseFirestore db;
     late FirestoreHabitsRepository repository;
 
@@ -34,16 +35,14 @@ void main() {
         userId: uid,
         firestore: db,
         timezone: 'Europe/Madrid',
-        now: () => today,
+        now: () => nowInstant,
       );
       await seedAmbito(Ambito.generalId, order: 0);
       await seedAmbito('salud', order: 1);
     });
 
     test('createHabit escribe exactamente los campos de las reglas', () async {
-      final habit = await repository.createHabit(
-        habitDraft(reminderTime: '18:00'),
-      );
+      final habit = await repository.createHabit(habitDraft(reminderTime: '18:00'), today: today);
 
       final doc = await col('habitos').doc(habit.id).get();
       final data = doc.data()!;
@@ -53,10 +52,7 @@ void main() {
         'colorValue',
         'ambitoId',
         'periodicidad',
-        'historialPeriodicidad',
-        'descansosPermitidos',
-        'tareaRecuperacion',
-        'recuperacionCooldownDias',
+        'cambiosPeriodicidad',
         'recordatorioHora',
         'orden',
         'deletedAt',
@@ -64,11 +60,11 @@ void main() {
         'updatedAt',
       });
       expect(data['nombre'], 'Beber agua');
-      expect(data['periodicidad'], 'daily');
-      expect(data['historialPeriodicidad'], isEmpty);
+      expect(data['periodicidad'], {'tipo': 'daily', 'veces': 1});
+      expect(data['cambiosPeriodicidad'], isEmpty);
       expect(data['deletedAt'], isNull);
       expect(data['recordatorioHora'], '18:00');
-      expect(data['orden'], today.millisecondsSinceEpoch);
+      expect(data['orden'], nowInstant.millisecondsSinceEpoch);
       expect(data['createdAt'], isA<Timestamp>());
     });
 
@@ -79,8 +75,8 @@ void main() {
       );
       await Future<void>.delayed(Duration.zero);
 
-      final a = await repository.createHabit(habitDraft(name: 'A'));
-      await repository.createHabit(habitDraft(name: 'B'));
+      final a = await repository.createHabit(habitDraft(name: 'A'), today: today);
+      await repository.createHabit(habitDraft(name: 'B'), today: today);
       await repository.softDeleteHabit(a.id);
       await Future<void>.delayed(Duration.zero);
       await sub.cancel();
@@ -94,12 +90,18 @@ void main() {
     });
 
     test('updateHabit guarda los campos editables y el historial', () async {
-      final habit = await repository.createHabit(habitDraft());
+      final habit = await repository.createHabit(habitDraft(), today: today);
       final updated = habit.copyWith(
         name: 'Beber 2L',
-        periodicity: Periodicity.weekly,
-        periodicityHistory: [
-          PeriodicityChange(periodicity: Periodicity.daily, since: today),
+        periodicityTimeline: [
+          ...habit.periodicityTimeline,
+          PeriodicityEntry(
+            periodicity: const Periodicity(
+              type: PeriodicityType.weekly,
+              timesPerPeriod: 3,
+            ),
+            since: day(2026, 9, 14),
+          ),
         ],
         reminderTime: '09:30',
       );
@@ -108,17 +110,22 @@ void main() {
 
       final data = (await col('habitos').doc(habit.id).get()).data()!;
       expect(data['nombre'], 'Beber 2L');
-      expect(data['periodicidad'], 'weekly');
-      expect(data['historialPeriodicidad'], [
-        {'periodicidad': 'daily', 'desde': '2026-09-10'},
+      expect(data['periodicidad'], {'tipo': 'daily', 'veces': 1});
+      expect(data['cambiosPeriodicidad'], [
+        {'tipo': 'weekly', 'veces': 3, 'desde': '2026-09-14'},
       ]);
       expect(data['recordatorioHora'], '09:30');
       final reloaded = await repository.getHabit(habit.id);
-      expect(reloaded!.periodicityHistory.single.since, today);
+      expect(reloaded!.periodicityTimeline, hasLength(2));
+      // El cambio es diferido: hasta el 14 sigue vigente el objetivo viejo.
+      expect(reloaded.periodicityOn(day(2026, 9, 13)).type,
+          PeriodicityType.daily);
+      expect(reloaded.periodicityOn(day(2026, 9, 14)).type,
+          PeriodicityType.weekly);
     });
 
     test('los registros sobreviven al soft delete', () async {
-      final habit = await repository.createHabit(habitDraft());
+      final habit = await repository.createHabit(habitDraft(), today: today);
       await repository.setHabitCompletion(
         habitId: habit.id,
         date: today,
@@ -135,11 +142,11 @@ void main() {
     });
 
     test('marcar usa id determinista y es idempotente', () async {
-      final habit = await repository.createHabit(habitDraft());
+      final habit = await repository.createHabit(habitDraft(), today: today);
 
       await repository.setHabitCompletion(
         habitId: habit.id,
-        date: DateTime(2026, 9, 10, 23, 15),
+        date: today,
         completed: true,
       );
       final first = (await col(
@@ -167,32 +174,31 @@ void main() {
       expect(second['tz'], 'Europe/Madrid');
     });
 
-    test(
-      'cambiar el tipo de un registro existente solo actualiza tipo',
-      () async {
-        final habit = await repository.createHabit(habitDraft());
-        await repository.setHabitCompletion(
-          habitId: habit.id,
-          date: today,
-          completed: true,
-        );
+    test('un registro existente nunca se reescribe', () async {
+      final habit = await repository.createHabit(habitDraft(), today: today);
+      await repository.setHabitCompletion(
+        habitId: habit.id,
+        date: today,
+        completed: true,
+      );
+      final original = (await col('registros').get()).docs.single.data();
 
-        await repository.setHabitCompletion(
-          habitId: habit.id,
-          date: today,
-          completed: true,
-          type: HabitLogType.recovery,
-        );
+      // Marcar de nuevo no genera ninguna escritura: marcar es create,
+      // desmarcar es delete, y no hay update posible (las reglas lo
+      // prohíben, así el histórico es inmutable por construcción).
+      await repository.setHabitCompletion(
+        habitId: habit.id,
+        date: today,
+        completed: true,
+      );
 
-        final all = await col('registros').get();
-        expect(all.docs, hasLength(1));
-        expect(all.docs.single.data()['tipo'], 'recovery');
-        expect(all.docs.single.data()['updatedAt'], isA<Timestamp>());
-      },
-    );
+      final all = await col('registros').get();
+      expect(all.docs, hasLength(1));
+      expect(all.docs.single.data(), original);
+    });
 
     test('desmarcar borra el registro y es idempotente', () async {
-      final habit = await repository.createHabit(habitDraft());
+      final habit = await repository.createHabit(habitDraft(), today: today);
       await repository.setHabitCompletion(
         habitId: habit.id,
         date: today,
@@ -214,8 +220,8 @@ void main() {
     });
 
     test('consulta por rango de fechas y por hábito', () async {
-      final a = await repository.createHabit(habitDraft(name: 'A'));
-      final b = await repository.createHabit(habitDraft(name: 'B'));
+      final a = await repository.createHabit(habitDraft(name: 'A'), today: today);
+      final b = await repository.createHabit(habitDraft(name: 'B'), today: today);
       for (final d in [day(2026, 8, 31), day(2026, 9, 5), day(2026, 9, 10)]) {
         await repository.setHabitCompletion(
           habitId: a.id,
@@ -246,7 +252,7 @@ void main() {
     });
 
     test('watchLogsBetween reacciona a marcar y desmarcar', () async {
-      final habit = await repository.createHabit(habitDraft());
+      final habit = await repository.createHabit(habitDraft(), today: today);
       final emissions = <int>[];
       final sub = repository
           .watchLogsBetween(day(2026, 9, 7), day(2026, 9, 13))
@@ -290,13 +296,9 @@ void main() {
 
     test('eliminar un ámbito reasigna todos sus hábitos a General', () async {
       final custom = await repository.createAmbito(ambitoDraft);
-      final active = await repository.createHabit(
-        habitDraft(name: 'Activo', ambitoId: custom.id),
-      );
-      final deleted = await repository.createHabit(
-        habitDraft(name: 'Borrado', ambitoId: custom.id),
-      );
-      final other = await repository.createHabit(habitDraft(name: 'Otro'));
+      final active = await repository.createHabit(habitDraft(name: 'Activo', ambitoId: custom.id), today: today);
+      final deleted = await repository.createHabit(habitDraft(name: 'Borrado', ambitoId: custom.id), today: today);
+      final other = await repository.createHabit(habitDraft(name: 'Otro'), today: today);
       await repository.setHabitCompletion(
         habitId: active.id,
         date: today,
@@ -333,40 +335,126 @@ void main() {
       expect((await col('ambitos').doc(Ambito.generalId).get()).exists, true);
     });
 
-    test('sin cache/rachas los streams funcionan con rachas vacías', () async {
-      final streaks = await repository.watchStreaks().first;
-
-      expect(streaks, StreaksSnapshot.empty);
-      expect(streaks.isEmpty, isTrue);
-      expect(streaks.habitStreak('x').current, 0);
+    test('sin cache/rachas la app funciona: la caché es prescindible', () async {
+      expect(await repository.watchStreakCache().first, isNull);
+      expect(await repository.fetchStreakCache(), isNull);
     });
 
     test('cache/rachas se mapea cuando existe', () async {
       await col('cache').doc('rachas').set({
-        'general': {
-          'actual': 12,
-          'mejor': 20,
-          'comodinDisponible': false,
-          'ultimoDiaRegistrado': '2026-09-09',
-        },
-        'habitos': {
-          'h1': {'actual': 3, 'mejor': 5},
-        },
-        'ambitos': {
-          'salud': {'actual': 4, 'mejor': 6, 'comodinDisponible': true},
-        },
+        'rachaActual': 12,
+        'mejorRacha': 20,
+        'ultimoDiaActividad': '2026-09-09',
         'calculadoHasta': '2026-09-09',
+        'version': 2,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      final streaks = await repository.watchStreaks().first;
+      final cache = await repository.watchStreakCache().first;
 
-      expect(streaks.general.count, 12);
-      expect(streaks.general.comodinDisponible, isFalse);
-      expect(streaks.general.lastLogDate, day(2026, 9, 9));
-      expect(streaks.habitStreak('h1'), const HabitStreak(current: 3, best: 5));
-      expect(streaks.ambitoStreak('salud').best, 6);
-      expect(streaks.calculatedThrough, day(2026, 9, 9));
+      expect(cache!.currentStreak, 12);
+      expect(cache.bestStreak, 20);
+      expect(cache.lastActivityDay, day(2026, 9, 9));
+      expect(cache.calculatedThrough, day(2026, 9, 9));
+      expect(cache.algorithmVersion, 2);
+    });
+
+    test('saveStreakCache escribe exactamente los campos de las reglas', () async {
+      await repository.saveStreakCache(
+        StreakCacheEntry(
+          currentStreak: 4,
+          bestStreak: 9,
+          lastActivityDay: today,
+          calculatedThrough: today,
+          algorithmVersion: 2,
+        ),
+      );
+
+      final data = (await col('cache').doc('rachas').get()).data()!;
+      expect(data.keys.toSet(), {
+        'rachaActual',
+        'mejorRacha',
+        'ultimoDiaActividad',
+        'calculadoHasta',
+        'version',
+        'updatedAt',
+      });
+      expect(data['rachaActual'], 4);
+      expect(data['calculadoHasta'], '2026-09-10');
+    });
+
+    test('la caché se puede borrar entera', () async {
+      await repository.saveStreakCache(
+        StreakCacheEntry(
+          currentStreak: 4,
+          bestStreak: 9,
+          lastActivityDay: today,
+          calculatedThrough: today,
+          algorithmVersion: 2,
+        ),
+      );
+
+      await repository.clearStreakCache();
+
+      expect((await col('cache').doc('rachas').get()).exists, isFalse);
+      expect(await repository.fetchStreakCache(), isNull);
+    });
+
+    test('activityDays solo cuenta la actividad real', () async {
+      final habit = await repository.createHabit(habitDraft(), today: today);
+      await repository.setHabitCompletion(
+        habitId: habit.id,
+        date: today,
+        completed: true,
+      );
+      // Registro legacy escrito directamente, como los que puedan existir de
+      // antes de la fase 5: se conserva pero NO cuenta como actividad.
+      await col('registros').doc('${habit.id}_2026-09-09').set({
+        'habitoId': habit.id,
+        'dia': '2026-09-09',
+        'tipo': 'plannedRest',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      expect(await repository.fetchActivityDays(), {today});
+      final logs = await repository.fetchHabitLogs(habit.id);
+      expect(logs, hasLength(2), reason: 'el histórico se conserva entero');
+      expect(logs.where((l) => l.isActivity), hasLength(1));
+    });
+
+    test('updateHabit borra los campos legacy del modelo antiguo', () async {
+      // Migración perezosa: un hábito creado antes de la fase 5 se limpia
+      // solo la primera vez que se edita, sin migración masiva.
+      await col('habitos').doc('viejo').set({
+        'nombre': 'Antiguo',
+        'emoji': '📖',
+        'colorValue': 1,
+        'ambitoId': 'salud',
+        'periodicidad': 'weekly',
+        'historialPeriodicidad': [],
+        'descansosPermitidos': 2,
+        'tareaRecuperacion': '5 páginas',
+        'recuperacionCooldownDias': 7,
+        'orden': 0,
+        'deletedAt': null,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      final habit = (await repository.getHabit('viejo'))!;
+      // El string suelto se interpreta como 1 vez por semana.
+      expect(habit.periodicityOn(today).type, PeriodicityType.weekly);
+      expect(habit.periodicityOn(today).timesPerPeriod, 1);
+
+      await repository.updateHabit(habit.copyWith(name: 'Migrado'));
+
+      final data = (await col('habitos').doc('viejo').get()).data()!;
+      expect(data['nombre'], 'Migrado');
+      expect(data['periodicidad'], {'tipo': 'weekly', 'veces': 1});
+      expect(data.containsKey('descansosPermitidos'), isFalse);
+      expect(data.containsKey('tareaRecuperacion'), isFalse);
+      expect(data.containsKey('recuperacionCooldownDias'), isFalse);
+      expect(data.containsKey('historialPeriodicidad'), isFalse);
     });
   });
 }

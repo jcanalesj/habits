@@ -1,7 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/domain.dart';
+import 'package:habits/features/auth/2_presentation/controllers/verification_origin.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
+
+/// Resultado del login desde el punto de vista de la navegación.
+enum LoginOutcome {
+  /// Sesión iniciada con el correo verificado: a la home.
+  verified,
+
+  /// Credenciales correctas pero el correo sigue sin verificar: a la
+  /// pantalla de verificación. Aquí sí conocemos legítimamente el estado de
+  /// la cuenta porque el usuario ha demostrado saber su contraseña.
+  needsVerification,
+
+  /// No se pudo iniciar sesión; el motivo está en el estado.
+  failed,
+}
 
 /// Estado de la pantalla de login.
 class LoginState {
@@ -35,10 +50,12 @@ class LoginController extends Notifier<LoginState> {
   @override
   LoginState build() => const LoginState();
 
-  /// Intenta iniciar sesión. Devuelve true si tuvo éxito; los errores se
-  /// reflejan en el estado. La sesión la publica el AuthController al
+  /// Intenta iniciar sesión. La sesión la publica el AuthController al
   /// recibir el cambio del repositorio; la navegación queda en la página.
-  Future<bool> submit({required String email, required String password}) async {
+  Future<LoginOutcome> submit({
+    required String email,
+    required String password,
+  }) async {
     state = state.copyWith(
       isSubmitting: true,
       validationErrors: {},
@@ -48,18 +65,22 @@ class LoginController extends Notifier<LoginState> {
     final result = await ref
         .read(signInUsecaseProvider)
         .execute(email: email, password: password);
-    if (!ref.mounted) return false;
+    if (!ref.mounted) return LoginOutcome.failed;
 
     switch (result) {
-      case SignInSuccess():
+      case SignInSuccess(:final user):
         state = state.copyWith(isSubmitting: false);
-        return true;
+        if (user.emailVerified) return LoginOutcome.verified;
+        ref
+            .read(verificationOriginProvider.notifier)
+            .set(VerificationOrigin.existingAccount);
+        return LoginOutcome.needsVerification;
       case SignInValidationFailed(:final errors):
         state = state.copyWith(isSubmitting: false, validationErrors: errors);
-        return false;
+        return LoginOutcome.failed;
       case SignInFailed(:final failure):
         state = state.copyWith(isSubmitting: false, failure: failure);
-        return false;
+        return LoginOutcome.failed;
     }
   }
 }

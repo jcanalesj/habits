@@ -36,16 +36,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get consecutiveDays => 'consecutive days';
 
   @override
-  String get freeWildcardAvailable => '1 free wildcard available this week';
-
-  @override
   String get amazing => 'Amazing!';
 
   @override
   String get keepItUp => 'Keep it up';
-
-  @override
-  String get streaksByAmbito => 'Streaks by area';
 
   @override
   String get seeAll => 'See all';
@@ -88,17 +82,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get periodicityYearly => 'Yearly';
-
-  @override
-  String restDaysCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count rest days',
-      one: '1 rest day',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get navHome => 'Home';
@@ -228,7 +211,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyLinkInstructions =>
-      'Open it from your inbox and come back here to continue.';
+      'Open it from your inbox and come back here to continue. If you can\'t see it, check your spam folder.';
 
   @override
   String get iHaveVerified => 'I\'ve verified my email';
@@ -254,6 +237,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get useAnotherAccount => 'Use another account';
+
+  @override
+  String get pendingVerificationTitle => 'Your account isn\'t verified yet';
+
+  @override
+  String get pendingVerificationBody =>
+      'This is the only step left. Open the link we sent you or request a new one; check your spam folder too.';
+
+  @override
+  String get signInCta => 'Sign in';
+
+  @override
+  String get welcomeTitle => 'Your change starts here';
+
+  @override
+  String get welcomeMessage =>
+      'The best day to start was months ago.\nThe next best moment is ';
+
+  @override
+  String get welcomeMessageHighlight => 'TODAY.';
+
+  @override
+  String get welcomeStart => 'Get started';
 
   @override
   String get forgotPasswordTitle => 'Recover your password';
@@ -283,7 +289,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authErrorEmailAlreadyInUse =>
-      'An account already exists for that email.';
+      'An account already exists with this email.';
 
   @override
   String get authErrorWeakPassword => 'The password is too weak.';
@@ -345,4 +351,232 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weekdayInitials => 'M,T,W,T,F,S,S';
+
+  @override
+  String get streakAtRisk => 'Your streak is at risk';
+
+  @override
+  String get streakAtRiskBody =>
+      'You didn\'t complete any habit yesterday. You can protect it with a wildcard until the end of the day.';
+
+  @override
+  String get streakSafeToday => 'Today already counts. Keep it up!';
+
+  @override
+  String get streakPendingToday => 'You haven\'t completed anything today yet.';
+
+  @override
+  String get streakStartToday => 'Complete a habit to start your streak.';
+
+  @override
+  String get useWildcard => 'Use wildcard';
+
+  @override
+  String wildcardsAvailable(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count wildcards available',
+      one: '1 wildcard available',
+      zero: 'No wildcards',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noWildcardsLeft =>
+      'You have no wildcards left. You\'ll get a new one next month.';
+
+  @override
+  String get wildcardProtectsNotAdds =>
+      'A wildcard protects your streak, but it doesn\'t add a day or mark any habit.';
+
+  @override
+  String get wildcardConfirmTitle => 'Use a wildcard?';
+
+  @override
+  String wildcardConfirmBody(String day, int streak) {
+    return 'You\'ll protect $day and your $streak-day streak will stay alive.';
+  }
+
+  @override
+  String get wildcardUsed => 'Streak protected. Keep going!';
+
+  @override
+  String get wildcardErrorWindowClosed =>
+      'That day can no longer be protected.';
+
+  @override
+  String get wildcardErrorNone => 'You have no wildcards left.';
+
+  @override
+  String get wildcardErrorConnection =>
+      'You need a connection to use a wildcard.';
+
+  @override
+  String get wildcardErrorGeneric =>
+      'The wildcard couldn\'t be used. Please try again.';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String goalProgressLabel(int completed, int goal) {
+    return '$completed / $goal';
+  }
+
+  @override
+  String get goalPeriodWeek => 'this week';
+
+  @override
+  String get goalPeriodMonth => 'this month';
+
+  @override
+  String get goalPeriodYear => 'this year';
+
+  @override
+  String get goalPeriodDay => 'today';
+
+  @override
+  String get periodicityDailyLabel => 'Every day';
+
+  @override
+  String periodicityWeeklyLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times per week',
+      one: '1 time per week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String periodicityMonthlyLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times per month',
+      one: '1 time per month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String periodicityYearlyLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times per year',
+      one: '1 time per year',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String frequencyChangeDeferred(String date) {
+    return 'This change will apply on $date. Until then your current goal stays the same.';
+  }
+
+  @override
+  String get logNotTodayError => 'You can only mark habits for today.';
+
+  @override
+  String bestStreakLabel(int count) {
+    return 'Best streak: $count';
+  }
+
+  @override
+  String get newHabitTitle => 'New habit';
+
+  @override
+  String get editHabitTitle => 'Edit habit';
+
+  @override
+  String get habitNameLabel => 'Name';
+
+  @override
+  String get habitNameHint => 'E.g. Drink water';
+
+  @override
+  String get habitEmojiLabel => 'Emoji';
+
+  @override
+  String get habitColorLabel => 'Color';
+
+  @override
+  String get habitAmbitoLabel => 'Area';
+
+  @override
+  String get habitPeriodicityLabel => 'Goal';
+
+  @override
+  String get habitTimesLabel => 'Times per period';
+
+  @override
+  String get habitReminderLabel => 'Reminder';
+
+  @override
+  String get habitReminderNone => 'No reminder';
+
+  @override
+  String habitReminderSet(String time) {
+    return 'Every day at $time';
+  }
+
+  @override
+  String get saveHabit => 'Save';
+
+  @override
+  String get createHabit => 'Create habit';
+
+  @override
+  String get deleteHabit => 'Delete habit';
+
+  @override
+  String get deleteHabitConfirmTitle => 'Delete this habit?';
+
+  @override
+  String get deleteHabitConfirmBody =>
+      'It will disappear from your lists, but its history is kept and the days you already completed still count towards your streak.';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get habitCreated => 'Habit created';
+
+  @override
+  String get habitSaved => 'Changes saved';
+
+  @override
+  String get habitDeleted => 'Habit deleted';
+
+  @override
+  String get habitNotFound => 'This habit no longer exists';
+
+  @override
+  String get errorNameRequired => 'Enter a name';
+
+  @override
+  String get errorNameTooLong => 'The name is too long';
+
+  @override
+  String get errorEmojiRequired => 'Pick an emoji';
+
+  @override
+  String get errorTimesInvalid => 'That number doesn\'t fit in the period';
+
+  @override
+  String get errorReminderInvalid => 'Invalid time';
+
+  @override
+  String get errorSaveFailed => 'Couldn\'t save. Please try again.';
+
+  @override
+  String get noHabitsYetLong =>
+      'You don\'t have any habits yet.\nCreate your first one and start your streak.';
+
+  @override
+  String get allHabitsTitle => 'My habits';
 }

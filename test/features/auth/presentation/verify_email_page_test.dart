@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:habits/features/auth/2_presentation/controllers/verification_origin.dart';
 import 'package:habits/features/auth/2_presentation/pages/verify_email_page.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 
@@ -38,7 +39,6 @@ void main() {
     );
     expect(find.text(unverifiedUser.email), findsOneWidget);
     expect(find.text('Ya he verificado mi correo'), findsOneWidget);
-    expect(find.text('Reenviar correo'), findsOneWidget);
     expect(find.text('Usar otra cuenta'), findsOneWidget);
     expect(find.byType(TextField), findsNothing);
     expect(tester.takeException(), isNull);
@@ -60,23 +60,37 @@ void main() {
     expect(env.auth.currentUser?.emailVerified, isFalse);
   });
 
-  testWidgets(
-    'Reenviar envía el correo y bloquea el botón durante el cooldown',
-    (tester) async {
-      await tester.pumpWidget(app());
-      await tester.pump();
+  testWidgets('Al abrir envía el correo automáticamente y bloquea el reenvío', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Reenviar correo'));
-      await tester.pumpAndSettle();
+    expect(env.auth.verificationEmailsSent, [unverifiedUser.email]);
+    expect(find.textContaining('Correo reenviado'), findsOneWidget);
+    expect(find.text('Reenviar en 30 s'), findsOneWidget);
 
-      expect(env.auth.verificationEmailsSent, [unverifiedUser.email]);
-      expect(find.textContaining('Correo reenviado'), findsOneWidget);
-      expect(find.text('Reenviar en 30 s'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Reenviar en 29 s'), findsOneWidget);
+  });
 
-      await tester.pump(const Duration(seconds: 1));
-      expect(find.text('Reenviar en 29 s'), findsOneWidget);
-    },
-  );
+  testWidgets('El envío automático no se repite al volver a la pantalla', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(env.auth.verificationEmailsSent, hasLength(1));
+
+    // Se desmonta y se vuelve a montar dentro de la misma sesión.
+    await tester.pumpWidget(
+      localizedApp(const SizedBox.shrink(), overrides: env.overrides),
+    );
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    expect(env.auth.verificationEmailsSent, hasLength(1));
+  });
 
   testWidgets('El sondeo automático detecta la verificación y navega', (
     tester,
@@ -111,4 +125,53 @@ void main() {
     expect(env.auth.currentUser?.emailVerified, isTrue);
     expect(find.text('HOME'), findsOneWidget);
   });
+  testWidgets(
+    'Por defecto avisa de que la cuenta está pendiente de verificar',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 950);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(app());
+      await tester.pump();
+
+      expect(find.text('Tu cuenta todavía no está verificada'), findsOneWidget);
+      expect(find.textContaining('Solo falta este paso'), findsOneWidget);
+      // Y el correo sale solo, sin que el usuario tenga que pedirlo.
+      expect(env.auth.verificationEmailsSent, [unverifiedUser.email]);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('Tras registrarse no se avisa y el reenvío espera', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 950);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      localizedApp(
+        const VerifyEmailPage(),
+        overrides: [
+          ...env.overrides,
+          verificationOriginProvider.overrideWith(_JustRegistered.new),
+        ],
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Tu cuenta todavía no está verificada'), findsNothing);
+    expect(find.text('Reenviar en 30 s'), findsOneWidget);
+    // El alta ya lo envió: no se duplica el correo.
+    expect(env.auth.verificationEmailsSent, isEmpty);
+  });
+}
+
+/// Origen forzado a "recién registrado" para los tests.
+class _JustRegistered extends VerificationOriginController {
+  @override
+  VerificationOrigin build() => VerificationOrigin.justRegistered;
 }

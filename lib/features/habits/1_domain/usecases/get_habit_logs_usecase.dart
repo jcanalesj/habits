@@ -1,7 +1,6 @@
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/exceptions/habits_exception.dart';
 import 'package:habits/features/habits/1_domain/repositories/habits_repository.dart';
-import 'package:habits/features/habits/1_domain/services/logical_day.dart';
 
 sealed class GetHabitLogsResult {}
 
@@ -15,7 +14,9 @@ class GetHabitLogsFailed extends GetHabitLogsResult {
   GetHabitLogsFailed(this.failure);
 }
 
-/// Registros de un hábito (también si está eliminado), para estadísticas.
+/// Registros de un hábito (también si está eliminado), para estadísticas y
+/// para la futura vista calendario del hábito (§6): los días cumplidos se
+/// muestran marcados y los no cumplidos permanecen vacíos.
 class GetHabitLogsUsecase {
   final HabitsRepository _repository;
 
@@ -23,14 +24,14 @@ class GetHabitLogsUsecase {
 
   Future<GetHabitLogsResult> execute(
     String habitId, {
-    DateTime? from,
-    DateTime? to,
+    LogicalDate? from,
+    LogicalDate? to,
   }) async {
     try {
       final logs = await _repository.fetchHabitLogs(
         habitId,
-        from: from == null ? null : LogicalDay.of(from),
-        to: to == null ? null : LogicalDay.of(to),
+        from: from,
+        to: to,
       );
       return GetHabitLogsSuccess(logs);
     } on HabitsException catch (e) {

@@ -11,17 +11,19 @@ class HabitsListCard extends StatelessWidget {
     super.key,
     required this.habits,
     required this.weekLogs,
+    required this.today,
     required this.onToggleToday,
-    this.streakOf,
+    this.progressOf,
     this.onSeeAll,
     this.onHabitTap,
   });
 
   final List<Habit> habits;
   final List<HabitLog> weekLogs;
+  final LogicalDate today;
 
-  /// Racha actual por hábito (dato derivado); null o ausente → 0.
-  final int Function(String habitId)? streakOf;
+  /// Progreso del objetivo por hábito. Es progreso, no racha (§37).
+  final GoalProgress? Function(String habitId)? progressOf;
   final ValueChanged<String> onToggleToday;
   final VoidCallback? onSeeAll;
   final ValueChanged<Habit>? onHabitTap;
@@ -53,23 +55,36 @@ class HabitsListCard extends StatelessWidget {
             HabitListTile(
               habit: habit,
               weekLogs: weekLogs,
-              currentStreak: streakOf?.call(habit.id) ?? 0,
+              today: today,
+              progress: progressOf?.call(habit.id),
               onToggleToday: () => onToggleToday(habit.id),
               onTap: onHabitTap == null ? null : () => onHabitTap!(habit),
             ),
-          TextButton.icon(
+          // Texto flexible en vez de TextButton.icon: la etiqueta larga
+          // desbordaba por la derecha en anchos de móvil.
+          TextButton(
             onPressed: onSeeAll,
-            icon: Text(
-              context.l10n.seeAllMyHabits,
-              style: textTheme.labelLarge?.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            label: const Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: 20,
-              color: AppColors.primary,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    context.l10n.seeAllMyHabits,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.labelLarge?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: AppColors.primary,
+                ),
+              ],
             ),
           ),
         ],

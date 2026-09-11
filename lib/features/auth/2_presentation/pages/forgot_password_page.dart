@@ -11,7 +11,10 @@ import 'package:habits/theme/app_theme.dart';
 /// Recuperación de contraseña: Firebase envía un enlace con el que el
 /// usuario define una nueva contraseña desde el navegador.
 class ForgotPasswordPage extends ConsumerStatefulWidget {
-  const ForgotPasswordPage({super.key});
+  const ForgotPasswordPage({super.key, this.initialEmail});
+
+  /// Correo con el que llegar precargado.
+  final String? initialEmail;
 
   @override
   ConsumerState<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
@@ -19,6 +22,23 @@ class ForgotPasswordPage extends ConsumerStatefulWidget {
 
 class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   final _emailController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.text = widget.initialEmail ?? '';
+  }
+
+  /// go_router reutiliza esta página cuando solo cambia el `?email=`, así
+  /// que el State sobrevive y hay que resincronizar el campo a mano.
+  @override
+  void didUpdateWidget(ForgotPasswordPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final email = widget.initialEmail;
+    if (email != null && email != oldWidget.initialEmail) {
+      _emailController.text = email;
+    }
+  }
 
   @override
   void dispose() {

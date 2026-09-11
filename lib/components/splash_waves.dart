@@ -7,10 +7,7 @@ class SplashWavesBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _SplashWavesPainter(),
-    );
+    return CustomPaint(size: Size.infinite, painter: _SplashWavesPainter());
   }
 }
 
@@ -31,14 +28,18 @@ class _SplashWavesPainter extends CustomPainter {
 
     // Halo cálido tras el logo.
     final glow = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFFFF4E8).withValues(alpha: 0.55),
-          const Color(0xFFFFF4E8).withValues(alpha: 0),
-        ],
-      ).createShader(
-        Rect.fromCircle(center: Offset(0.62 * w, 0.24 * h), radius: 0.45 * w),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFFFFF4E8).withValues(alpha: 0.55),
+              const Color(0xFFFFF4E8).withValues(alpha: 0),
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(0.62 * w, 0.24 * h),
+              radius: 0.45 * w,
+            ),
+          );
     canvas.drawCircle(Offset(0.62 * w, 0.24 * h), 0.45 * w, glow);
 
     // Ondas translúcidas.
@@ -63,7 +64,14 @@ class _SplashWavesPainter extends CustomPainter {
     final path = Path()
       ..moveTo(0, y)
       ..cubicTo(0.25 * w, y - amp, 0.40 * w, y + amp, 0.65 * w, y)
-      ..cubicTo(0.82 * w, y - amp * 0.7, 0.92 * w, y + amp * 0.4, w, y - amp * 0.3)
+      ..cubicTo(
+        0.82 * w,
+        y - amp * 0.7,
+        0.92 * w,
+        y + amp * 0.4,
+        w,
+        y - amp * 0.3,
+      )
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();

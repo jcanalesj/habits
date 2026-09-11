@@ -127,6 +127,64 @@ lo deja explícito en la configuración e incluye un comentario con la decisión
 
 ---
 
+## Fase 3.4 bis — Verificación de email DESACTIVADA (temporal)
+
+Firebase genera los enlaces de sus correos con `apiKey=` vacío en este
+proyecto y su página de verificación falla. La causa está diagnosticada y no
+es reparable desde fuera: la clave que Auth tiene registrada como clave del
+proyecto (`client.apiKey`) es la **clave de Android**, restringida a apps
+Android y por tanto inservible en un navegador, y ese campo es de solo
+lectura en la API. Viene de haber creado el proyecto por CLI, sin clave de
+navegador, registrando Android como primera app.
+
+Mientras tanto la verificación queda desactivada:
+
+| Dónde | Qué |
+|---|---|
+| `lib/env.dart` | `Env.requireEmailVerification = false` |
+| `firestore.rules` | `isOwner()` ya no exige `email_verified` (línea comentada) |
+| Alta | No se envía correo; se pasa a `/welcome` |
+| `/verify-email` | La pantalla y sus tests siguen en el repo, fuera del flujo |
+
+> ⚠️ **Para reactivarla hay que hacer las DOS cosas**: poner el flag a `true`
+> y descomentar `email_verified` en las reglas, y desplegar las reglas. Con
+> solo una de las dos, la app deja de funcionar.
+
+Opciones de arreglo definitivo, pendientes de decisión: recrear el proyecto
+desde la consola (con app web registrada primero), abrir ticket a soporte de
+Firebase, o pasar a enlaces que abran la app (App Links / Universal Links).
+
+---
+
+## Fase 3.5 — Gestor de acciones de correo propio
+
+### Por qué existe
+Firebase genera los enlaces de sus correos (verificación, restablecimiento de
+contraseña) con `apiKey=` **vacío** en este proyecto, porque se creó por CLI y
+no tenía clave de navegador cuando se crearon las plantillas. Su página
+alojada no puede resolver el proyecto sin esa clave y responde
+*"The selected page mode is invalid"*. Crear una app web después no lo
+arregló: los correos nuevos siguen saliendo sin clave.
+
+### Solución
+`public/auth/action.html` es un gestor propio publicado en Firebase Hosting
+(gratis en Spark). Lleva la clave de navegador explícita —es pública por
+diseño— y llama directamente a Identity Toolkit por REST, sin SDK. Cubre
+`verifyEmail`, `resetPassword` (con formulario propio) y `recoverEmail`, en
+español, siguiendo la paleta de la app.
+
+```bash
+firebase deploy --only hosting            # publica en constanza-dev.web.app
+firebase emulators:start --only hosting   # pruebas locales en :5010
+```
+
+> 🧑 **Paso manual obligatorio**: consola → Authentication → Templates →
+> "Personalizar URL de acción" → `https://constanza-dev.web.app/auth/action`.
+> Sin esto los correos siguen apuntando a la página rota de Firebase. El
+> idioma de la plantilla se cambia en esa misma pantalla.
+
+---
+
 ## Fase 4 — Authentication
 
 ### 4.1 🧑 Activar el proveedor
