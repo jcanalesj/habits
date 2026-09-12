@@ -164,5 +164,12 @@
   "errorReminderInvalid": "Hora no válida",
   "errorSaveFailed": "No se ha podido guardar. Inténtalo de nuevo.",
   "noHabitsYetLong": "Aún no tienes hábitos.\nCrea el primero y empieza tu racha.",
-  "allHabitsTitle": "Mis hábitos"
+  "allHabitsTitle": "Mis hábitos",
+  "pendingHabitsWithCount": "Pendientes ({count})",
+  "completedHabitsWithCount": "Completados hoy ({count})",
+  "allHabitsDoneTitle": "¡Todo hecho por hoy! 🎉",
+  "allHabitsDoneBody": "Has registrado todos tus hábitos.",
+  "markHabitDone": "Marcar {habit} como hecho hoy",
+  "markHabitUndone": "Desmarcar {habit} de hoy",
+  "editHabitsHint": "Para editar tus hábitos, ve a la pestaña Hábitos."
 }

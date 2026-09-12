@@ -278,5 +278,40 @@
   "errorReminderInvalid": "Invalid time",
   "errorSaveFailed": "Couldn't save. Please try again.",
   "noHabitsYetLong": "You don't have any habits yet.\nCreate your first one and start your streak.",
-  "allHabitsTitle": "My habits"
+  "allHabitsTitle": "My habits",
+  "pendingHabitsWithCount": "Pending ({count})",
+  "@pendingHabitsWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "completedHabitsWithCount": "Completed today ({count})",
+  "@completedHabitsWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allHabitsDoneTitle": "All done for today! 🎉",
+  "allHabitsDoneBody": "You've logged every habit.",
+  "markHabitDone": "Mark {habit} as done today",
+  "@markHabitDone": {
+    "placeholders": {
+      "habit": {
+        "type": "String"
+      }
+    }
+  },
+  "markHabitUndone": "Unmark {habit} for today",
+  "@markHabitUndone": {
+    "placeholders": {
+      "habit": {
+        "type": "String"
+      }
+    }
+  },
+  "editHabitsHint": "To edit your habits, go to the Habits tab."
 }

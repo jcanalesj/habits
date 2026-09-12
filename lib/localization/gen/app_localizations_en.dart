@@ -579,4 +579,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allHabitsTitle => 'My habits';
+
+  @override
+  String pendingHabitsWithCount(int count) {
+    return 'Pending ($count)';
+  }
+
+  @override
+  String completedHabitsWithCount(int count) {
+    return 'Completed today ($count)';
+  }
+
+  @override
+  String get allHabitsDoneTitle => 'All done for today! 🎉';
+
+  @override
+  String get allHabitsDoneBody => 'You\'ve logged every habit.';
+
+  @override
+  String markHabitDone(String habit) {
+    return 'Mark $habit as done today';
+  }
+
+  @override
+  String markHabitUndone(String habit) {
+    return 'Unmark $habit for today';
+  }
+
+  @override
+  String get editHabitsHint => 'To edit your habits, go to the Habits tab.';
 }

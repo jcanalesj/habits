@@ -16,6 +16,8 @@ class HabitsListCard extends StatelessWidget {
     this.progressOf,
     this.onSeeAll,
     this.onHabitTap,
+    this.mode = HabitTileMode.manage,
+    this.emptyMessage,
   });
 
   final List<Habit> habits;
@@ -27,6 +29,10 @@ class HabitsListCard extends StatelessWidget {
   final ValueChanged<String> onToggleToday;
   final VoidCallback? onSeeAll;
   final ValueChanged<Habit>? onHabitTap;
+  final HabitTileMode mode;
+
+  /// Texto cuando no hay hábitos que mostrar en esta tarjeta.
+  final String? emptyMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +50,7 @@ class HabitsListCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
               child: Text(
-                context.l10n.noHabitsYet,
+                emptyMessage ?? context.l10n.noHabitsYet,
                 textAlign: TextAlign.center,
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
@@ -57,36 +63,38 @@ class HabitsListCard extends StatelessWidget {
               weekLogs: weekLogs,
               today: today,
               progress: progressOf?.call(habit.id),
+              mode: mode,
               onToggleToday: () => onToggleToday(habit.id),
               onTap: onHabitTap == null ? null : () => onHabitTap!(habit),
             ),
           // Texto flexible en vez de TextButton.icon: la etiqueta larga
           // desbordaba por la derecha en anchos de móvil.
-          TextButton(
-            onPressed: onSeeAll,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    context.l10n.seeAllMyHabits,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.labelLarge?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
+          if (onSeeAll != null)
+            TextButton(
+              onPressed: onSeeAll,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      context.l10n.seeAllMyHabits,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.labelLarge?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 20,
-                  color: AppColors.primary,
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

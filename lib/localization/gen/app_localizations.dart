@@ -1087,6 +1087,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My habits'**
   String get allHabitsTitle;
+
+  /// No description provided for @pendingHabitsWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending ({count})'**
+  String pendingHabitsWithCount(int count);
+
+  /// No description provided for @completedHabitsWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed today ({count})'**
+  String completedHabitsWithCount(int count);
+
+  /// No description provided for @allHabitsDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All done for today! 🎉'**
+  String get allHabitsDoneTitle;
+
+  /// No description provided for @allHabitsDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve logged every habit.'**
+  String get allHabitsDoneBody;
+
+  /// No description provided for @markHabitDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark {habit} as done today'**
+  String markHabitDone(String habit);
+
+  /// No description provided for @markHabitUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmark {habit} for today'**
+  String markHabitUndone(String habit);
+
+  /// No description provided for @editHabitsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'To edit your habits, go to the Habits tab.'**
+  String get editHabitsHint;
 }
 
 class _AppLocalizationsDelegate

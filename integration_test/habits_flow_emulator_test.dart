@@ -489,20 +489,30 @@ void main() {
     );
     expect(find.text('Meditar'), findsOneWidget);
 
-    // Marcar hoy desde la UI crea el registro en Firestore. En la fila solo
-    // el punto de hoy tiene acción (los demás días no son interactivos).
+    // Registrar hoy desde la UI crea el registro en Firestore. En Inicio la
+    // única acción de la fila es el botón de registro: la semana es solo
+    // historial y la fila no navega a la edición.
     final habits = await run(
       tester,
       () => repository.watchActiveHabits().first,
     );
     final meditar = habits.firstWhere((h) => h.name == 'Meditar');
-    final tile = find
-        .ancestor(of: find.text('Meditar'), matching: find.byType(InkWell))
-        .first;
-    final todayDot = find.byKey(
-      ValueKey('habit-dot-${meditar.id}-${today.key}'),
-    );
+    final todayDot = find.byKey(ValueKey('habit-track-${meditar.id}'));
     expect(todayDot, findsOneWidget);
+    expect(
+      tester
+          .widget<GestureDetector>(
+            find.descendant(
+              of: find.byKey(
+                ValueKey('habit-dot-${meditar.id}-${today.key}'),
+              ),
+              matching: find.byType(GestureDetector),
+            ),
+          )
+          .onTap,
+      isNull,
+      reason: 'la semana no es interactiva en Inicio',
+    );
     // La fila de puntos puede quedar bajo la barra inferior (extendBody):
     // subimos la lista para que el punto sea pulsable.
     await tester.ensureVisible(todayDot);
@@ -520,10 +530,15 @@ void main() {
       logs = await run(tester, () => repository.fetchHabitLogs(meditar.id));
     }
     expect(logs.map((l) => l.date), [today]);
-    // Y la Home lo refleja: el punto de hoy pasa a completado (check).
+    // Y la Home lo refleja: el hábito pasa a "Completados hoy" y su punto de
+    // hoy queda marcado.
     await settle(tester);
+    expect(find.textContaining('Completados hoy'), findsOneWidget);
     expect(
-      find.descendant(of: tile, matching: find.byIcon(Icons.check_rounded)),
+      find.descendant(
+        of: find.byKey(ValueKey('habit-dot-${meditar.id}-${today.key}')),
+        matching: find.byIcon(Icons.check_rounded),
+      ),
       findsOneWidget,
     );
   });
