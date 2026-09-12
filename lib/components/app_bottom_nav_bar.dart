@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
-/// Barra de navegación inferior: Inicio, Hábitos, [+], Estadísticas, Perfil.
+/// Barra de navegación inferior: Inicio, Hábitos, Estadísticas y Perfil.
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
-    required this.onCreate,
   });
 
   final int currentIndex;
   final ValueChanged<int> onTap;
-  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +39,9 @@ class AppBottomNavBar extends StatelessWidget {
             children: [
               Expanded(
                 child: _NavItem(
-                  icon: Icons.home_rounded,
+                  icon: currentIndex == 0
+                      ? PhosphorIconsFill.house
+                      : PhosphorIconsRegular.house,
                   label: l10n.navHome,
                   selected: currentIndex == 0,
                   onTap: () => onTap(0),
@@ -48,16 +49,19 @@ class AppBottomNavBar extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.task_alt_rounded,
+                  icon: currentIndex == 1
+                      ? PhosphorIconsFill.checkCircle
+                      : PhosphorIconsRegular.checkCircle,
                   label: l10n.navHabits,
                   selected: currentIndex == 1,
                   onTap: () => onTap(1),
                 ),
               ),
-              _CreateButton(onTap: onCreate),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.bar_chart_rounded,
+                  icon: currentIndex == 2
+                      ? PhosphorIconsFill.chartBar
+                      : PhosphorIconsRegular.chartBar,
                   label: l10n.navStats,
                   selected: currentIndex == 2,
                   onTap: () => onTap(2),
@@ -65,7 +69,9 @@ class AppBottomNavBar extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.person_outline_rounded,
+                  icon: currentIndex == 3
+                      ? PhosphorIconsFill.user
+                      : PhosphorIconsRegular.user,
                   label: l10n.navProfile,
                   selected: currentIndex == 3,
                   onTap: () => onTap(3),
@@ -134,40 +140,6 @@ class _NavItem extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _CreateButton extends StatelessWidget {
-  const _CreateButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      customBorder: const CircleBorder(),
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.gradientStart, AppColors.gradientEnd],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.gradientEnd.withValues(alpha: 0.4),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
       ),
     );
   }

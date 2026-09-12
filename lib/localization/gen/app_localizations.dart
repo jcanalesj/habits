@@ -128,6 +128,48 @@ abstract class AppLocalizations {
   /// **'Small actions, big changes.'**
   String get tagline;
 
+  /// No description provided for @welcomeMessage1.
+  ///
+  /// In en, this message translates to:
+  /// **'A small step still counts.'**
+  String get welcomeMessage1;
+
+  /// No description provided for @welcomeMessage2.
+  ///
+  /// In en, this message translates to:
+  /// **'Consistency beats perfection.'**
+  String get welcomeMessage2;
+
+  /// No description provided for @welcomeMessage3.
+  ///
+  /// In en, this message translates to:
+  /// **'Today is a good day to move forward a little.'**
+  String get welcomeMessage3;
+
+  /// No description provided for @welcomeMessage4.
+  ///
+  /// In en, this message translates to:
+  /// **'Do it for your future self.'**
+  String get welcomeMessage4;
+
+  /// No description provided for @welcomeMessage5.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t need to do it perfectly, just do it.'**
+  String get welcomeMessage5;
+
+  /// No description provided for @welcomeMessage6.
+  ///
+  /// In en, this message translates to:
+  /// **'Every habit today builds your tomorrow.'**
+  String get welcomeMessage6;
+
+  /// No description provided for @skipWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip welcome'**
+  String get skipWelcome;
+
   /// No description provided for @generalStreak.
   ///
   /// In en, this message translates to:
@@ -169,6 +211,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My habits'**
   String get myHabits;
+
+  /// No description provided for @habitFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get habitFilterAll;
+
+  /// No description provided for @habitFilterDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get habitFilterDaily;
+
+  /// No description provided for @habitFilterWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get habitFilterWeekly;
+
+  /// No description provided for @habitFilterMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get habitFilterMonthly;
+
+  /// No description provided for @habitFilterYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get habitFilterYearly;
 
   /// No description provided for @newHabit.
   ///
@@ -773,7 +845,7 @@ abstract class AppLocalizations {
   /// No description provided for @wildcardsAvailable.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =0{No wildcards} =1{1 wildcard available} other{{count} wildcards available}}'**
+  /// **'{count, plural, =0{No streak protectors} =1{1 streak protector} other{{count} streak protectors}}'**
   String wildcardsAvailable(int count);
 
   /// No description provided for @noWildcardsLeft.
@@ -919,6 +991,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit habit'**
   String get editHabitTitle;
+
+  /// No description provided for @editHabitWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change frequency?'**
+  String get editHabitWarningTitle;
+
+  /// No description provided for @editHabitWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you change the frequency, progress will be recalculated for the new goal.\nYour history and streak won\'t be deleted.'**
+  String get editHabitWarningBody;
+
+  /// No description provided for @editHabitProgressInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress will adjust to the new goal.'**
+  String get editHabitProgressInfo;
+
+  /// No description provided for @editHabitHistoryInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Your history will be kept.'**
+  String get editHabitHistoryInfo;
+
+  /// No description provided for @editHabitStreakInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Your streak won\'t be deleted.'**
+  String get editHabitStreakInfo;
+
+  /// No description provided for @habitIdentityLockedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The name and area can\'t be changed. Create a new habit instead.'**
+  String get habitIdentityLockedHint;
 
   /// No description provided for @habitNameLabel.
   ///
@@ -1088,6 +1196,138 @@ abstract class AppLocalizations {
   /// **'My habits'**
   String get allHabitsTitle;
 
+  /// No description provided for @habitCalendarsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendars'**
+  String get habitCalendarsAction;
+
+  /// No description provided for @habitCalendarsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit calendars'**
+  String get habitCalendarsTitle;
+
+  /// No description provided for @habitCalendarsCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get habitCalendarsCompleted;
+
+  /// No description provided for @habitCalendarsNotCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not completed'**
+  String get habitCalendarsNotCompleted;
+
+  /// No description provided for @statsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your consistency shows 💜'**
+  String get statsSubtitle;
+
+  /// No description provided for @statsThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get statsThisWeek;
+
+  /// No description provided for @statsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get statsThisMonth;
+
+  /// No description provided for @statsThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get statsThisYear;
+
+  /// No description provided for @statsCurrentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak'**
+  String get statsCurrentStreak;
+
+  /// No description provided for @statsBestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Best streak'**
+  String get statsBestStreak;
+
+  /// No description provided for @statsDayCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String statsDayCount(int count);
+
+  /// No description provided for @statsKeepGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it up!'**
+  String get statsKeepGoing;
+
+  /// No description provided for @statsPersonalRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal best!'**
+  String get statsPersonalRecord;
+
+  /// No description provided for @statsCompliance.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get statsCompliance;
+
+  /// No description provided for @statsCompletedRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Habits completed'**
+  String get statsCompletedRecords;
+
+  /// No description provided for @statsActiveDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Active days'**
+  String get statsActiveDays;
+
+  /// No description provided for @statsProtectors.
+  ///
+  /// In en, this message translates to:
+  /// **'Protectors available'**
+  String get statsProtectors;
+
+  /// No description provided for @statsWeeklyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress this week'**
+  String get statsWeeklyProgress;
+
+  /// No description provided for @statsMonthlyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress this month'**
+  String get statsMonthlyProgress;
+
+  /// No description provided for @statsYearlyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress this year'**
+  String get statsYearlyProgress;
+
+  /// No description provided for @statsSeeCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'View calendar'**
+  String get statsSeeCalendar;
+
+  /// No description provided for @statsHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'Habits'**
+  String get statsHabits;
+
   /// No description provided for @pendingHabitsWithCount.
   ///
   /// In en, this message translates to:
@@ -1123,6 +1363,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unmark {habit} for today'**
   String markHabitUndone(String habit);
+
+  /// No description provided for @habitPendingEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'Small steps, big results ✨'**
+  String get habitPendingEncouragement;
+
+  /// No description provided for @habitCompletedEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal completed! 🎉'**
+  String get habitCompletedEncouragement;
+
+  /// No description provided for @habitCompletedCelebration.
+  ///
+  /// In en, this message translates to:
+  /// **'Great job! One step closer 💪'**
+  String get habitCompletedCelebration;
+
+  /// No description provided for @allHabitsCompletedCelebration.
+  ///
+  /// In en, this message translates to:
+  /// **'Day complete! You\'re unstoppable'**
+  String get allHabitsCompletedCelebration;
 
   /// No description provided for @editHabitsHint.
   ///

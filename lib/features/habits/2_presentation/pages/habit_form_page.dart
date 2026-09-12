@@ -35,8 +35,18 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     AppColors.primary,
   ];
   static const _emojis = [
-    '💧', '📖', '🏋️', '🧘', '🏃', '💬',
-    '🥗', '😴', '🎸', '🧠', '✍️', '🌿',
+    '💧',
+    '📖',
+    '🏋️',
+    '🧘',
+    '🏃',
+    '💬',
+    '🥗',
+    '😴',
+    '🎸',
+    '🧠',
+    '✍️',
+    '🌿',
   ];
 
   final _nameController = TextEditingController();
@@ -164,10 +174,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     }
   }
 
-  Future<bool> _saveExisting(
-    LogicalDate today,
-    AppLocalizations l10n,
-  ) async {
+  Future<bool> _saveExisting(LogicalDate today, AppLocalizations l10n) async {
     final original = _loaded;
     if (original == null) return false;
 
@@ -179,10 +186,12 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
         .execute(
           original: original,
           updated: original.copyWith(
-            name: _nameController.text,
+            // La identidad del hábito no se edita: cambiar nombre o ámbito
+            // equivale a crear un hábito distinto.
+            name: original.name,
             emoji: _emojiController.text,
             colorValue: _colorValue,
-            ambitoId: _ambitoId ?? original.ambitoId,
+            ambitoId: original.ambitoId,
             reminderTime: _reminderText,
           ),
         );
@@ -288,15 +297,43 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Label(l10n.habitNameLabel),
-                AuthTextField(
-                  controller: _nameController,
-                  hint: l10n.habitNameHint,
-                  icon: Icons.edit_rounded,
-                  errorText: _errors.isEmpty ? null : _errorFor(l10n),
-                  textInputAction: TextInputAction.done,
-                ),
-                const SizedBox(height: 20),
+                if (!widget.isEditing) ...[
+                  _Label(l10n.habitNameLabel),
+                  AuthTextField(
+                    controller: _nameController,
+                    hint: l10n.habitNameHint,
+                    icon: Icons.edit_rounded,
+                    errorText: _errors.isEmpty ? null : _errorFor(l10n),
+                    textInputAction: TextInputAction.done,
+                  ),
+                  const SizedBox(height: 20),
+                ] else ...[
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.lock_outline_rounded,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _nameController.text,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.habitIdentityLockedHint,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
                 _Label(l10n.habitEmojiLabel),
                 _EmojiPicker(
                   emojis: _emojis,
@@ -314,30 +351,32 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          SurfaceCard(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Label(l10n.habitAmbitoLabel),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final ambito in ambitos)
-                      ChoiceChip(
-                        avatar: Text(ambito.emoji),
-                        label: Text(ambito.name),
-                        selected: _ambitoId == ambito.id,
-                        onSelected: (_) =>
-                            setState(() => _ambitoId = ambito.id),
-                      ),
-                  ],
-                ),
-              ],
+          if (!widget.isEditing) ...[
+            const SizedBox(height: 16),
+            SurfaceCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Label(l10n.habitAmbitoLabel),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final ambito in ambitos)
+                        ChoiceChip(
+                          avatar: Text(ambito.emoji),
+                          label: Text(ambito.name),
+                          selected: _ambitoId == ambito.id,
+                          onSelected: (_) =>
+                              setState(() => _ambitoId = ambito.id),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 16),
           SurfaceCard(
             padding: const EdgeInsets.all(20),
@@ -380,8 +419,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                         final picked = await showTimePicker(
                           context: context,
                           initialTime:
-                              _reminder ??
-                              const TimeOfDay(hour: 9, minute: 0),
+                              _reminder ?? const TimeOfDay(hour: 9, minute: 0),
                         );
                         if (picked != null) {
                           setState(() => _reminder = picked);
@@ -527,8 +565,11 @@ class _ColorPicker extends StatelessWidget {
                     : null,
               ),
               child: color.toARGB32() == selected
-                  ? const Icon(Icons.check_rounded,
-                      size: 18, color: Colors.white)
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 18,
+                      color: Colors.white,
+                    )
                   : null,
             ),
           ),

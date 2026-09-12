@@ -49,7 +49,19 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Mis hábitos'), findsOneWidget);
+    // El asset se reutiliza en la mascota del header, así que la aserción
+    // se acota a la tarjeta de racha.
+    expect(
+      find.descendant(
+        of: find.byType(GeneralStreakCard),
+        matching: find.image(
+          const AssetImage('assets/images/cards/card1.png'),
+        ),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Beber agua'), findsOneWidget);
+    expect(find.text('Anuales'), findsOneWidget);
   });
 
   testWidgets('HomePage shows the overall streak in English', (tester) async {
@@ -74,7 +86,7 @@ void main() {
     );
 
     // "Entrenar" está sembrado como 3 veces por semana.
-    expect(find.text('3 veces por semana'), findsOneWidget);
+    expect(find.textContaining('3 veces por semana'), findsOneWidget);
     expect(find.textContaining('esta semana'), findsWidgets);
   });
 
@@ -98,9 +110,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('con saldo se muestran los comodines disponibles', (
-    tester,
-  ) async {
+  testWidgets('con saldo se muestran los protectores de racha', (tester) async {
     await tester.pumpWidget(
       _appUnderTest(
         locale: const Locale('es'),
@@ -114,15 +124,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('2 comodines disponibles'), findsOneWidget);
+    expect(find.text('2 protectores de racha'), findsOneWidget);
+    expect(find.byType(Image), findsWidgets);
   });
 
   group('Inicio: registrar, no editar', () {
     setUp(() {
       // La Home es larga: con el viewport por defecto (800x600) los botones
       // de registro quedan fuera de pantalla y no reciben taps.
-      final view = TestWidgetsFlutterBinding.instance.platformDispatcher
-          .implicitView!;
+      final view =
+          TestWidgetsFlutterBinding.instance.platformDispatcher.implicitView!;
       view.physicalSize = const Size(1200, 3000);
       view.devicePixelRatio = 1;
       addTearDown(() {
@@ -170,42 +181,54 @@ void main() {
       expect(find.textContaining('Completados hoy'), findsNothing);
     });
 
-    testWidgets('las filas de Inicio no llevan a la edición', (tester) async {
+    testWidgets('toda la tarjeta registra sin llevar a la edición', (
+      tester,
+    ) async {
       await tester.pumpWidget(_appUnderTest(locale: const Locale('es')));
       await tester.pumpAndSettle();
 
-      // Sin chevron y sin acción de navegación: desde Inicio solo se
-      // registra; editar vive en la pestaña Hábitos.
-      expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
+      // Sin chevron: al tocar cualquier punto de la tarjeta se registra;
+      // editar sigue viviendo exclusivamente en la pestaña Hábitos.
+      expect(
+        find.descendant(
+          of: find.byType(HabitListTile),
+          matching: find.byIcon(Icons.chevron_right_rounded),
+        ),
+        findsNothing,
+      );
       for (final tile in tester.widgetList<HabitListTile>(
         find.byType(HabitListTile),
       )) {
-        expect(tile.mode, HabitTileMode.track);
+        expect(tile.mode, HabitTileMode.trackCompact);
       }
-      final inkWells = tester.widgetList<InkWell>(
-        find.descendant(
-          of: find.byType(HabitListTile).first,
-          matching: find.byType(InkWell),
-        ),
+      final cardInkWell = tester.widget<InkWell>(
+        find
+            .descendant(
+              of: find.byType(HabitListTile).first,
+              matching: find.byType(InkWell),
+            )
+            .first,
       );
-      expect(inkWells.every((w) => w.onTap == null), isTrue);
+      expect(cardInkWell.onTap, isNotNull);
+
+      await tester.tap(find.text('Beber agua'));
+      await tester.pumpAndSettle();
+      expect(find.text('Completados hoy (1)'), findsOneWidget);
     });
 
-    testWidgets('la semana es solo historial en Inicio', (tester) async {
+    testWidgets('las cards compactas no muestran la semana en Inicio', (
+      tester,
+    ) async {
       await tester.pumpWidget(_appUnderTest(locale: const Locale('es')));
       await tester.pumpAndSettle();
 
-      // Ningún punto de la semana es pulsable: el único control es el botón.
+      // El resumen semanal vive fuera de las cards compactas de Inicio.
       final monday = testToday.addDays(-(testToday.weekday - DateTime.monday));
       for (var i = 0; i < 7; i++) {
         final dot = find.byKey(
           ValueKey('habit-dot-agua-${monday.addDays(i).key}'),
         );
-        expect(dot, findsOneWidget);
-        final detector = tester.widget<GestureDetector>(
-          find.descendant(of: dot, matching: find.byType(GestureDetector)),
-        );
-        expect(detector.onTap, isNull);
+        expect(dot, findsNothing);
       }
     });
 
@@ -223,6 +246,43 @@ void main() {
       expect(find.textContaining('Todo hecho por hoy'), findsOneWidget);
       expect(find.textContaining('Pendientes'), findsNothing);
       expect(find.text('Completados hoy (5)'), findsOneWidget);
+      final completedTopBefore = tester.getTopLeft(
+        find.text('Completados hoy (5)'),
+      );
+
+      await tester.tap(find.byKey(const ValueKey('dismiss-all-done')));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Todo hecho por hoy'), findsNothing);
+      expect(find.text('Completados hoy (5)'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('Completados hoy (5)')).dy,
+        lessThan(completedTopBefore.dy),
+      );
     });
+  });
+
+  testWidgets('la bienvenida de arranque se muestra y termina sola', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_appUnderTest(locale: const Locale('es')));
+    // Varios pumps cortos: deja llegar el primer HomeSummary sin agotar la
+    // animación (pumpAndSettle la consumiría entera de una vez).
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 1));
+    }
+
+    final welcome = find.byKey(const ValueKey('cold-start-welcome'));
+    expect(welcome, findsOneWidget, reason: 'debe aparecer al arrancar');
+
+    // A mitad de recorrido sigue visible: es una transición, no un flash.
+    await tester.pump(ColdStartWelcome.duration ~/ 2);
+    expect(welcome, findsOneWidget);
+
+    // Y se retira sola al completarse, sin dejar la Home tapada.
+    await tester.pump(ColdStartWelcome.duration);
+    await tester.pumpAndSettle();
+    expect(welcome, findsNothing);
+    expect(find.text('Racha general'), findsOneWidget);
   });
 }

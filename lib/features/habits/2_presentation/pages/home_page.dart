@@ -6,18 +6,13 @@ import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
+import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
-
-  String _greeting(AppLocalizations l10n, String name) {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return l10n.goodMorning(name);
-    if (hour < 20) return l10n.goodAfternoon(name);
-    return l10n.goodEvening(name);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +25,11 @@ class HomePage extends ConsumerWidget {
         child: switch (summaryAsync) {
           AsyncData(:final value) => _HomeContent(
             summary: value,
-            greeting: _greeting(context.l10n, userName),
+            greeting: WelcomeGreetingResolver.resolve(
+              context.l10n,
+              userName,
+              DateTime.now().hour,
+            ),
           ),
           AsyncError(:final error) => Center(
             child: Padding(
@@ -45,11 +44,34 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _HomeContent extends ConsumerWidget {
+enum _HabitFilter { all, daily, weekly, monthly, yearly }
+
+class _HomeContent extends ConsumerStatefulWidget {
   const _HomeContent({required this.summary, required this.greeting});
 
   final HomeSummary summary;
   final String greeting;
+
+  @override
+  ConsumerState<_HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends ConsumerState<_HomeContent> {
+  _HabitFilter _filter = _HabitFilter.all;
+  bool _hideAllDone = false;
+  late bool _showColdStartWelcome;
+  late final int _welcomeMessageIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _showColdStartWelcome = ref
+        .read(coldStartWelcomeSessionProvider)
+        .take(enabled: ref.read(welcomeAnimationEnabledProvider));
+    _welcomeMessageIndex = WelcomeMessageSelector.randomIndex();
+  }
+
+  HomeSummary get summary => widget.summary;
 
   /// Hábito con recordatorio hoy aún sin completar y con hora más próxima.
   Habit? get _nextReminderHabit {
@@ -71,7 +93,9 @@ class _HomeContent extends ConsumerWidget {
     );
     if (!confirmed || !context.mounted) return;
 
-    final result = await ref.read(homeControllerProvider.notifier).useWildcard();
+    final result = await ref
+        .read(homeControllerProvider.notifier)
+        .useWildcard();
     if (!context.mounted) return;
 
     final l10n = context.l10n;
@@ -103,20 +127,41 @@ class _HomeContent extends ConsumerWidget {
       if (summary.isCompletedOn(habit.id, summary.today)) habit,
   ];
 
+  Future<void> _toggleHabit(
+    BuildContext context,
+    HomeController controller,
+    String habitId,
+  ) async {
+    final wasCompleted = summary.isCompletedOn(habitId, summary.today);
+    final completesTheDay = !wasCompleted && _pending.length == 1;
+    final result = await controller.toggleToday(habitId);
+    if (!context.mounted || result is! ToggleHabitCompletionSuccess) return;
+
+    // Desmarcar es una corrección, no un logro: solo celebramos al completar.
+    if (wasCompleted) return;
+    HabitCelebration.show(
+      context,
+      message: completesTheDay
+          ? context.l10n.allHabitsCompletedCelebration
+          : context.l10n.habitCompletedCelebration,
+      allDone: completesTheDay,
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final controller = ref.read(homeControllerProvider.notifier);
     final nextReminder = _nextReminderHabit;
-    final pending = _pending;
-    final completed = _completed;
+    final pending = _pending.where(_matchesFilter).toList();
+    final completed = _completed.where(_matchesFilter).toList();
     final hasHabits = summary.habits.isNotEmpty;
 
-    return ListView(
+    final home = ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
       children: [
-        HomeHeader(greeting: greeting),
-        const SizedBox(height: 20),
+        HomeHeader(greeting: widget.greeting),
+        const SizedBox(height: 16),
         // Única racha de la app: la general del usuario. Ya no hay rachas
         // por ámbito ni por hábito (§1/§29).
         GeneralStreakCard(
@@ -133,15 +178,24 @@ class _HomeContent extends ConsumerWidget {
             FilledButton.tonalIcon(
               onPressed: () => context.push('/habit/new'),
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
-              icon: const Icon(Icons.add_rounded, size: 18),
+              icon: const Icon(PhosphorIconsBold.plus, size: 18),
               label: Text(l10n.newHabit),
             ),
           ],
         ),
         const SizedBox(height: 12),
+        _HabitFilters(
+          selected: _filter,
+          onSelected: (value) => setState(() => _filter = value),
+        ),
+        const SizedBox(height: 10),
 
         // Inicio sirve para REGISTRAR, no para editar: las filas no navegan
         // y se separan en pendientes y completados para ver de un vistazo
@@ -155,24 +209,35 @@ class _HomeContent extends ConsumerWidget {
             mode: HabitTileMode.track,
           )
         else ...[
-          if (pending.isEmpty)
-            const _AllDoneCard()
+          if (_pending.isEmpty && !_hideAllDone)
+            _AllDoneCard(
+              onCreate: () => context.push('/habit/new'),
+              onDismiss: () => setState(() => _hideAllDone = true),
+            )
           else ...[
-            _SubSection(label: l10n.pendingHabitsWithCount(pending.length)),
-            const SizedBox(height: 8),
-            HabitsListCard(
-              habits: pending,
-              weekLogs: summary.weekLogs,
-              today: summary.today,
-              progressOf: summary.progressOf,
-              onToggleToday: controller.toggleToday,
-              mode: HabitTileMode.track,
-            ),
+            if (pending.isNotEmpty) ...[
+              _SubSection(
+                label: l10n.pendingHabitsWithCount(pending.length),
+                onSeeAll: () => context.go('/habits'),
+              ),
+              const SizedBox(height: 8),
+              HabitsListCard(
+                habits: pending,
+                weekLogs: summary.weekLogs,
+                today: summary.today,
+                progressOf: summary.progressOf,
+                onToggleToday: (habitId) {
+                  _toggleHabit(context, controller, habitId);
+                },
+                mode: HabitTileMode.trackCompact,
+              ),
+            ],
           ],
           if (completed.isNotEmpty) ...[
             const SizedBox(height: 20),
             _SubSection(
               label: l10n.completedHabitsWithCount(completed.length),
+              onSeeAll: () => context.go('/habits'),
             ),
             const SizedBox(height: 8),
             HabitsListCard(
@@ -180,51 +245,132 @@ class _HomeContent extends ConsumerWidget {
               weekLogs: summary.weekLogs,
               today: summary.today,
               progressOf: summary.progressOf,
-              onToggleToday: controller.toggleToday,
-              mode: HabitTileMode.track,
+              onToggleToday: (habitId) {
+                _toggleHabit(context, controller, habitId);
+              },
+              mode: HabitTileMode.trackCompact,
             ),
           ],
-          const SizedBox(height: 8),
-          TextButton(
-            // "Ver todos" cambia a la pestaña Hábitos del shell, que es
-            // donde se editan.
-            onPressed: () => context.go('/habits'),
-            child: Text(l10n.seeAllMyHabits),
-          ),
         ],
         if (nextReminder != null) ...[
           const SizedBox(height: 16),
           NextReminderCard(
             habit: nextReminder,
-            onMarkNow: () => controller.toggleToday(nextReminder.id),
+            onMarkNow: () {
+              _toggleHabit(context, controller, nextReminder.id);
+            },
           ),
         ],
       ],
+    );
+
+    if (!_showColdStartWelcome) return home;
+    return ColdStartWelcome(
+      greeting: widget.greeting,
+      message: WelcomeMessageSelector.message(l10n, _welcomeMessageIndex),
+      onFinished: () {
+        if (mounted) setState(() => _showColdStartWelcome = false);
+      },
+      child: home,
+    );
+  }
+
+  bool _matchesFilter(Habit habit) {
+    final type = habit.periodicityOn(summary.today).type;
+    return switch (_filter) {
+      _HabitFilter.all => true,
+      _HabitFilter.daily => type == PeriodicityType.daily,
+      _HabitFilter.weekly => type == PeriodicityType.weekly,
+      _HabitFilter.monthly => type == PeriodicityType.monthly,
+      _HabitFilter.yearly => type == PeriodicityType.yearly,
+    };
+  }
+}
+
+class _HabitFilters extends StatelessWidget {
+  const _HabitFilters({required this.selected, required this.onSelected});
+
+  final _HabitFilter selected;
+  final ValueChanged<_HabitFilter> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final labels = {
+      _HabitFilter.all: l10n.habitFilterAll,
+      _HabitFilter.daily: l10n.habitFilterDaily,
+      _HabitFilter.weekly: l10n.habitFilterWeekly,
+      _HabitFilter.monthly: l10n.habitFilterMonthly,
+      _HabitFilter.yearly: l10n.habitFilterYearly,
+    };
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final filter in _HabitFilter.values) ...[
+            ChoiceChip(
+              label: Text(labels[filter]!),
+              selected: selected == filter,
+              onSelected: (_) => onSelected(filter),
+              showCheckmark: false,
+              side: BorderSide.none,
+              selectedColor: AppColors.primary.withValues(alpha: 0.16),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.045),
+              labelStyle: TextStyle(
+                color: selected == filter
+                    ? AppColors.primary
+                    : AppColors.textSecondary,
+                fontWeight: selected == filter
+                    ? FontWeight.w800
+                    : FontWeight.w500,
+              ),
+            ),
+            if (filter != _HabitFilter.values.last) const SizedBox(width: 8),
+          ],
+        ],
+      ),
     );
   }
 }
 
 /// Cabecera pequeña de "Pendientes" / "Completados hoy".
 class _SubSection extends StatelessWidget {
-  const _SubSection({required this.label});
+  const _SubSection({required this.label, required this.onSeeAll});
 
   final String label;
+  final VoidCallback onSeeAll;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-        color: AppColors.textSecondary,
-        fontWeight: FontWeight.w800,
-      ),
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        TextButton.icon(
+          onPressed: onSeeAll,
+          icon: const Icon(PhosphorIconsBold.caretRight, size: 16),
+          label: Text(context.l10n.seeAll),
+          iconAlignment: IconAlignment.end,
+        ),
+      ],
     );
   }
 }
 
 /// Estado de "no queda nada por registrar hoy".
 class _AllDoneCard extends StatelessWidget {
-  const _AllDoneCard();
+  const _AllDoneCard({required this.onCreate, required this.onDismiss});
+
+  final VoidCallback onCreate;
+  final VoidCallback onDismiss;
 
   @override
   Widget build(BuildContext context) {
@@ -233,26 +379,73 @@ class _AllDoneCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
+      child: Stack(
         children: [
-          Text(
-            l10n.allHabitsDoneTitle,
-            textAlign: TextAlign.center,
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
+          SizedBox(
+            width: double.infinity,
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text('🌱', style: TextStyle(fontSize: 21)),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  l10n.allHabitsDoneTitle,
+                  textAlign: TextAlign.center,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.allHabitsDoneBody,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 9),
+                FilledButton.tonal(
+                  onPressed: onCreate,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.10),
+                    foregroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 9,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  child: Text(l10n.newHabit),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.allHabitsDoneBody,
-            textAlign: TextAlign.center,
-            style: textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
+          Positioned(
+            right: 0,
+            top: 0,
+            child: IconButton(
+              key: const ValueKey('dismiss-all-done'),
+              onPressed: onDismiss,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              style: IconButton.styleFrom(
+                foregroundColor: AppColors.textSecondary,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.06),
+                minimumSize: const Size(36, 36),
+              ),
+              icon: const Icon(PhosphorIconsRegular.x, size: 19),
             ),
           ),
         ],

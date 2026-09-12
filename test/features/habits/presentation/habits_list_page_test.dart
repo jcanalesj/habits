@@ -30,13 +30,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Mis hábitos'), findsOneWidget);
+    expect(find.byKey(const ValueKey('open-habit-calendars')), findsOneWidget);
     expect(find.text('Beber agua'), findsOneWidget);
+    expect(find.text('Salud'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Meditación'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Mente'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Estudiar inglés'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Desarrollo'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Entrenar'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('3 veces por semana'), findsOneWidget);
+    expect(find.text('Energía'), findsOneWidget);
+    expect(find.text('Editar hábito'), findsWidgets);
+    expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
   });
 
   testWidgets('sin hábitos muestra el estado vacío', (tester) async {
@@ -51,7 +68,27 @@ void main() {
     await tester.pumpWidget(appWith());
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(FloatingActionButton, 'Nuevo hábito'),
-        findsOneWidget);
+    expect(
+      find.widgetWithText(FloatingActionButton, 'Nuevo hábito'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('avisa antes de abrir la edición', (tester) async {
+    await tester.pumpWidget(appWith());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('habit-edit-agua')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¿Cambiar frecuencia?'), findsOneWidget);
+    expect(find.textContaining('progreso se recalculará'), findsOneWidget);
+    expect(find.text('Tu historial se mantendrá.'), findsOneWidget);
+    expect(find.text('Tu racha no se borrará.'), findsOneWidget);
+    expect(
+      find.image(const AssetImage('assets/icons/edit.png')),
+      findsOneWidget,
+    );
+    expect(find.text('Continuar'), findsOneWidget);
   });
 }

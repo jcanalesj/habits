@@ -38,27 +38,23 @@ class HabitsListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          if (habits.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
-              child: Text(
-                emptyMessage ?? context.l10n.noHabitsYet,
-                textAlign: TextAlign.center,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+    return Column(
+      children: [
+        if (habits.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+            child: Text(
+              emptyMessage ?? context.l10n.noHabitsYet,
+              textAlign: TextAlign.center,
+              style: textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
-          for (final habit in habits)
-            HabitListTile(
+          ),
+        for (final habit in habits)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: HabitListTile(
               habit: habit,
               weekLogs: weekLogs,
               today: today,
@@ -67,36 +63,36 @@ class HabitsListCard extends StatelessWidget {
               onToggleToday: () => onToggleToday(habit.id),
               onTap: onHabitTap == null ? null : () => onHabitTap!(habit),
             ),
-          // Texto flexible en vez de TextButton.icon: la etiqueta larga
-          // desbordaba por la derecha en anchos de móvil.
-          if (onSeeAll != null)
-            TextButton(
-              onPressed: onSeeAll,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      context.l10n.seeAllMyHabits,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.labelLarge?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
+          ),
+        // Texto flexible en vez de TextButton.icon: la etiqueta larga
+        // desbordaba por la derecha en anchos de móvil.
+        if (onSeeAll != null)
+          TextButton(
+            onPressed: onSeeAll,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    context.l10n.seeAllMyHabits,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.labelLarge?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 20,
-                    color: AppColors.primary,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: AppColors.primary,
+                ),
+              ],
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }

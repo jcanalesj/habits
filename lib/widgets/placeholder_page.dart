@@ -16,8 +16,20 @@ class PlaceholderPage extends StatelessWidget {
   final String emoji;
   final Widget? action;
 
+  /// Altura visual de la barra flotante más un margen de separación. El
+  /// shell usa `extendBody`, así que esta zona no forma parte del safe area
+  /// que recibe la página.
+  static const double bottomBarClearance = 136;
+
   @override
   Widget build(BuildContext context) {
+    // La barra inferior se dibuja sobre el body (`extendBody: true`). Su
+    // altura incluye además el safe area, que cambia entre dispositivos.
+    // Reservamos ambas zonas para que acciones como "Cerrar sesión" nunca
+    // queden debajo de la navegación ni del indicador de inicio.
+    final bottomActionInset =
+        MediaQuery.viewPaddingOf(context).bottom + bottomBarClearance;
+
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -27,7 +39,7 @@ class PlaceholderPage extends StatelessWidget {
             Positioned(
               left: 24,
               right: 24,
-              bottom: 120,
+              bottom: bottomActionInset,
               child: Center(child: action),
             ),
         ],

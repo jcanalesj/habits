@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 
@@ -34,16 +35,7 @@ class HomeHeader extends StatelessWidget {
             ],
           ),
         ),
-        Container(
-          width: 52,
-          height: 52,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-          ),
-          child: const Text('👾', style: TextStyle(fontSize: 24)),
-        ),
+        const CatMascot(size: 52),
       ],
     );
   }

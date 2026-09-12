@@ -21,6 +21,7 @@ dependencies:
   google_fonts: ^8.2.1
   intl: ^0.20.2
   json_annotation: 4.9.0
+  phosphor_icons: ^3.0.1
   timezone: ^0.11.1
 
 dev_dependencies:
@@ -43,4 +44,6 @@ flutter:
   generate: true
   assets:
     - assets/backgrounds/
+    - assets/icons/
+    - assets/images/cards/
     - assets/logo/

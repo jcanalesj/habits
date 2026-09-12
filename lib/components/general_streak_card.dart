@@ -47,7 +47,7 @@ class GeneralStreakCard extends StatelessWidget {
         : const [AppColors.gradientStart, AppColors.gradientEnd];
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -63,94 +63,139 @@ class GeneralStreakCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Text(
-            _atRisk ? l10n.streakAtRisk : l10n.generalStreak,
-            style: textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/cards/card1.png',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
             ),
           ),
-          const SizedBox(height: 4),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                '${streak.displayStreak}',
-                style: textTheme.displayMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  height: 1.1,
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.30),
+                    Colors.black.withValues(alpha: 0.06),
+                    Colors.transparent,
+                  ],
                 ),
               ),
-              const SizedBox(width: 8),
-              const Text('🔥', style: TextStyle(fontSize: 32)),
-              const Spacer(),
-              if (streak.bestStreak > 0)
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('🔥', style: TextStyle(fontSize: 24)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _atRisk ? l10n.streakAtRisk : l10n.generalStreak,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    if (streak.bestStreak > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.22),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Text(
+                          l10n.bestStreakLabel(streak.bestStreak),
+                          style: textTheme.labelMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 Text(
-                  l10n.bestStreakLabel(streak.bestStreak),
-                  style: textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                  '${streak.displayStreak}',
+                  style: textTheme.displayMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    height: 0.95,
                   ),
                 ),
-            ],
-          ),
-          Text(
-            l10n.consecutiveDays,
-            style: textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            _message(l10n),
-            style: textTheme.bodySmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.95),
-            ),
-          ),
-          if (_atRisk) ...[
-            const SizedBox(height: 14),
-            if (wildcards.hasAny)
-              FilledButton.icon(
-                onPressed: onUseWildcard,
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: colors.last,
+                Text(
+                  l10n.consecutiveDays,
+                  style: textTheme.bodyLarge?.copyWith(color: Colors.white),
                 ),
-                icon: const Text('🃏', style: TextStyle(fontSize: 16)),
-                label: Text(l10n.useWildcard),
-              )
-            else
-              // Sin saldo no se ofrece ninguna acción: las vías de anuncio y
-              // de compra todavía no existen y no se simulan (§24/§50).
-              Text(
-                l10n.noWildcardsLeft,
-                style: textTheme.bodySmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-          ],
-          if (wildcards.available > 0) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Text('🃏', style: TextStyle(fontSize: 14)),
-                const SizedBox(width: 6),
-                Flexible(
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: 185,
                   child: Text(
-                    l10n.wildcardsAvailable(wildcards.available),
+                    _message(l10n),
                     style: textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.95),
-                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      height: 1.35,
                     ),
                   ),
                 ),
+                if (_atRisk && !wildcards.hasAny) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    l10n.noWildcardsLeft,
+                    style: textTheme.bodySmall?.copyWith(color: Colors.white),
+                  ),
+                ],
+                if (wildcards.available > 0) ...[
+                  const SizedBox(height: 12),
+                  Material(
+                    color: Colors.white.withValues(alpha: 0.76),
+                    borderRadius: BorderRadius.circular(18),
+                    child: InkWell(
+                      onTap: _atRisk ? onUseWildcard : null,
+                      borderRadius: BorderRadius.circular(18),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              'assets/icons/protector.png',
+                              width: 42,
+                              height: 42,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                l10n.wildcardsAvailable(wildcards.available),
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.primaryDeep,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
-          ],
+          ),
         ],
       ),
     );

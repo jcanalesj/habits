@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
 /// Tarjeta "Próximo recordatorio" con acción rápida de marcado.
 class NextReminderCard extends StatelessWidget {
@@ -44,14 +45,10 @@ class NextReminderCard extends StatelessWidget {
                 height: 34,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.notifications_none_rounded,
-                  size: 18,
-                  color: AppColors.primary,
-                ),
+                child: Icon(PhosphorIconsRegular.bell, size: 18, color: color),
               ),
             ],
           ),
@@ -92,8 +89,8 @@ class NextReminderCard extends StatelessWidget {
               FilledButton.tonal(
                 onPressed: onMarkNow,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-                  foregroundColor: AppColors.primary,
+                  backgroundColor: color.withValues(alpha: 0.12),
+                  foregroundColor: color,
                   textStyle: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),

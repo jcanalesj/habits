@@ -6,6 +6,7 @@ import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
 /// Pestaña "Hábitos": todos los hábitos activos con su objetivo y la semana
 /// en curso. Tocar uno lleva a su edición.
@@ -45,6 +46,17 @@ class _Content extends ConsumerWidget {
 
   final HomeSummary summary;
 
+  Future<void> _openEditor(BuildContext context, Habit habit) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: AppColors.textPrimary.withValues(alpha: 0.62),
+      builder: (_) => const _EditHabitWarningDialog(),
+    );
+    if (confirmed == true && context.mounted) {
+      context.push('/habit/${habit.id}');
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -57,9 +69,9 @@ class _Content extends ConsumerWidget {
           child: Text(
             l10n.noHabitsYetLong,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           ),
         ),
       );
@@ -68,15 +80,268 @@ class _Content extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
       children: [
-        SectionHeader(title: l10n.allHabitsTitle),
-        const SizedBox(height: 12),
-        HabitsListCard(
-          habits: summary.habits,
-          weekLogs: summary.weekLogs,
-          today: summary.today,
-          progressOf: summary.progressOf,
-          onToggleToday: controller.toggleToday,
-          onHabitTap: (habit) => context.push('/habit/${habit.id}'),
+        Row(
+          children: [
+            Expanded(child: SectionHeader(title: l10n.allHabitsTitle)),
+            FilledButton.tonalIcon(
+              key: const ValueKey('open-habit-calendars'),
+              onPressed: () => context.push('/habit-calendars'),
+              style: FilledButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+              ),
+              icon: const Icon(PhosphorIconsBold.calendarDots, size: 19),
+              label: Text(l10n.habitCalendarsAction),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        for (final ambito in summary.ambitos)
+          if (summary.habits.any((habit) => habit.ambitoId == ambito.id)) ...[
+            _AmbitoHeader(ambito: ambito),
+            const SizedBox(height: 8),
+            HabitsListCard(
+              habits: [
+                for (final habit in summary.habits)
+                  if (habit.ambitoId == ambito.id) habit,
+              ],
+              weekLogs: summary.weekLogs,
+              today: summary.today,
+              progressOf: summary.progressOf,
+              onToggleToday: controller.toggleToday,
+              onHabitTap: (habit) => _openEditor(context, habit),
+            ),
+            const SizedBox(height: 20),
+          ],
+      ],
+    );
+  }
+}
+
+class _EditHabitWarningDialog extends StatelessWidget {
+  const _EditHabitWarningDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      backgroundColor: const Color(0xFFFCFBFF),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480, maxHeight: 760),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton.filledTonal(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+                    foregroundColor: AppColors.textSecondary,
+                    minimumSize: const Size(48, 48),
+                  ),
+                  icon: const Icon(Icons.close_rounded, size: 28),
+                ),
+              ),
+              Transform.translate(
+                offset: const Offset(0, -14),
+                child: Image.asset(
+                  'assets/icons/edit.png',
+                  width: 168,
+                  height: 168,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Transform.translate(
+                offset: const Offset(0, -12),
+                child: Column(
+                  children: [
+                    Text(
+                      l10n.editHabitWarningTitle,
+                      textAlign: TextAlign.center,
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      l10n.editHabitWarningBody,
+                      textAlign: TextAlign.center,
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.055),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Column(
+                        children: [
+                          _WarningPoint(
+                            icon: Icons.bar_chart_rounded,
+                            text: l10n.editHabitProgressInfo,
+                          ),
+                          const SizedBox(height: 14),
+                          _WarningPoint(
+                            icon: Icons.schedule_rounded,
+                            text: l10n.editHabitHistoryInfo,
+                          ),
+                          const SizedBox(height: 14),
+                          _WarningPoint(
+                            icon: Icons.local_fire_department_rounded,
+                            text: l10n.editHabitStreakInfo,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: BorderSide(
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.35,
+                                ),
+                                width: 1.5,
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                            ),
+                            child: Text(l10n.cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  AppColors.primaryDeep,
+                                  AppColors.primary,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.25,
+                                  ),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
+                              ),
+                              child: Text(l10n.continueLabel),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WarningPoint extends StatelessWidget {
+  const _WarningPoint({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 23),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.25,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AmbitoHeader extends StatelessWidget {
+  const _AmbitoHeader({required this.ambito});
+
+  final Ambito ambito;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Color(ambito.colorValue);
+
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(ambito.emoji, style: const TextStyle(fontSize: 18)),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            ambito.name,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ),
       ],
     );

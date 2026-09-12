@@ -30,6 +30,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tagline => 'Pequeñas acciones, grandes cambios.';
 
   @override
+  String get welcomeMessage1 => 'Un pequeño paso también cuenta.';
+
+  @override
+  String get welcomeMessage2 => 'La constancia gana a la perfección.';
+
+  @override
+  String get welcomeMessage3 => 'Hoy es un buen día para avanzar un poquito.';
+
+  @override
+  String get welcomeMessage4 => 'Hazlo por tu yo de mañana.';
+
+  @override
+  String get welcomeMessage5 => 'No necesitas hacerlo perfecto, solo hacerlo.';
+
+  @override
+  String get welcomeMessage6 => 'Cada hábito de hoy construye tu mañana.';
+
+  @override
+  String get skipWelcome => 'Saltar bienvenida';
+
+  @override
   String get generalStreak => 'Racha general';
 
   @override
@@ -49,6 +70,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get myHabits => 'Mis hábitos';
+
+  @override
+  String get habitFilterAll => 'Todos';
+
+  @override
+  String get habitFilterDaily => 'Diarios';
+
+  @override
+  String get habitFilterWeekly => 'Semanales';
+
+  @override
+  String get habitFilterMonthly => 'Mensuales';
+
+  @override
+  String get habitFilterYearly => 'Anuales';
 
   @override
   String get newHabit => 'Nuevo hábito';
@@ -379,9 +415,9 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count comodines disponibles',
-      one: '1 comodín disponible',
-      zero: 'Sin comodines',
+      other: '$count protectores de racha',
+      one: '1 protector de racha',
+      zero: 'Sin protectores de racha',
     );
     return '$_temp0';
   }
@@ -495,6 +531,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get editHabitTitle => 'Editar hábito';
 
   @override
+  String get editHabitWarningTitle => '¿Cambiar frecuencia?';
+
+  @override
+  String get editHabitWarningBody =>
+      'Si cambias la frecuencia, el progreso se recalculará con el nuevo objetivo.\nEl historial y la racha no se borrarán.';
+
+  @override
+  String get editHabitProgressInfo =>
+      'El progreso se ajustará al nuevo objetivo.';
+
+  @override
+  String get editHabitHistoryInfo => 'Tu historial se mantendrá.';
+
+  @override
+  String get editHabitStreakInfo => 'Tu racha no se borrará.';
+
+  @override
+  String get habitIdentityLockedHint =>
+      'El nombre y el ámbito no se pueden cambiar. Para eso, crea un hábito nuevo.';
+
+  @override
   String get habitNameLabel => 'Nombre';
 
   @override
@@ -583,6 +640,80 @@ class AppLocalizationsEs extends AppLocalizations {
   String get allHabitsTitle => 'Mis hábitos';
 
   @override
+  String get habitCalendarsAction => 'Calendarios';
+
+  @override
+  String get habitCalendarsTitle => 'Calendarios de hábitos';
+
+  @override
+  String get habitCalendarsCompleted => 'Cumplido';
+
+  @override
+  String get habitCalendarsNotCompleted => 'Sin completar';
+
+  @override
+  String get statsSubtitle => 'Tu constancia se nota 💜';
+
+  @override
+  String get statsThisWeek => 'Esta semana';
+
+  @override
+  String get statsThisMonth => 'Este mes';
+
+  @override
+  String get statsThisYear => 'Este año';
+
+  @override
+  String get statsCurrentStreak => 'Racha actual';
+
+  @override
+  String get statsBestStreak => 'Mejor racha';
+
+  @override
+  String statsDayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsKeepGoing => '¡Sigue así!';
+
+  @override
+  String get statsPersonalRecord => '¡Tu récord personal!';
+
+  @override
+  String get statsCompliance => 'Cumplimiento';
+
+  @override
+  String get statsCompletedRecords => 'Hábitos completados';
+
+  @override
+  String get statsActiveDays => 'Días activos';
+
+  @override
+  String get statsProtectors => 'Protectores disponibles';
+
+  @override
+  String get statsWeeklyProgress => 'Tu progreso esta semana';
+
+  @override
+  String get statsMonthlyProgress => 'Tu progreso este mes';
+
+  @override
+  String get statsYearlyProgress => 'Tu progreso este año';
+
+  @override
+  String get statsSeeCalendar => 'Ver calendario';
+
+  @override
+  String get statsHabits => 'Hábitos';
+
+  @override
   String pendingHabitsWithCount(int count) {
     return 'Pendientes ($count)';
   }
@@ -607,6 +738,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String markHabitUndone(String habit) {
     return 'Desmarcar $habit de hoy';
   }
+
+  @override
+  String get habitPendingEncouragement =>
+      'Pequeños pasos, grandes resultados ✨';
+
+  @override
+  String get habitCompletedEncouragement => '¡Objetivo cumplido! 🎉';
+
+  @override
+  String get habitCompletedCelebration => '¡Muy bien! Un paso más 💪';
+
+  @override
+  String get allHabitsCompletedCelebration => '¡Día completado! Eres imparable';
 
   @override
   String get editHabitsHint =>

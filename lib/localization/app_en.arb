@@ -26,6 +26,13 @@
     }
   },
   "tagline": "Small actions, big changes.",
+  "welcomeMessage1": "A small step still counts.",
+  "welcomeMessage2": "Consistency beats perfection.",
+  "welcomeMessage3": "Today is a good day to move forward a little.",
+  "welcomeMessage4": "Do it for your future self.",
+  "welcomeMessage5": "You don't need to do it perfectly, just do it.",
+  "welcomeMessage6": "Every habit today builds your tomorrow.",
+  "skipWelcome": "Skip welcome",
   "generalStreak": "Overall streak",
   "consecutiveDays": "consecutive days",
   "amazing": "Amazing!",
@@ -33,6 +40,11 @@
   "seeAll": "See all",
   "days": "days",
   "myHabits": "My habits",
+  "habitFilterAll": "All",
+  "habitFilterDaily": "Daily",
+  "habitFilterWeekly": "Weekly",
+  "habitFilterMonthly": "Monthly",
+  "habitFilterYearly": "Yearly",
   "newHabit": "New habit",
   "seeAllMyHabits": "See all my habits",
   "noHabitsYet": "No habits yet. Create your first one with the + button.",
@@ -157,7 +169,7 @@
   "streakPendingToday": "You haven't completed anything today yet.",
   "streakStartToday": "Complete a habit to start your streak.",
   "useWildcard": "Use wildcard",
-  "wildcardsAvailable": "{count, plural, =0{No wildcards} =1{1 wildcard available} other{{count} wildcards available}}",
+  "wildcardsAvailable": "{count, plural, =0{No streak protectors} =1{1 streak protector} other{{count} streak protectors}}",
   "@wildcardsAvailable": {
     "placeholders": {
       "count": {
@@ -244,6 +256,12 @@
   },
   "newHabitTitle": "New habit",
   "editHabitTitle": "Edit habit",
+  "editHabitWarningTitle": "Change frequency?",
+  "editHabitWarningBody": "If you change the frequency, progress will be recalculated for the new goal.\nYour history and streak won't be deleted.",
+  "editHabitProgressInfo": "Progress will adjust to the new goal.",
+  "editHabitHistoryInfo": "Your history will be kept.",
+  "editHabitStreakInfo": "Your streak won't be deleted.",
+  "habitIdentityLockedHint": "The name and area can't be changed. Create a new habit instead.",
   "habitNameLabel": "Name",
   "habitNameHint": "E.g. Drink water",
   "habitEmojiLabel": "Emoji",
@@ -279,6 +297,35 @@
   "errorSaveFailed": "Couldn't save. Please try again.",
   "noHabitsYetLong": "You don't have any habits yet.\nCreate your first one and start your streak.",
   "allHabitsTitle": "My habits",
+  "habitCalendarsAction": "Calendars",
+  "habitCalendarsTitle": "Habit calendars",
+  "habitCalendarsCompleted": "Completed",
+  "habitCalendarsNotCompleted": "Not completed",
+  "statsSubtitle": "Your consistency shows 💜",
+  "statsThisWeek": "This week",
+  "statsThisMonth": "This month",
+  "statsThisYear": "This year",
+  "statsCurrentStreak": "Current streak",
+  "statsBestStreak": "Best streak",
+  "statsDayCount": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsKeepGoing": "Keep it up!",
+  "statsPersonalRecord": "Your personal best!",
+  "statsCompliance": "Completion",
+  "statsCompletedRecords": "Habits completed",
+  "statsActiveDays": "Active days",
+  "statsProtectors": "Protectors available",
+  "statsWeeklyProgress": "Your progress this week",
+  "statsMonthlyProgress": "Your progress this month",
+  "statsYearlyProgress": "Your progress this year",
+  "statsSeeCalendar": "View calendar",
+  "statsHabits": "Habits",
   "pendingHabitsWithCount": "Pending ({count})",
   "@pendingHabitsWithCount": {
     "placeholders": {
@@ -313,5 +360,9 @@
       }
     }
   },
+  "habitPendingEncouragement": "Small steps, big results ✨",
+  "habitCompletedEncouragement": "Goal completed! 🎉",
+  "habitCompletedCelebration": "Great job! One step closer 💪",
+  "allHabitsCompletedCelebration": "Day complete! You're unstoppable",
   "editHabitsHint": "To edit your habits, go to the Habits tab."
 }

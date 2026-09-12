@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/features/habits/2_presentation/pages/habit_form_page.dart';
+import 'package:habits/features/habits/2_presentation/pages/habit_calendars_page.dart';
 import 'package:habits/features/habits/2_presentation/pages/home_page.dart';
 
 /// Rutas de la pestaña de inicio.
@@ -22,6 +23,10 @@ final habitFormRoutesProvider = Provider<List<GoRoute>>((ref) {
       path: '/habit/:id',
       builder: (context, state) =>
           HabitFormPage(habitId: state.pathParameters['id']),
+    ),
+    GoRoute(
+      path: '/habit-calendars',
+      builder: (context, state) => const HabitCalendarsPage(),
     ),
   ];
 });

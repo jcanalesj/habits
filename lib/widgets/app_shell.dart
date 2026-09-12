@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/auth/2_presentation/presentation.dart';
-import 'package:habits/localization/l10n.dart';
 
 /// Shell de navegación: pinta la rama activa y la barra inferior.
 ///
@@ -32,12 +31,6 @@ class AppShell extends ConsumerWidget {
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
-        onCreate: () {
-          // TODO(habits): flujo de creación de hábito (siguiente hito).
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.createHabitComingSoon)),
-          );
-        },
       ),
     );
   }

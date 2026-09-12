@@ -16,8 +16,8 @@ void main() {
   setUp(() {
     // El formulario es largo; con el viewport por defecto (800x600) los
     // controles de abajo quedan fuera de pantalla y no reciben taps.
-    final view = TestWidgetsFlutterBinding.instance.platformDispatcher
-        .implicitView!;
+    final view =
+        TestWidgetsFlutterBinding.instance.platformDispatcher.implicitView!;
     view.physicalSize = const Size(1200, 2600);
     view.devicePixelRatio = 1;
     addTearDown(() {
@@ -76,23 +76,43 @@ void main() {
     expect((await env.habits.watchActiveHabits().first).length, antes);
   });
 
-  testWidgets('cambiar el objetivo avisa de la fecha efectiva antes de guardar',
-      (tester) async {
-    // "entrenar" está sembrado como 3 veces por semana.
+  testWidgets(
+    'cambiar el objetivo avisa de la fecha efectiva antes de guardar',
+    (tester) async {
+      // "entrenar" está sembrado como 3 veces por semana.
+      await tester.pumpWidget(
+        appWith(const HabitFormPage(habitId: 'entrenar')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Editar hábito'), findsOneWidget);
+      expect(find.text('3 veces por semana'), findsOneWidget);
+      // Sin cambios no hay aviso.
+      expect(find.textContaining('se aplicará'), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.add_rounded).last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('4 veces por semana'), findsOneWidget);
+      // testToday es viernes 11/09/2026 → el cambio entra el lunes 14.
+      expect(find.textContaining('2026-09-14'), findsOneWidget);
+    },
+  );
+
+  testWidgets('al editar bloquea nombre y ámbito pero permite recordatorio', (
+    tester,
+  ) async {
     await tester.pumpWidget(appWith(const HabitFormPage(habitId: 'entrenar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Editar hábito'), findsOneWidget);
-    expect(find.text('3 veces por semana'), findsOneWidget);
-    // Sin cambios no hay aviso.
-    expect(find.textContaining('se aplicará'), findsNothing);
-
-    await tester.tap(find.byIcon(Icons.add_rounded).last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('4 veces por semana'), findsOneWidget);
-    // testToday es viernes 11/09/2026 → el cambio entra el lunes 14.
-    expect(find.textContaining('2026-09-14'), findsOneWidget);
+    expect(
+      find.textContaining('El nombre y el ámbito no se pueden cambiar'),
+      findsOneWidget,
+    );
+    expect(find.text('Nombre'), findsNothing);
+    expect(find.text('Ámbito'), findsNothing);
+    expect(find.text('Recordatorio'), findsOneWidget);
+    expect(find.byIcon(Icons.schedule_rounded), findsOneWidget);
   });
 
   testWidgets('el cambio de objetivo se guarda como diferido', (tester) async {
