@@ -184,6 +184,24 @@ final habitByIdProvider = FutureProvider.autoDispose.family<Habit?, String>((
   return ref.watch(habitsRepositoryProvider).getHabit(habitId);
 });
 
+/// Notificaciones locales. Una sola instancia: el plugin guarda estado
+/// (canal creado, permisos) y crear varias duplicaría el trabajo.
+final notificationsRepositoryProvider = Provider<NotificationsRepository>((
+  ref,
+) {
+  return LocalNotificationsRepository();
+});
+
+final syncRemindersUsecaseProvider = Provider<SyncRemindersUsecase>((ref) {
+  return SyncRemindersUsecase(ref.watch(notificationsRepositoryProvider));
+});
+
+/// Permiso actual del sistema para notificar.
+final notificationPermissionProvider =
+    FutureProvider.autoDispose<NotificationPermission>((ref) {
+      return ref.watch(notificationsRepositoryProvider).currentPermission();
+    });
+
 /// Nombre del usuario mostrado en el saludo: nickname de la cuenta o, si no
 /// lo tiene, la parte local del email.
 final userNameProvider = Provider<String>((ref) {

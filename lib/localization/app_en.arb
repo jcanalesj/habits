@@ -184,11 +184,23 @@
   "notificationHeroTitle": "A little nudge on time",
   "notificationHeroBody": "Choose when you want Constanza to remind you about each habit.",
   "notificationActiveSummary": "{count, plural, =0{No active reminders} =1{1 active reminder} other{{count} active reminders}}",
-  "@notificationActiveSummary": {"placeholders": {"count": {"type": "int"}}},
+  "@notificationActiveSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationActiveSummaryHint": "You can configure each one separately.",
   "notificationHabitListHint": "Enable a habit or tap its time to change it.",
   "notificationEveryDayAt": "Every day at {time}",
-  "@notificationEveryDayAt": {"placeholders": {"time": {"type": "String"}}},
+  "@notificationEveryDayAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "notificationChooseTime": "Choose reminder time",
   "notificationReminderSaved": "Reminder updated",
   "notificationTimezoneHint": "Reminders will follow the time zone configured in your profile.",
@@ -501,5 +513,26 @@
   "timezoneChangeConfirmTitle": "Change your time zone?",
   "timezoneChangeConfirmAction": "Change",
   "timezoneAutomaticConfirmBody": "Constanza will use the device time zone and update it automatically when you travel, so your days follow local time.",
-  "timezoneManualConfirmBody": "When you choose a time zone manually, it will no longer update automatically as you travel. Your habits and streak will follow the zone you select."
+  "timezoneManualConfirmBody": "When you choose a time zone manually, it will no longer update automatically as you travel. Your habits and streak will follow the zone you select.",
+  "reminderNotificationTitle": "{habit}",
+  "@reminderNotificationTitle": {
+    "placeholders": {
+      "habit": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderNotificationBody": "It's your moment. Shall we call it done today?",
+  "notificationsDisabledTitle": "Notifications are off",
+  "notificationsDisabledBody": "Constanza can't remind you until you allow notifications.",
+  "notificationsEnableAction": "Turn on reminders",
+  "notificationsDeniedHint": "You denied notifications. You can turn them on from your system settings.",
+  "notificationsScheduled": "{count, plural, =0{No reminders scheduled} =1{1 reminder scheduled} other{{count} reminders scheduled}}",
+  "@notificationsScheduled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

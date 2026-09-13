@@ -1166,4 +1166,39 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get timezoneManualConfirmBody =>
       'Al elegir una zona manualmente, dejará de actualizarse automáticamente cuando viajes. Tus hábitos y tu racha seguirán la zona que selecciones.';
+
+  @override
+  String reminderNotificationTitle(String habit) {
+    return '$habit';
+  }
+
+  @override
+  String get reminderNotificationBody =>
+      'Es tu momento. ¿Lo damos por hecho hoy?';
+
+  @override
+  String get notificationsDisabledTitle => 'Los avisos están desactivados';
+
+  @override
+  String get notificationsDisabledBody =>
+      'Constanza no puede avisarte hasta que des permiso a las notificaciones.';
+
+  @override
+  String get notificationsEnableAction => 'Activar avisos';
+
+  @override
+  String get notificationsDeniedHint =>
+      'Has denegado los avisos. Puedes activarlos desde los ajustes del sistema.';
+
+  @override
+  String notificationsScheduled(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count avisos programados',
+      one: '1 aviso programado',
+      zero: 'Sin avisos programados',
+    );
+    return '$_temp0';
+  }
 }

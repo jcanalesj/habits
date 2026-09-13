@@ -265,25 +265,27 @@ class _CompactStreakContent extends StatelessWidget {
         key: const Key('expand-streak-card'),
         onTap: onExpand,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          padding: const EdgeInsets.fromLTRB(14, 11, 8, 11),
           child: Row(
             children: [
-              const Text('🔥', style: TextStyle(fontSize: 28)),
-              const SizedBox(width: 10),
+              const Text('🔥', style: TextStyle(fontSize: 30)),
+              const SizedBox(width: 9),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n.generalStreak,
+                      atRisk ? l10n.streakAtRisk : l10n.generalStreak,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: textTheme.labelLarge?.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
-                      '${streak.displayStreak} ${l10n.consecutiveDays}',
+                      '${streak.displayStreak} ${l10n.days}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: textTheme.titleMedium?.copyWith(
@@ -295,43 +297,39 @@ class _CompactStreakContent extends StatelessWidget {
                 ),
               ),
               if (wildcards.hasAny) ...[
-                Image.asset(
-                  'assets/icons/protector.png',
-                  width: 28,
-                  height: 28,
-                ),
-                Text(
-                  '${wildcards.available}',
-                  style: textTheme.titleSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
+                const SizedBox(width: 6),
+                _CompactMetricBadge(
+                  semanticLabel: l10n.wildcardsAvailable(wildcards.available),
+                  icon: Image.asset(
+                    'assets/icons/protector.png',
+                    width: 35,
+                    height: 35,
+                    fit: BoxFit.contain,
                   ),
+                  value: '${wildcards.available}',
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 7),
               ],
               if (streak.bestStreak > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 7,
+                _CompactMetricBadge(
+                  semanticLabel: l10n.bestStreakLabel(streak.bestStreak),
+                  icon: const Icon(
+                    Icons.emoji_events_rounded,
+                    color: Color(0xFFF59E0B),
+                    size: 27,
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.20),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    '🏆 ${streak.bestStreak}',
-                    style: textTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                  value: '${streak.bestStreak}',
                 ),
-              IconButton(
+              const SizedBox(width: 4),
+              IconButton.filledTonal(
                 onPressed: onExpand,
                 tooltip: l10n.expandStreakCard,
-                color: Colors.white,
-                icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                visualDensity: VisualDensity.compact,
+                style: IconButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: .18),
+                ),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 26),
               ),
             ],
           ),
@@ -339,4 +337,45 @@ class _CompactStreakContent extends StatelessWidget {
       ),
     );
   }
+}
+
+class _CompactMetricBadge extends StatelessWidget {
+  const _CompactMetricBadge({
+    required this.semanticLabel,
+    required this.icon,
+    required this.value,
+  });
+
+  final String semanticLabel;
+  final Widget icon;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: semanticLabel,
+    container: true,
+    child: Container(
+      height: 45,
+      padding: const EdgeInsets.fromLTRB(7, 4, 9, 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .48),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: .38)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          icon,
+          const SizedBox(width: 3),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.primaryDeep,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

@@ -2119,6 +2119,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'When you choose a time zone manually, it will no longer update automatically as you travel. Your habits and streak will follow the zone you select.'**
   String get timezoneManualConfirmBody;
+
+  /// No description provided for @reminderNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{habit}'**
+  String reminderNotificationTitle(String habit);
+
+  /// No description provided for @reminderNotificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s your moment. Shall we call it done today?'**
+  String get reminderNotificationBody;
+
+  /// No description provided for @notificationsDisabledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off'**
+  String get notificationsDisabledTitle;
+
+  /// No description provided for @notificationsDisabledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza can\'t remind you until you allow notifications.'**
+  String get notificationsDisabledBody;
+
+  /// No description provided for @notificationsEnableAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on reminders'**
+  String get notificationsEnableAction;
+
+  /// No description provided for @notificationsDeniedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You denied notifications. You can turn them on from your system settings.'**
+  String get notificationsDeniedHint;
+
+  /// No description provided for @notificationsScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No reminders scheduled} =1{1 reminder scheduled} other{{count} reminders scheduled}}'**
+  String notificationsScheduled(int count);
 }
 
 class _AppLocalizationsDelegate

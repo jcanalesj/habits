@@ -1,16 +1,29 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
+
+import 'package:flutter/widgets.dart' show Locale;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
+import 'package:habits/localization/gen/app_localizations.dart';
 
 /// Estado de la Home, alimentado por snapshots del repositorio: cualquier
 /// escritura (local u otro dispositivo) se refleja sola, sin recargas.
 ///
 /// La racha llega ya calculada en vivo desde la fuente de verdad; el
 /// controller solo sincroniza la proyección de `cache/rachas` cuando cambia.
+///
+/// También es quien mantiene al día los recordatorios del sistema: ve pasar
+/// los cambios de hábitos y de registros, que es justo lo que decide qué hay
+/// que avisar.
 class HomeController extends StreamNotifier<HomeSummary> {
+  /// Huella de lo último que se programó, para no reprogramar en cada
+  /// emisión del stream (cancelar y volver a crear decenas de avisos no es
+  /// gratis).
+  String? _remindersFingerprint;
+
   @override
   Stream<HomeSummary> build() {
     // Concesión mensual perezosa: al abrir la app se ponen al día los
@@ -38,7 +51,82 @@ class HomeController extends StreamNotifier<HomeSummary> {
           .read(rebuildStreakUsecaseProvider)
           .syncCache(summary.streak, summary.today),
     );
+    unawaited(_syncReminders(summary));
     return summary;
+  }
+
+  /// Solo depende de lo que cambia el plan de avisos: el día, y por cada
+  /// hábito su hora, su nombre, si ya está hecho hoy y si el objetivo del
+  /// periodo está cumplido.
+  static String _fingerprintOf(HomeSummary summary) => [
+    summary.today.key,
+    for (final habit in summary.habits)
+      '${habit.id}|${habit.reminderTime}|${habit.name}'
+          '|${summary.isCompletedOn(habit.id, summary.today)}'
+          '|${summary.progressOf(habit.id)?.isMet}',
+  ].join('~');
+
+  Future<void> _syncReminders(HomeSummary summary) async {
+    final fingerprint = _fingerprintOf(summary);
+    if (fingerprint == _remindersFingerprint) return;
+    _remindersFingerprint = fingerprint;
+
+    final l10n = await AppLocalizations.delegate.load(_deviceLocale());
+    if (!ref.mounted) return;
+
+    final now = ref.read(clockProvider).nowUtc();
+    final calendar = ref.read(logicalCalendarProvider);
+    final localNow = calendar.dateOf(now);
+
+    await ref
+        .read(syncRemindersUsecaseProvider)
+        .execute(
+          habits: summary.habits,
+          today: summary.today,
+          nowMinutes: _minutesOfDay(summary, localNow),
+          timezone: calendar.timezoneName,
+          completedDays: {
+            for (final habit in summary.habits)
+              habit.id: {
+                for (final log in summary.weekLogs)
+                  if (log.habitId == habit.id && log.isActivity) log.date,
+              },
+          },
+          isGoalMetOn: (habit, day) {
+            final progress = summary.progressOf(habit.id);
+            // Del progreso de periodos futuros no sabemos nada todavía, así
+            // que solo se salta el periodo en curso.
+            if (progress == null || !progress.isMet) return false;
+            return progress.period.contains(day);
+          },
+          title: (reminder) => l10n.reminderNotificationTitle(
+            reminder.habitName,
+          ),
+          body: (reminder) => l10n.reminderNotificationBody,
+        );
+  }
+
+  /// Idioma con el que se redactan las notificaciones.
+  ///
+  /// La app no fija `locale` en MaterialApp, así que usa el del sistema;
+  /// aquí se resuelve igual para que el aviso llegue en el mismo idioma que
+  /// ve el usuario en pantalla.
+  static Locale _deviceLocale() {
+    final device = PlatformDispatcher.instance.locale;
+    return AppLocalizations.supportedLocales.firstWhere(
+      (locale) => locale.languageCode == device.languageCode,
+      orElse: () => const Locale('es'),
+    );
+  }
+
+  /// Minutos transcurridos del día de hoy, para no programar avisos de una
+  /// hora que ya pasó.
+  int _minutesOfDay(HomeSummary summary, LogicalDate localToday) {
+    if (localToday != summary.today) return 0;
+    final calendar = ref.read(logicalCalendarProvider);
+    final startOfDay = calendar.startOfDayUtc(summary.today);
+    final elapsed = ref.read(clockProvider).nowUtc().difference(startOfDay);
+    return elapsed.inMinutes.clamp(0, 24 * 60);
   }
 
   /// Marca o desmarca el cumplimiento de HOY para [habitId].

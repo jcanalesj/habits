@@ -44,6 +44,14 @@ class LogicalCalendar {
   DateTime startOfDayUtc(LogicalDate date) =>
       tz.TZDateTime(_location, date.year, date.month, date.day).toUtc();
 
+  /// Instante exacto de [date] a las [hour]:[minute] en esta zona.
+  ///
+  /// Es lo que necesitan los recordatorios: "las 21:00" significa las 21:00
+  /// de la zona del perfil, no las del dispositivo. Devuelve el
+  /// [tz.TZDateTime] para poder programarlo tal cual.
+  tz.TZDateTime instantAt(LogicalDate date, int hour, int minute) =>
+      tz.TZDateTime(_location, date.year, date.month, date.day, hour, minute);
+
   /// Lunes de la semana de [date]. La semana va de lunes 00:00 a domingo
   /// 23:59:59 en la zona del perfil (§9).
   LogicalDate startOfWeek(LogicalDate date) =>

@@ -50,6 +50,24 @@ class _NotificationSettingsPageState
     await _update(habit, _serialize(selected));
   }
 
+  Future<void> _requestPermission() async {
+    final l10n = context.l10n;
+    final result = await ref
+        .read(notificationsRepositoryProvider)
+        .requestPermission();
+    ref.invalidate(notificationPermissionProvider);
+    if (!mounted) return;
+    if (result == NotificationPermission.denied) {
+      // Android e iOS solo preguntan una vez: a partir de ahí hay que ir a
+      // los ajustes del sistema, así que se dice en lugar de reintentar.
+      AppNotice.show(
+        context,
+        message: l10n.notificationsDeniedHint,
+        type: AppNoticeType.error,
+      );
+    }
+  }
+
   Future<void> _update(Habit habit, String? reminder) async {
     setState(() => _saving.add(habit.id));
     final result = await ref
@@ -159,6 +177,14 @@ class _NotificationSettingsPageState
           ),
         ),
         const SizedBox(height: 20),
+        // Sin permiso del sistema, las horas que configure aquí no sonarían
+        // nunca. Mejor decirlo arriba y dar el botón que dejar que lo
+        // descubra por su cuenta.
+        if (ref.watch(notificationPermissionProvider).value ==
+            NotificationPermission.denied) ...[
+          _PermissionCard(onRequest: _requestPermission),
+          const SizedBox(height: 14),
+        ],
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: _surfaceDecoration(),
@@ -373,3 +399,50 @@ BoxDecoration _surfaceDecoration() => BoxDecoration(
   borderRadius: BorderRadius.circular(24),
   border: Border.all(color: Colors.white),
 );
+
+/// Aviso de que el sistema tiene las notificaciones bloqueadas.
+class _PermissionCard extends StatelessWidget {
+  const _PermissionCard({required this.onRequest});
+
+  final VoidCallback onRequest;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _surfaceDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                PhosphorIconsBold.bellSlash,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  l10n.notificationsDisabledTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.notificationsDisabledBody,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: onRequest,
+            child: Text(l10n.notificationsEnableAction),
+          ),
+        ],
+      ),
+    );
+  }
+}

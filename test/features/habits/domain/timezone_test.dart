@@ -195,4 +195,47 @@ void main() {
     // un entry point nuevo, el error dice exactamente qué falta.
     expect(TimezoneDatabase.isInitialized, isTrue);
   });
+
+  group('instante de un recordatorio', () {
+    test('las 21:00 son las 21:00 de la zona del perfil', () {
+      final when = madrid.instantAt(const LogicalDate(2026, 9, 13), 21, 0);
+
+      expect(when.location.name, 'Europe/Madrid');
+      expect(when.hour, 21);
+      expect(when.minute, 0);
+      // 21:00 en Madrid (CEST, UTC+2) son las 19:00 UTC.
+      expect(when.toUtc().hour, 19);
+    });
+
+    test('la misma hora en otra zona es otro instante', () {
+      const dia = LogicalDate(2026, 9, 13);
+      final enMadrid = madrid.instantAt(dia, 21, 0);
+      final enNuevaYork = newYork.instantAt(dia, 21, 0);
+
+      expect(enMadrid.hour, enNuevaYork.hour);
+      expect(enMadrid.toUtc(), isNot(enNuevaYork.toUtc()));
+      // Nueva York va 6 horas por detrás de Madrid en septiembre.
+      expect(
+        enNuevaYork.toUtc().difference(enMadrid.toUtc()),
+        const Duration(hours: 6),
+      );
+    });
+
+    test('funciona el día del cambio de horario', () {
+      // 25 octubre 2026: Madrid vuelve a CET. Las 21:00 de ese día son las
+      // 20:00 UTC, no las 19:00.
+      final when = madrid.instantAt(const LogicalDate(2026, 10, 25), 21, 0);
+
+      expect(when.hour, 21);
+      expect(when.toUtc().hour, 20);
+    });
+
+    test('una zona inválida degrada a UTC sin lanzar', () {
+      final roto = LogicalCalendar('Marte/Olympus_Mons');
+      final when = roto.instantAt(const LogicalDate(2026, 9, 13), 21, 0);
+
+      expect(when.location.name, 'UTC');
+      expect(when.hour, 21);
+    });
+  });
 }

@@ -1161,4 +1161,39 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get timezoneManualConfirmBody =>
       'When you choose a time zone manually, it will no longer update automatically as you travel. Your habits and streak will follow the zone you select.';
+
+  @override
+  String reminderNotificationTitle(String habit) {
+    return '$habit';
+  }
+
+  @override
+  String get reminderNotificationBody =>
+      'It\'s your moment. Shall we call it done today?';
+
+  @override
+  String get notificationsDisabledTitle => 'Notifications are off';
+
+  @override
+  String get notificationsDisabledBody =>
+      'Constanza can\'t remind you until you allow notifications.';
+
+  @override
+  String get notificationsEnableAction => 'Turn on reminders';
+
+  @override
+  String get notificationsDeniedHint =>
+      'You denied notifications. You can turn them on from your system settings.';
+
+  @override
+  String notificationsScheduled(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reminders scheduled',
+      one: '1 reminder scheduled',
+      zero: 'No reminders scheduled',
+    );
+    return '$_temp0';
+  }
 }
