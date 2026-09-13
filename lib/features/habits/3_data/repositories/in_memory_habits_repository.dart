@@ -289,7 +289,13 @@ class InMemoryHabitsRepository implements HabitsRepository {
       ],
       colorValue: draft.colorValue,
       emoji: draft.emoji,
+      iconId: draft.iconId,
       reminderTime: draft.reminderTime,
+      trackingType: draft.trackingType,
+      targetCount: draft.targetCount,
+      unit: draft.unit,
+      displayGoal: draft.displayGoal,
+      progressIconId: draft.progressIconId,
       order: _habits.length,
       createdAt: _now(),
     );
@@ -374,6 +380,31 @@ class InMemoryHabitsRepository implements HabitsRepository {
       if (!_logs.containsKey(key)) return; // nada que borrar
       _requireActiveHabit(habitId);
       _logs.remove(key);
+    }
+    _logsController.add(_logs.values.toList(growable: false));
+  }
+
+  @override
+  Future<void> setHabitDailyCount({
+    required String habitId,
+    required LogicalDate date,
+    required int completedCount,
+    required int targetCount,
+  }) async {
+    _requireActiveHabit(habitId);
+    final key = '${habitId}_${date.key}';
+    final safeTarget = targetCount.clamp(1, 999);
+    final safeCount = completedCount.clamp(0, safeTarget);
+    if (safeCount == 0) {
+      _logs.remove(key);
+    } else {
+      _logs[key] = HabitLog(
+        id: key,
+        habitId: habitId,
+        date: date,
+        completedCount: safeCount,
+        targetCount: safeTarget,
+      );
     }
     _logsController.add(_logs.values.toList(growable: false));
   }

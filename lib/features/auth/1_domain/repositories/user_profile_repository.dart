@@ -19,4 +19,20 @@ abstract class UserProfileRepository {
   ///
   /// Emite null mientras el perfil no existe o no tiene zona.
   Stream<String?> watchTimezone(String userId);
+
+  Stream<String?> watchAvatarId(String userId);
+
+  Stream<bool> watchTimezoneAutomatic(String userId);
+
+  Future<void> updateDisplayName(String userId, String displayName);
+
+  Future<void> updateTimezone(String userId, String timezone);
+
+  Future<void> updateTimezoneSettings(
+    String userId, {
+    required String timezone,
+    required bool automatic,
+  });
+
+  Future<void> updateAvatarId(String userId, String avatarId);
 }

@@ -59,6 +59,32 @@ class HomeController extends StreamNotifier<HomeSummary> {
         );
   }
 
+  Future<bool> setTodayCount(String habitId, int count) async {
+    final summary = state.value;
+    if (summary == null) return false;
+    final habit = summary.habits
+        .where((item) => item.id == habitId)
+        .firstOrNull;
+    if (habit == null || !habit.hasRepetitions) return false;
+    final existingTarget = summary.weekLogs
+        .where((log) => log.habitId == habitId && log.date == summary.today)
+        .firstOrNull
+        ?.targetCount;
+    try {
+      await ref
+          .read(habitsRepositoryProvider)
+          .setHabitDailyCount(
+            habitId: habitId,
+            date: summary.today,
+            completedCount: count,
+            targetCount: existingTarget ?? habit.targetCount,
+          );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Gasta un comodín para proteger el día en peligro.
   ///
   /// El comodín nunca se consume solo: esto solo se llama desde una acción

@@ -18,6 +18,7 @@ class HabitsListCard extends StatelessWidget {
     this.onHabitTap,
     this.mode = HabitTileMode.manage,
     this.emptyMessage,
+    this.onSetDailyCount,
   });
 
   final List<Habit> habits;
@@ -30,6 +31,7 @@ class HabitsListCard extends StatelessWidget {
   final VoidCallback? onSeeAll;
   final ValueChanged<Habit>? onHabitTap;
   final HabitTileMode mode;
+  final void Function(String habitId, int count)? onSetDailyCount;
 
   /// Texto cuando no hay hábitos que mostrar en esta tarjeta.
   final String? emptyMessage;
@@ -41,14 +43,50 @@ class HabitsListCard extends StatelessWidget {
     return Column(
       children: [
         if (habits.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
-            child: Text(
-              emptyMessage ?? context.l10n.noHabitsYet,
-              textAlign: TextAlign.center,
-              style: textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 22),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 150,
+                  child: Image.asset(
+                    'assets/images/empty_habits.png',
+                    fit: BoxFit.contain,
+                    alignment: Alignment.topCenter,
+                    semanticLabel: context.l10n.emptyHabitsImageLabel,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.emptyHabitsTitle,
+                  textAlign: TextAlign.center,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  emptyMessage ?? context.l10n.homeEmptyHabitsBody,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ),
           ),
         for (final habit in habits)
@@ -62,6 +100,9 @@ class HabitsListCard extends StatelessWidget {
               mode: mode,
               onToggleToday: () => onToggleToday(habit.id),
               onTap: onHabitTap == null ? null : () => onHabitTap!(habit),
+              onSetDailyCount: onSetDailyCount == null
+                  ? null
+                  : (count) => onSetDailyCount!(habit.id, count),
             ),
           ),
         // Texto flexible en vez de TextButton.icon: la etiqueta larga

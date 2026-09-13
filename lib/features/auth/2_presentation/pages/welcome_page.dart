@@ -41,9 +41,7 @@ class WelcomePage extends ConsumerWidget {
                     children: [
                       const ConstanzaLogo(size: 145),
                       const SizedBox(height: 2),
-                      const ConstanzaWordmark(
-                        fontSize: 28,
-                      ),
+                      const ConstanzaWordmark(fontSize: 28),
                       const SizedBox(height: 22),
                       Container(
                         width: 34,

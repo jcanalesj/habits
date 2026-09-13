@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habits/components/habit_icon_catalog.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
@@ -817,7 +818,11 @@ class _HabitProgressRow extends StatelessWidget {
               color: color.withValues(alpha: .13),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Text(habit.emoji, style: const TextStyle(fontSize: 24)),
+            child: HabitIcon(
+              iconId: habit.iconId,
+              legacyEmoji: habit.emoji,
+              size: 30,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

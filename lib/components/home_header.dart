@@ -5,9 +5,14 @@ import 'package:habits/theme/app_theme.dart';
 
 /// Cabecera de la Home: saludo, lema y avatar.
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key, required this.greeting});
+  const HomeHeader({
+    super.key,
+    required this.greeting,
+    required this.onAvatarTap,
+  });
 
   final String greeting;
+  final VoidCallback onAvatarTap;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +40,20 @@ class HomeHeader extends StatelessWidget {
             ],
           ),
         ),
-        const CatMascot(size: 52),
+        Semantics(
+          button: true,
+          label: context.l10n.navProfile,
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onAvatarTap,
+              customBorder: const CircleBorder(),
+              child: const UserAvatar(size: 52),
+            ),
+          ),
+        ),
       ],
     );
   }

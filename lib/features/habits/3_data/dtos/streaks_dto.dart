@@ -27,8 +27,7 @@ class StreaksDto {
     return StreaksDto(
       rachaActual: (data[FirestoreFields.rachaActual] as num?)?.toInt() ?? 0,
       mejorRacha: (data[FirestoreFields.mejorRacha] as num?)?.toInt() ?? 0,
-      ultimoDiaActividad:
-          data[FirestoreFields.ultimoDiaActividad] as String?,
+      ultimoDiaActividad: data[FirestoreFields.ultimoDiaActividad] as String?,
       calculadoHasta: data[FirestoreFields.calculadoHasta] as String?,
       version: (data[FirestoreFields.version] as num?)?.toInt() ?? 0,
     );

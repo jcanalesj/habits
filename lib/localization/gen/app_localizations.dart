@@ -260,6 +260,12 @@ abstract class AppLocalizations {
   /// **'No habits yet. Create your first one with the + button.'**
   String get noHabitsYet;
 
+  /// No description provided for @homeEmptyHabitsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first small step starts here. Create it with the New habit button.'**
+  String get homeEmptyHabitsBody;
+
   /// No description provided for @nextReminder.
   ///
   /// In en, this message translates to:
@@ -305,13 +311,13 @@ abstract class AppLocalizations {
   /// No description provided for @navHome.
   ///
   /// In en, this message translates to:
-  /// **'Home'**
+  /// **'Habits'**
   String get navHome;
 
   /// No description provided for @navHabits.
   ///
   /// In en, this message translates to:
-  /// **'Habits'**
+  /// **'My habits'**
   String get navHabits;
 
   /// No description provided for @navStats.
@@ -673,6 +679,384 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out'**
   String get signOut;
+
+  /// No description provided for @profileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal space'**
+  String get profileSubtitle;
+
+  /// No description provided for @profileVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified account'**
+  String get profileVerified;
+
+  /// No description provided for @profileYourProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress'**
+  String get profileYourProgress;
+
+  /// No description provided for @profileCurrentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak'**
+  String get profileCurrentStreak;
+
+  /// No description provided for @profileActiveHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'Active habits'**
+  String get profileActiveHabits;
+
+  /// No description provided for @profileProtectors.
+  ///
+  /// In en, this message translates to:
+  /// **'Protectors'**
+  String get profileProtectors;
+
+  /// No description provided for @profileManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your experience'**
+  String get profileManage;
+
+  /// No description provided for @profileMyHabitsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize and edit your habits'**
+  String get profileMyHabitsSubtitle;
+
+  /// No description provided for @profileCalendarsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View your full history'**
+  String get profileCalendarsSubtitle;
+
+  /// No description provided for @profileStatsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See how you\'re progressing'**
+  String get profileStatsSubtitle;
+
+  /// No description provided for @profilePreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get profilePreferences;
+
+  /// No description provided for @profileTimezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Time zone'**
+  String get profileTimezone;
+
+  /// No description provided for @profileEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEdit;
+
+  /// No description provided for @profileViewStats.
+  ///
+  /// In en, this message translates to:
+  /// **'View statistics'**
+  String get profileViewStats;
+
+  /// No description provided for @profileTimezoneSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure your time zone'**
+  String get profileTimezoneSubtitle;
+
+  /// No description provided for @profileNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get profileNotifications;
+
+  /// No description provided for @profileNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your reminders'**
+  String get profileNotificationsSubtitle;
+
+  /// No description provided for @profileAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get profileAppearance;
+
+  /// No description provided for @profileAppearanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, color and app icon'**
+  String get profileAppearanceSubtitle;
+
+  /// No description provided for @profileSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get profileSave;
+
+  /// No description provided for @profileName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get profileName;
+
+  /// No description provided for @profileChooseTimezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your time zone'**
+  String get profileChooseTimezone;
+
+  /// No description provided for @profileReminderSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit reminders'**
+  String get profileReminderSettings;
+
+  /// No description provided for @profileReminderSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a habit to configure its reminder time.'**
+  String get profileReminderSettingsHint;
+
+  /// No description provided for @profileNoHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any habits to configure yet.'**
+  String get profileNoHabits;
+
+  /// No description provided for @profileWelcomeAnimation.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome animation'**
+  String get profileWelcomeAnimation;
+
+  /// No description provided for @profileWelcomeAnimationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the mascot and motivation when opening the app'**
+  String get profileWelcomeAnimationHint;
+
+  /// No description provided for @profileChangesSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes saved'**
+  String get profileChangesSaved;
+
+  /// No description provided for @profileStreakEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it up! 💪'**
+  String get profileStreakEncouragement;
+
+  /// No description provided for @profileHabitsEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re building a great habit 💚'**
+  String get profileHabitsEncouragement;
+
+  /// No description provided for @profileProtectorEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} for a difficult day ✨'**
+  String profileProtectorEncouragement(int count);
+
+  /// No description provided for @chooseAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your avatar'**
+  String get chooseAvatar;
+
+  /// No description provided for @chooseAvatarSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Constanza feel a little more yours 💜'**
+  String get chooseAvatarSubtitle;
+
+  /// No description provided for @avatarTraveler.
+  ///
+  /// In en, this message translates to:
+  /// **'Traveler cat'**
+  String get avatarTraveler;
+
+  /// No description provided for @avatarFriendly.
+  ///
+  /// In en, this message translates to:
+  /// **'Curious cat'**
+  String get avatarFriendly;
+
+  /// No description provided for @avatarMagic.
+  ///
+  /// In en, this message translates to:
+  /// **'Magic cat'**
+  String get avatarMagic;
+
+  /// No description provided for @avatarGamer.
+  ///
+  /// In en, this message translates to:
+  /// **'Gamer cat'**
+  String get avatarGamer;
+
+  /// No description provided for @avatarZen.
+  ///
+  /// In en, this message translates to:
+  /// **'Zen cat'**
+  String get avatarZen;
+
+  /// No description provided for @avatarNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Night cat'**
+  String get avatarNight;
+
+  /// No description provided for @avatarAdventurer.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventurer cat'**
+  String get avatarAdventurer;
+
+  /// No description provided for @avatarLegendary.
+  ///
+  /// In en, this message translates to:
+  /// **'Legendary cat'**
+  String get avatarLegendary;
+
+  /// No description provided for @avatarSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get avatarSelected;
+
+  /// No description provided for @avatarAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get avatarAvailable;
+
+  /// No description provided for @avatarComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get avatarComingSoon;
+
+  /// No description provided for @avatarLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'locked'**
+  String get avatarLocked;
+
+  /// No description provided for @avatarLockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked avatar 🔒'**
+  String get avatarLockedTitle;
+
+  /// No description provided for @avatarLockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This avatar will be available soon.'**
+  String get avatarLockedBody;
+
+  /// No description provided for @understood.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get understood;
+
+  /// No description provided for @timezoneHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day, your time'**
+  String get timezoneHeroTitle;
+
+  /// No description provided for @timezoneHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We use your time zone to know when a new day begins and keep your habits and streak accurate.'**
+  String get timezoneHeroBody;
+
+  /// No description provided for @timezoneAutomatic.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic time zone'**
+  String get timezoneAutomatic;
+
+  /// No description provided for @timezoneAutomaticSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the device time zone'**
+  String get timezoneAutomaticSubtitle;
+
+  /// No description provided for @timezoneRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended for most users.'**
+  String get timezoneRecommended;
+
+  /// No description provided for @timezoneCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current time zone'**
+  String get timezoneCurrent;
+
+  /// No description provided for @timezoneActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get timezoneActive;
+
+  /// No description provided for @timezoneCurrentTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Current time: {time}'**
+  String timezoneCurrentTime(String time);
+
+  /// No description provided for @timezoneManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Select manually'**
+  String get timezoneManual;
+
+  /// No description provided for @timezoneManualSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'If you prefer, you can choose another time zone.'**
+  String get timezoneManualSubtitle;
+
+  /// No description provided for @timezoneSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search city or time zone...'**
+  String get timezoneSearch;
+
+  /// No description provided for @timezoneRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Available zones'**
+  String get timezoneRecent;
+
+  /// No description provided for @timezoneTravelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When automatic mode is enabled, Constanza will update your time zone as you travel so your days follow local time.'**
+  String get timezoneTravelHint;
+
+  /// No description provided for @profileAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get profileAccount;
+
+  /// No description provided for @profileSignOutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can sign in again with your email and password.'**
+  String get profileSignOutHint;
 
   /// No description provided for @nicknameTooLong.
   ///
@@ -1070,6 +1454,84 @@ abstract class AppLocalizations {
   /// **'Times per period'**
   String get habitTimesLabel;
 
+  /// No description provided for @habitTrackingQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How many times do you want to do it?'**
+  String get habitTrackingQuestion;
+
+  /// No description provided for @habitTrackingOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Once'**
+  String get habitTrackingOnce;
+
+  /// No description provided for @habitTrackingSeveral.
+  ///
+  /// In en, this message translates to:
+  /// **'Several times'**
+  String get habitTrackingSeveral;
+
+  /// No description provided for @habitTargetCount.
+  ///
+  /// In en, this message translates to:
+  /// **'How many times?'**
+  String get habitTargetCount;
+
+  /// No description provided for @habitUnitOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit (optional)'**
+  String get habitUnitOptional;
+
+  /// No description provided for @habitUnitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: glasses'**
+  String get habitUnitHint;
+
+  /// No description provided for @habitDisplayGoalOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Visible goal (optional)'**
+  String get habitDisplayGoalOptional;
+
+  /// No description provided for @habitDisplayGoalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: 2 L'**
+  String get habitDisplayGoalHint;
+
+  /// No description provided for @habitProgressIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress icon'**
+  String get habitProgressIcon;
+
+  /// No description provided for @habitProgressIconSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how you want to log each time you do it.'**
+  String get habitProgressIconSubtitle;
+
+  /// No description provided for @habitRepetitionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {target}{unit}'**
+  String habitRepetitionProgress(Object completed, Object target, Object unit);
+
+  /// No description provided for @habitRepetitionItemCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{item} {index} of {target}, completed'**
+  String habitRepetitionItemCompleted(Object index, Object item, Object target);
+
+  /// No description provided for @habitRepetitionItemPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{item} {index} of {target}, pending'**
+  String habitRepetitionItemPending(Object index, Object item, Object target);
+
   /// No description provided for @habitReminderLabel.
   ///
   /// In en, this message translates to:
@@ -1189,6 +1651,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You don\'t have any habits yet.\nCreate your first one and start your streak.'**
   String get noHabitsYetLong;
+
+  /// No description provided for @myHabitsManageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Here you can view and manage all your habits.'**
+  String get myHabitsManageSubtitle;
+
+  /// No description provided for @addHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Add habit'**
+  String get addHabit;
+
+  /// No description provided for @emptyHabitsImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cat waiting for new habits'**
+  String get emptyHabitsImageLabel;
+
+  /// No description provided for @emptyHabitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any habits yet'**
+  String get emptyHabitsTitle;
+
+  /// No description provided for @emptyHabitsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by adding your first habit and take the first step towards the best version of yourself.'**
+  String get emptyHabitsBody;
+
+  /// No description provided for @addFirstHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Add my first habit'**
+  String get addFirstHabit;
+
+  /// No description provided for @needIdeas.
+  ///
+  /// In en, this message translates to:
+  /// **'Need some ideas?'**
+  String get needIdeas;
+
+  /// No description provided for @habitIdeaExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get habitIdeaExercise;
+
+  /// No description provided for @habitIdeaRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get habitIdeaRead;
+
+  /// No description provided for @habitIdeaWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink water'**
+  String get habitIdeaWater;
+
+  /// No description provided for @habitIdeaSleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep better'**
+  String get habitIdeaSleep;
 
   /// No description provided for @allHabitsTitle.
   ///
@@ -1393,6 +1921,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'To edit your habits, go to the Habits tab.'**
   String get editHabitsHint;
+
+  /// No description provided for @timezoneChangeConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your time zone?'**
+  String get timezoneChangeConfirmTitle;
+
+  /// No description provided for @timezoneChangeConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get timezoneChangeConfirmAction;
 }
 
 class _AppLocalizationsDelegate

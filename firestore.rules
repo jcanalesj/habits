@@ -167,13 +167,19 @@ service cloud.firestore {
 
       function validUser(d) {
         return d.keys().hasOnly([
-            'email', 'displayName', 'timezone', 'locale', 'subscription',
+            'email', 'displayName', 'avatarId', 'timezone', 'timezoneAutomatic',
+            'locale', 'subscription',
             'onboardingCompleted', 'createdAt', 'updatedAt', 'lastActiveAt'
           ])
           && d.keys().hasAll(['email', 'timezone', 'locale', 'subscription', 'createdAt', 'updatedAt'])
           && d.email is string
           && (!('displayName' in d) || d.displayName == null || isShortText(d.displayName, 40))
+          && (!('avatarId' in d) || d.avatarId in [
+            'traveler', 'friendly', 'magic', 'gamer', 'zen', 'night',
+            'adventurer', 'legendary'
+          ])
           && isShortText(d.timezone, 64)
+          && (!('timezoneAutomatic' in d) || d.timezoneAutomatic is bool)
           && d.locale in ['es', 'en']
           && d.subscription is map
           && (!('onboardingCompleted' in d) || d.onboardingCompleted is bool);
@@ -250,6 +256,7 @@ service cloud.firestore {
         return d.keys().hasOnly([
             'nombre', 'emoji', 'colorValue', 'ambitoId', 'periodicidad',
             'cambiosPeriodicidad', 'recordatorioHora', 'orden', 'deletedAt',
+            'trackingType', 'targetCount', 'unit', 'displayGoal', 'iconId', 'progressIconId',
             'createdAt', 'updatedAt',
             // legacy, solo tolerados
             'historialPeriodicidad', 'descansosPermitidos',
@@ -261,12 +268,18 @@ service cloud.firestore {
           ])
           && isShortText(d.nombre, 60)
           && isShortText(d.emoji, 16)
+          && (!('iconId' in d) || isShortText(d.iconId, 32))
           && isColor(d.colorValue)
           && isShortText(d.ambitoId, 128)
           && isPeriodicidad(d.periodicidad)
           && d.cambiosPeriodicidad is list
           && d.cambiosPeriodicidad.size() <= 50
           && (!('recordatorioHora' in d) || d.recordatorioHora == null || isHora(d.recordatorioHora))
+          && (!('trackingType' in d) || d.trackingType in ['single', 'repetitions'])
+          && (!('targetCount' in d) || (d.targetCount is int && d.targetCount >= 1 && d.targetCount <= 999))
+          && (!('unit' in d) || d.unit == null || isShortText(d.unit, 24))
+          && (!('displayGoal' in d) || d.displayGoal == null || isShortText(d.displayGoal, 32))
+          && (!('progressIconId' in d) || isShortText(d.progressIconId, 32))
           && isNonNegInt(d.orden)
           && isNullOrTimestamp(d.deletedAt);
       }
@@ -285,10 +298,15 @@ service cloud.firestore {
         && isServerTime(incoming().createdAt)
         && habitoActivo(incoming().habitoId);
 
-      // Un registro no se edita: marcar es create, desmarcar es delete. Así
-      // no hay forma de reescribir el pasado cambiando un documento ya
-      // existente, y el histórico es inmutable por construcción.
-      allow update: if false;
+      // Solo el contador del día actual puede avanzar o retroceder. La fecha,
+      // el hábito y el objetivo histórico permanecen inmutables.
+      allow update: if isOwner(uid)
+        && validRegistro(incoming())
+        && unchanged('habitoId') && unchanged('dia') && unchanged('tipo')
+        && unchanged('targetCount')
+        && isDiaEnVentanaDeHoy(incoming().dia)
+        && habitoActivo(incoming().habitoId)
+        && habitoData(incoming().habitoId).trackingType == 'repetitions';
 
       // Los registros de un hábito eliminado (soft delete) son inmutables:
       // borrar un hábito hoy no debe reescribir la racha histórica (§30).
@@ -300,11 +318,13 @@ service cloud.firestore {
       }
 
       function validRegistro(d) {
-        return d.keys().hasOnly(['habitoId', 'dia', 'tipo', 'tz', 'createdAt'])
+        return d.keys().hasOnly(['habitoId', 'dia', 'tipo', 'tz', 'createdAt', 'completedCount', 'targetCount'])
           && d.keys().hasAll(['habitoId', 'dia', 'tipo', 'createdAt'])
           && isShortText(d.habitoId, 128)
           && isDia(d.dia)
           && isTipoRegistro(d.tipo)
+          && (!('completedCount' in d) || (d.completedCount is int && d.completedCount >= 1 && d.completedCount <= 999))
+          && (!('targetCount' in d) || (d.targetCount is int && d.targetCount >= 1 && d.targetCount <= 999 && d.completedCount <= d.targetCount))
           && (!('tz' in d) || isShortText(d.tz, 64));
       }
     }

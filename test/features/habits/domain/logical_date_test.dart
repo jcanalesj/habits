@@ -29,13 +29,19 @@ void main() {
     test('tryParse devuelve null en lugar de lanzar', () {
       expect(LogicalDate.tryParse(null), isNull);
       expect(LogicalDate.tryParse('2026-02-30'), isNull);
-      expect(LogicalDate.tryParse('2026-09-11'), const LogicalDate(2026, 9, 11));
+      expect(
+        LogicalDate.tryParse('2026-09-11'),
+        const LogicalDate(2026, 9, 11),
+      );
     });
   });
 
   group('LogicalDate — aritmética de días', () {
     test('addDays cruza el cambio de mes', () {
-      expect(const LogicalDate(2026, 8, 31).next, const LogicalDate(2026, 9, 1));
+      expect(
+        const LogicalDate(2026, 8, 31).next,
+        const LogicalDate(2026, 9, 1),
+      );
       expect(
         const LogicalDate(2026, 9, 1).previous,
         const LogicalDate(2026, 8, 31),
@@ -77,9 +83,11 @@ void main() {
 
     test('differenceInDays cuenta días naturales', () {
       expect(
-        const LogicalDate(2026, 9, 1).differenceInDays(
-          const LogicalDate(2026, 9, 11),
-        ),
+        const LogicalDate(
+          2026,
+          9,
+          1,
+        ).differenceInDays(const LogicalDate(2026, 9, 11)),
         10,
       );
     });

@@ -32,11 +32,15 @@ class HabitsListPage extends ConsumerWidget {
           _ => const Center(child: CircularProgressIndicator()),
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/habit/new'),
-        icon: const Icon(Icons.add_rounded),
-        label: Text(l10n.newHabit),
-      ),
+      floatingActionButton: switch (summaryAsync) {
+        AsyncData(:final value) when value.habits.isNotEmpty =>
+          FloatingActionButton.extended(
+            onPressed: () => context.push('/habit/new'),
+            icon: const Icon(Icons.add_rounded),
+            label: Text(l10n.newHabit),
+          ),
+        _ => null,
+      },
     );
   }
 }
@@ -63,18 +67,7 @@ class _Content extends ConsumerWidget {
     final controller = ref.read(homeControllerProvider.notifier);
 
     if (summary.habits.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(
-            l10n.noHabitsYetLong,
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-        ),
-      );
+      return const _EmptyHabits();
     }
 
     return ListView(
@@ -120,6 +113,184 @@ class _Content extends ConsumerWidget {
       ],
     );
   }
+}
+
+class _EmptyHabits extends StatelessWidget {
+  const _EmptyHabits();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
+    void createHabit() => context.push('/habit/new');
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 120),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.allHabitsTitle,
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.myHabitsManageSubtitle,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            FilledButton.icon(
+              key: const ValueKey('empty-add-habit-top'),
+              onPressed: createHabit,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 13,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon: const Icon(PhosphorIconsBold.plus, size: 19),
+              label: Text(l10n.addHabit),
+            ),
+          ],
+        ),
+        const SizedBox(height: 28),
+        Image.asset(
+          'assets/images/empty_habits.png',
+          height: 265,
+          fit: BoxFit.contain,
+          semanticLabel: l10n.emptyHabitsImageLabel,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          l10n.emptyHabitsTitle,
+          textAlign: TextAlign.center,
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          l10n.emptyHabitsBody,
+          textAlign: TextAlign.center,
+          style: textTheme.bodyMedium?.copyWith(
+            color: AppColors.textSecondary,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: FilledButton.icon(
+            key: const ValueKey('empty-add-first-habit'),
+            onPressed: createHabit,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: const StadiumBorder(),
+            ),
+            icon: const Icon(PhosphorIconsBold.plus, size: 20),
+            label: Text(l10n.addFirstHabit),
+          ),
+        ),
+        const SizedBox(height: 34),
+        Row(
+          children: [
+            const Expanded(child: Divider()),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                l10n.needIdeas,
+                style: textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+            const Expanded(child: Divider()),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            _HabitIdea(
+              icon: PhosphorIconsRegular.sneakerMove,
+              color: AppColors.primary,
+              label: l10n.habitIdeaExercise,
+            ),
+            _HabitIdea(
+              icon: PhosphorIconsRegular.bookOpen,
+              color: AppColors.green,
+              label: l10n.habitIdeaRead,
+            ),
+            _HabitIdea(
+              icon: PhosphorIconsRegular.drop,
+              color: AppColors.blue,
+              label: l10n.habitIdeaWater,
+            ),
+            _HabitIdea(
+              icon: PhosphorIconsRegular.moon,
+              color: AppColors.primary,
+              label: l10n.habitIdeaSleep,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _HabitIdea extends StatelessWidget {
+  const _HabitIdea({
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Container(
+        height: 92,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _EditHabitWarningDialog extends StatelessWidget {

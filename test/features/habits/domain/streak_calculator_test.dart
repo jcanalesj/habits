@@ -129,7 +129,11 @@ void main() {
       expect(state.currentStreak, 0, reason: 'valor determinista: ya rota');
       expect(state.rescue!.day, d('2026-09-10'));
       expect(state.rescue!.streakAtRisk, 24);
-      expect(state.rescue!.streakIfRescued, 24, reason: 'hoy aún sin actividad');
+      expect(
+        state.rescue!.streakIfRescued,
+        24,
+        reason: 'hoy aún sin actividad',
+      );
       expect(state.displayStreak, 24, reason: 'la UI enseña la que peligra');
     });
 

@@ -142,6 +142,46 @@ void main() {
       expect(logs, isEmpty);
     });
 
+    test(
+      'repeticiones solo cuentan como actividad al alcanzar el objetivo',
+      () async {
+        final ambitoId = (await repository.watchAmbitos().first).first.id;
+        final habit = await repository.createHabit(
+          habitDraft(
+            ambitoId: ambitoId,
+            trackingType: HabitTrackingType.repetitions,
+            targetCount: 6,
+            unit: 'vasos',
+            displayGoal: '2 L',
+            progressIconId: 'water_glass',
+          ),
+          today: today,
+        );
+
+        await repository.setHabitDailyCount(
+          habitId: habit.id,
+          date: today,
+          completedCount: 4,
+          targetCount: 6,
+        );
+        var log = (await repository.fetchHabitLogs(habit.id)).single;
+        expect(log.completedCount, 4);
+        expect(log.targetCount, 6);
+        expect(log.isActivity, isFalse);
+        expect(await repository.fetchActivityDays(), isEmpty);
+
+        await repository.setHabitDailyCount(
+          habitId: habit.id,
+          date: today,
+          completedCount: 6,
+          targetCount: 6,
+        );
+        log = (await repository.fetchHabitLogs(habit.id)).single;
+        expect(log.isActivity, isTrue);
+        expect(await repository.fetchActivityDays(), {today});
+      },
+    );
+
     test('consulta registros por rango de fechas y por hábito', () async {
       final ambitoId = (await repository.watchAmbitos().first).first.id;
       final a = await repository.createHabit(

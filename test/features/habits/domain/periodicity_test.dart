@@ -15,10 +15,7 @@ Periodicity monthly(int times) =>
 Periodicity yearly(int times) =>
     Periodicity(type: PeriodicityType.yearly, timesPerPeriod: times);
 
-Habit habitWith(
-  List<PeriodicityEntry> timeline, {
-  String id = 'h1',
-}) => Habit(
+Habit habitWith(List<PeriodicityEntry> timeline, {String id = 'h1'}) => Habit(
   id: id,
   name: 'Gimnasio',
   ambitoId: 'salud',
@@ -126,8 +123,10 @@ void main() {
       ];
 
       expect(resolver.configAt(timeline, d('2026-09-20')), weekly(3));
-      expect(resolver.pendingChange(timeline, d('2026-09-20'))!.since,
-          d('2026-10-01'));
+      expect(
+        resolver.pendingChange(timeline, d('2026-09-20'))!.since,
+        d('2026-10-01'),
+      );
       expect(resolver.pendingChange(timeline, d('2026-10-05')), isNull);
     });
 
@@ -148,7 +147,10 @@ void main() {
   group('progreso del objetivo', () {
     test('daily: el periodo es el propio día', () {
       final habit = habitWith([
-        PeriodicityEntry(periodicity: Periodicity.daily, since: d('2026-09-01')),
+        PeriodicityEntry(
+          periodicity: Periodicity.daily,
+          since: d('2026-09-01'),
+        ),
       ]);
 
       final result = progress.forHabit(
@@ -232,7 +234,11 @@ void main() {
       final result = progress.forHabit(
         habit: habit,
         logs: logsOn([
-          '2026-09-07', '2026-09-08', '2026-09-09', '2026-09-10', '2026-09-11',
+          '2026-09-07',
+          '2026-09-08',
+          '2026-09-09',
+          '2026-09-10',
+          '2026-09-11',
         ]),
         today: d('2026-09-11'),
       );
@@ -345,8 +351,11 @@ void main() {
       expect(enSeptiembre.goal, 3);
       expect(enOctubre.period.type, PeriodicityType.monthly);
       expect(enOctubre.goal, 12);
-      expect(enOctubre.period.start, d('2026-10-01'),
-          reason: 'periodo mensual completo, sin parcialidad');
+      expect(
+        enOctubre.period.start,
+        d('2026-10-01'),
+        reason: 'periodo mensual completo, sin parcialidad',
+      );
     });
 
     test('monthly → weekly: el mes sigue hasta que arranca la semana', () {
@@ -369,8 +378,11 @@ void main() {
         today: d('2026-09-14'),
       );
       expect(semanal.period.type, PeriodicityType.weekly);
-      expect(semanal.period.start, d('2026-09-14'),
-          reason: 'semana completa lunes-domingo');
+      expect(
+        semanal.period.start,
+        d('2026-09-14'),
+        reason: 'semana completa lunes-domingo',
+      );
       expect(semanal.period.end, d('2026-09-20'));
     });
   });
@@ -393,12 +405,10 @@ void main() {
         today: d('2026-09-01'),
       );
 
-      final result = await ChangeHabitPeriodicityUsecase(repo, resolver)
-          .execute(
-            habit: habit,
-            next: monthly(12),
-            today: d('2026-09-10'),
-          );
+      final result = await ChangeHabitPeriodicityUsecase(
+        repo,
+        resolver,
+      ).execute(habit: habit, next: monthly(12), today: d('2026-09-10'));
 
       final scheduled = result as ChangePeriodicityScheduled;
       expect(scheduled.effectiveFrom, d('2026-10-01'));
@@ -413,44 +423,49 @@ void main() {
       expect(scheduled.habit.periodicityOn(d('2026-10-01')), monthly(12));
     });
 
-    test('un segundo cambio antes de la fecha efectiva sustituye al primero',
-        () async {
-      final repo = InMemoryHabitsRepository(seeded: false);
-      addTearDown(repo.dispose);
-      await repo.createAmbito(
-        const AmbitoDraft(name: 'Salud', emoji: '💜', colorValue: 1),
-      );
-      final habit = await repo.createHabit(
-        HabitDraft(
-          name: 'Gimnasio',
-          ambitoId: (await repo.watchAmbitos().first).first.id,
-          periodicity: weekly(3),
-          colorValue: 0xFF000000,
-          emoji: '🏋️',
-        ),
-        today: d('2026-09-01'),
-      );
-      final usecase = ChangeHabitPeriodicityUsecase(repo, resolver);
+    test(
+      'un segundo cambio antes de la fecha efectiva sustituye al primero',
+      () async {
+        final repo = InMemoryHabitsRepository(seeded: false);
+        addTearDown(repo.dispose);
+        await repo.createAmbito(
+          const AmbitoDraft(name: 'Salud', emoji: '💜', colorValue: 1),
+        );
+        final habit = await repo.createHabit(
+          HabitDraft(
+            name: 'Gimnasio',
+            ambitoId: (await repo.watchAmbitos().first).first.id,
+            periodicity: weekly(3),
+            colorValue: 0xFF000000,
+            emoji: '🏋️',
+          ),
+          today: d('2026-09-01'),
+        );
+        final usecase = ChangeHabitPeriodicityUsecase(repo, resolver);
 
-      final first =
-          await usecase.execute(
-                habit: habit,
-                next: weekly(5),
-                today: d('2026-09-10'),
-              )
-              as ChangePeriodicityScheduled;
-      final second =
-          await usecase.execute(
-                habit: first.habit,
-                next: weekly(7),
-                today: d('2026-09-11'),
-              )
-              as ChangePeriodicityScheduled;
+        final first =
+            await usecase.execute(
+                  habit: habit,
+                  next: weekly(5),
+                  today: d('2026-09-10'),
+                )
+                as ChangePeriodicityScheduled;
+        final second =
+            await usecase.execute(
+                  habit: first.habit,
+                  next: weekly(7),
+                  today: d('2026-09-11'),
+                )
+                as ChangePeriodicityScheduled;
 
-      expect(second.habit.periodicityTimeline, hasLength(2),
-          reason: 'no se apilan entradas para la misma fecha');
-      expect(second.habit.periodicityOn(d('2026-09-14')), weekly(7));
-    });
+        expect(
+          second.habit.periodicityTimeline,
+          hasLength(2),
+          reason: 'no se apilan entradas para la misma fecha',
+        );
+        expect(second.habit.periodicityOn(d('2026-09-14')), weekly(7));
+      },
+    );
 
     test('rechaza una cantidad imposible para el tipo', () async {
       final repo = InMemoryHabitsRepository(seeded: false);
@@ -470,8 +485,10 @@ void main() {
       );
 
       // 10 veces por semana es imposible: solo cabe un registro por día.
-      final result = await ChangeHabitPeriodicityUsecase(repo, resolver)
-          .execute(habit: habit, next: weekly(10), today: d('2026-09-10'));
+      final result = await ChangeHabitPeriodicityUsecase(
+        repo,
+        resolver,
+      ).execute(habit: habit, next: weekly(10), today: d('2026-09-10'));
 
       expect(result, isA<ChangePeriodicityInvalid>());
     });

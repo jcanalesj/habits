@@ -39,7 +39,9 @@ void main() {
         expect(data.keys.toSet(), {
           'email',
           'displayName',
+          'avatarId',
           'timezone',
+          'timezoneAutomatic',
           'locale',
           'subscription',
           'onboardingCompleted',
@@ -49,7 +51,9 @@ void main() {
         });
         expect(data['email'], 'alex@example.com');
         expect(data['displayName'], 'Alex');
+        expect(data['avatarId'], 'traveler');
         expect(data['timezone'], 'Europe/Madrid');
+        expect(data['timezoneAutomatic'], isTrue);
         expect(data['locale'], 'es');
         expect(data['subscription'], {'status': 'free'});
         expect(data['onboardingCompleted'], isFalse);

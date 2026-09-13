@@ -13,6 +13,7 @@ class HabitDto {
     required this.id,
     required this.nombre,
     required this.emoji,
+    required this.iconId,
     required this.colorValue,
     required this.ambitoId,
     required this.periodicidad,
@@ -21,11 +22,17 @@ class HabitDto {
     required this.orden,
     required this.createdAt,
     required this.deletedAt,
+    required this.trackingType,
+    required this.targetCount,
+    required this.unit,
+    required this.displayGoal,
+    required this.progressIconId,
   });
 
   final String id;
   final String nombre;
   final String emoji;
+  final String? iconId;
   final int colorValue;
   final String ambitoId;
 
@@ -41,6 +48,11 @@ class HabitDto {
   /// no confirmada por el servidor).
   final DateTime? createdAt;
   final DateTime? deletedAt;
+  final String trackingType;
+  final int targetCount;
+  final String? unit;
+  final String? displayGoal;
+  final String progressIconId;
 
   factory HabitDto.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? const {};
@@ -48,6 +60,7 @@ class HabitDto {
       id: doc.id,
       nombre: data[FirestoreFields.nombre] as String? ?? '',
       emoji: data[FirestoreFields.emoji] as String? ?? '',
+      iconId: data[FirestoreFields.iconId] as String?,
       colorValue: (data[FirestoreFields.colorValue] as num?)?.toInt() ?? 0,
       ambitoId: data[FirestoreFields.ambitoId] as String? ?? '',
       periodicidad: normalizePeriodicidad(data[FirestoreFields.periodicidad]),
@@ -56,6 +69,12 @@ class HabitDto {
       orden: (data[FirestoreFields.orden] as num?)?.toInt() ?? 0,
       createdAt: (data[FirestoreFields.createdAt] as Timestamp?)?.toDate(),
       deletedAt: (data[FirestoreFields.deletedAt] as Timestamp?)?.toDate(),
+      trackingType: data[FirestoreFields.trackingType] as String? ?? 'single',
+      targetCount: (data[FirestoreFields.targetCount] as num?)?.toInt() ?? 1,
+      unit: data[FirestoreFields.unit] as String?,
+      displayGoal: data[FirestoreFields.displayGoal] as String?,
+      progressIconId:
+          data[FirestoreFields.progressIconId] as String? ?? 'check',
     );
   }
 
@@ -106,11 +125,17 @@ class HabitDto {
   Map<String, dynamic> toEditableMap() => {
     FirestoreFields.nombre: nombre,
     FirestoreFields.emoji: emoji,
+    if (iconId != null) FirestoreFields.iconId: iconId,
     FirestoreFields.colorValue: colorValue,
     FirestoreFields.ambitoId: ambitoId,
     FirestoreFields.periodicidad: periodicidad,
     FirestoreFields.cambiosPeriodicidad: cambiosPeriodicidad,
     FirestoreFields.recordatorioHora: recordatorioHora,
     FirestoreFields.orden: orden,
+    FirestoreFields.trackingType: trackingType,
+    FirestoreFields.targetCount: targetCount,
+    FirestoreFields.unit: unit,
+    FirestoreFields.displayGoal: displayGoal,
+    FirestoreFields.progressIconId: progressIconId,
   };
 }

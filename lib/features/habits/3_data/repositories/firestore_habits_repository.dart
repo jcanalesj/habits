@@ -70,6 +70,8 @@ class FirestoreHabitsRepository implements HabitsRepository {
           FirestoreFields.habitoId: dto.habitoId,
           FirestoreFields.dia: dto.dia,
           FirestoreFields.tipo: dto.tipo,
+          FirestoreFields.completedCount: dto.completedCount,
+          FirestoreFields.targetCount: dto.targetCount,
         },
       );
 
@@ -163,8 +165,7 @@ class FirestoreHabitsRepository implements HabitsRepository {
   });
 
   @override
-  Future<void> clearStreakCache() =>
-      _guard(() async => _rachasRaw.delete());
+  Future<void> clearStreakCache() => _guard(() async => _rachasRaw.delete());
 
   @override
   Future<List<HabitLog>> fetchHabitLogs(
@@ -200,34 +201,38 @@ class FirestoreHabitsRepository implements HabitsRepository {
   // ---------------------------------------------------------------- hábitos
 
   @override
-  Future<Habit> createHabit(
-    HabitDraft draft, {
-    required LogicalDate today,
-  }) => _guard(() async {
-    final ref = _habitosRaw.doc();
-    final now = _now();
-    final habit = Habit(
-      id: ref.id,
-      name: draft.name,
-      ambitoId: draft.ambitoId,
-      periodicityTimeline: [
-        PeriodicityEntry(periodicity: draft.periodicity, since: today),
-      ],
-      colorValue: draft.colorValue,
-      emoji: draft.emoji,
-      reminderTime: draft.reminderTime,
-      // Orden monotónico sin consultar: válido offline y sin colisiones.
-      order: now.millisecondsSinceEpoch,
-      createdAt: now,
-    );
-    await ref.set({
-      ...HabitsMappers.habitToDto(habit).toEditableMap(),
-      FirestoreFields.deletedAt: null,
-      FirestoreFields.createdAt: FieldValue.serverTimestamp(),
-      FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
-    });
-    return habit;
-  });
+  Future<Habit> createHabit(HabitDraft draft, {required LogicalDate today}) =>
+      _guard(() async {
+        final ref = _habitosRaw.doc();
+        final now = _now();
+        final habit = Habit(
+          id: ref.id,
+          name: draft.name,
+          ambitoId: draft.ambitoId,
+          periodicityTimeline: [
+            PeriodicityEntry(periodicity: draft.periodicity, since: today),
+          ],
+          colorValue: draft.colorValue,
+          emoji: draft.emoji,
+          iconId: draft.iconId,
+          reminderTime: draft.reminderTime,
+          trackingType: draft.trackingType,
+          targetCount: draft.targetCount,
+          unit: draft.unit,
+          displayGoal: draft.displayGoal,
+          progressIconId: draft.progressIconId,
+          // Orden monotónico sin consultar: válido offline y sin colisiones.
+          order: now.millisecondsSinceEpoch,
+          createdAt: now,
+        );
+        await ref.set({
+          ...HabitsMappers.habitToDto(habit).toEditableMap(),
+          FirestoreFields.deletedAt: null,
+          FirestoreFields.createdAt: FieldValue.serverTimestamp(),
+          FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+        });
+        return habit;
+      });
 
   @override
   Future<void> updateHabit(Habit habit) => _guard(() async {
@@ -334,8 +339,35 @@ class FirestoreHabitsRepository implements HabitsRepository {
       FirestoreFields.habitoId: habitId,
       FirestoreFields.dia: date.key,
       FirestoreFields.tipo: FirestoreFields.tipoCompleted,
+      FirestoreFields.completedCount: 1,
+      FirestoreFields.targetCount: 1,
       // Se guarda la zona con la que se resolvió el día, para poder auditar
       // cómo se decidió. No se usa para reinterpretar el día después (§13).
+      FirestoreFields.tz: _timezone ?? _now().timeZoneName,
+      FirestoreFields.createdAt: FieldValue.serverTimestamp(),
+    });
+  });
+
+  @override
+  Future<void> setHabitDailyCount({
+    required String habitId,
+    required LogicalDate date,
+    required int completedCount,
+    required int targetCount,
+  }) => _guard(() async {
+    final ref = _registrosRaw.doc(HabitLogDto.idFor(habitId, date.key));
+    final safeTarget = targetCount.clamp(1, 999);
+    final safeCount = completedCount.clamp(0, safeTarget);
+    if (safeCount == 0) {
+      if (await _getDocOrNull(ref) != null) await ref.delete();
+      return;
+    }
+    await ref.set({
+      FirestoreFields.habitoId: habitId,
+      FirestoreFields.dia: date.key,
+      FirestoreFields.tipo: FirestoreFields.tipoCompleted,
+      FirestoreFields.completedCount: safeCount,
+      FirestoreFields.targetCount: safeTarget,
       FirestoreFields.tz: _timezone ?? _now().timeZoneName,
       FirestoreFields.createdAt: FieldValue.serverTimestamp(),
     });
@@ -345,9 +377,7 @@ class FirestoreHabitsRepository implements HabitsRepository {
 
   static List<HabitLog> _mapLogs(
     List<QueryDocumentSnapshot<HabitLogDto>> docs,
-  ) => [
-    for (final doc in docs) ?HabitsMappers.logFromDto(doc.data()),
-  ];
+  ) => [for (final doc in docs) ?HabitsMappers.logFromDto(doc.data())];
 
   static Set<LogicalDate> _activityDaysOf(
     List<QueryDocumentSnapshot<HabitLogDto>> docs,

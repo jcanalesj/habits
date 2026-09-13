@@ -14,10 +14,7 @@ void main() {
   late InMemoryWildcardsRepository wildcards;
 
   setUp(() {
-    repository = InMemoryHabitsRepository(
-      now: () => nowInstant,
-      today: today,
-    );
+    repository = InMemoryHabitsRepository(now: () => nowInstant, today: today);
     wildcards = InMemoryWildcardsRepository();
   });
 
@@ -261,19 +258,22 @@ void main() {
   });
 
   group('WatchHomeSummaryUsecase', () {
-    test('calcula la racha en vivo y decide completado por registros', () async {
-      final first = await homeSummary().execute(today: today).first;
-      final habit = first.habits.first;
+    test(
+      'calcula la racha en vivo y decide completado por registros',
+      () async {
+        final first = await homeSummary().execute(today: today).first;
+        final habit = first.habits.first;
 
-      expect(first.today, today);
-      expect(first.isCompletedOn(habit.id, today), isFalse);
-      // La semana sembrada va de lunes a ayer, así que la racha está
-      // intacta pero hoy queda pendiente.
-      expect(first.isCompletedOn(habit.id, today.previous), isTrue);
-      expect(first.streak.status, StreakStatus.pendingToday);
-      expect(first.streak.currentStreak, greaterThan(0));
-      expect(first.wildcards, WildcardBalance.empty);
-    });
+        expect(first.today, today);
+        expect(first.isCompletedOn(habit.id, today), isFalse);
+        // La semana sembrada va de lunes a ayer, así que la racha está
+        // intacta pero hoy queda pendiente.
+        expect(first.isCompletedOn(habit.id, today.previous), isTrue);
+        expect(first.streak.status, StreakStatus.pendingToday);
+        expect(first.streak.currentStreak, greaterThan(0));
+        expect(first.wildcards, WildcardBalance.empty);
+      },
+    );
 
     test('emite al marcar y la racha sube sin tocar ninguna caché', () async {
       final emissions = <HomeSummary>[];

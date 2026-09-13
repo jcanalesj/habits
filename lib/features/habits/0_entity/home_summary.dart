@@ -47,4 +47,15 @@ abstract class HomeSummary with _$HomeSummary {
   bool isCompletedOn(String habitId, LogicalDate day) => weekLogs.any(
     (log) => log.habitId == habitId && log.isActivity && log.date == day,
   );
+
+  int completedCountOn(String habitId, LogicalDate day) {
+    for (final log in weekLogs) {
+      if (log.habitId == habitId &&
+          log.date == day &&
+          log.type == HabitLogType.completed) {
+        return log.completedCount;
+      }
+    }
+    return 0;
+  }
 }

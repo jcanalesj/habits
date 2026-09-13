@@ -1,0 +1,48 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="appleFill" x1="42" y1="38" x2="83" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFB6C5"/>
+      <stop offset="0.55" stop-color="#FF829B"/>
+      <stop offset="1" stop-color="#F46383"/>
+    </linearGradient>
+    <linearGradient id="leafFill" x1="72" y1="20" x2="94" y2="43" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A8E7B2"/>
+      <stop offset="1" stop-color="#65C982"/>
+    </linearGradient>
+  </defs>
+
+  <!-- stem -->
+  <path
+    d="M65 39C65 31 68 25 73 20"
+    stroke="#7C6B78"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+  <!-- leaf -->
+  <path
+    d="M71 29C78 20 89 20 95 24C91 34 82 40 72 36C70 34 70 31 71 29Z"
+    fill="url(#leafFill)"
+    stroke="#679B78"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+
+  <!-- apple -->
+  <path
+    d="M64 46C55 37 42 37 33 44C22 52 20 68 24 83C29 102 41 113 53 111C59 110 61 107 64 107C67 107 70 110 76 111C88 113 100 102 105 83C109 68 106 52 95 44C86 37 73 37 64 46Z"
+    fill="url(#appleFill)"
+    stroke="#9B607D"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+
+  <!-- soft highlight -->
+  <path
+    d="M39 57C34 63 33 72 35 79"
+    stroke="white"
+    stroke-width="6"
+    stroke-linecap="round"
+    opacity="0.55"
+  />
+</svg>

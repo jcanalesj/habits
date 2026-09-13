@@ -21,6 +21,18 @@ class AuthController extends StreamNotifier<AppUser?> {
     if (result is SignOutSuccess) state = const AsyncData(null);
     return result;
   }
+
+  Future<void> updateDisplayName(String displayName) async {
+    final user = state.value;
+    if (user == null) return;
+    final updated = await ref
+        .read(authRepositoryProvider)
+        .updateDisplayName(displayName);
+    await ref
+        .read(userProfileRepositoryProvider)
+        .updateDisplayName(user.id, displayName);
+    if (ref.mounted) state = AsyncData(updated);
+  }
 }
 
 final authControllerProvider = StreamNotifierProvider<AuthController, AppUser?>(

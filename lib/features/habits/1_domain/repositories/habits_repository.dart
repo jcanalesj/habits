@@ -87,6 +87,16 @@ abstract class HabitsRepository {
     required LogicalDate date,
     required bool completed,
   });
+
+  /// Guarda el contador diario de un hábito con repeticiones. Un contador
+  /// cero elimina el documento; el objetivo se copia al registro para que el
+  /// historial conserve la configuración vigente en ese momento.
+  Future<void> setHabitDailyCount({
+    required String habitId,
+    required LogicalDate date,
+    required int completedCount,
+    required int targetCount,
+  });
 }
 
 /// Contenido de `users/{uid}/cache/rachas`. Proyección pura.

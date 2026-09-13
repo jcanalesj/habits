@@ -59,10 +59,7 @@ abstract final class HabitsMappers {
       );
       if (since == null) continue;
       timeline.add(
-        PeriodicityEntry(
-          periodicity: periodicityFromMap(change),
-          since: since,
-        ),
+        PeriodicityEntry(periodicity: periodicityFromMap(change), since: since),
       );
     }
     timeline.sort((a, b) => a.since.compareTo(b.since));
@@ -71,6 +68,7 @@ abstract final class HabitsMappers {
       id: dto.id,
       name: dto.nombre,
       emoji: dto.emoji,
+      iconId: dto.iconId,
       colorValue: dto.colorValue,
       ambitoId: dto.ambitoId,
       periodicityTimeline: timeline,
@@ -78,6 +76,11 @@ abstract final class HabitsMappers {
       order: dto.orden,
       createdAt: createdAt,
       deletedAt: dto.deletedAt,
+      trackingType: HabitTrackingTypeX.fromStorage(dto.trackingType),
+      targetCount: dto.targetCount,
+      unit: dto.unit,
+      displayGoal: dto.displayGoal,
+      progressIconId: dto.progressIconId,
     );
   }
 
@@ -87,6 +90,7 @@ abstract final class HabitsMappers {
       id: habit.id,
       nombre: habit.name,
       emoji: habit.emoji,
+      iconId: habit.iconId,
       colorValue: habit.colorValue,
       ambitoId: habit.ambitoId,
       periodicidad: periodicityToMap(
@@ -105,6 +109,11 @@ abstract final class HabitsMappers {
       orden: habit.order,
       createdAt: habit.createdAt,
       deletedAt: habit.deletedAt,
+      trackingType: habit.trackingType.storageValue,
+      targetCount: habit.targetCount,
+      unit: habit.unit,
+      displayGoal: habit.displayGoal,
+      progressIconId: habit.progressIconId,
     );
   }
 
@@ -138,6 +147,8 @@ abstract final class HabitsMappers {
       habitId: dto.habitoId,
       date: date,
       type: logTypeFromString(dto.tipo),
+      completedCount: dto.completedCount,
+      targetCount: dto.targetCount,
     );
   }
 

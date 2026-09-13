@@ -3,7 +3,7 @@ import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-/// Barra de navegación inferior: Inicio, Hábitos, Estadísticas y Perfil.
+/// Barra de navegación inferior: Hábitos, Mis hábitos, Estadísticas y Perfil.
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({
     super.key,

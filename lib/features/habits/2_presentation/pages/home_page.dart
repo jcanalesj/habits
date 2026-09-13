@@ -110,9 +110,13 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       null => null,
     };
     if (message == null) return;
-    ScaffoldMessenger.of(
+    AppNotice.show(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+      message: message,
+      type: result is UseWildcardSuccess
+          ? AppNoticeType.success
+          : AppNoticeType.error,
+    );
   }
 
   /// Hábitos que todavía no se han registrado hoy.
@@ -148,6 +152,31 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     );
   }
 
+  Future<void> _setRepetitionCount(
+    BuildContext context,
+    HomeController controller,
+    Habit habit,
+    int count,
+  ) async {
+    final previous = summary.completedCountOn(habit.id, summary.today);
+    final historicalTarget = summary.weekLogs
+        .where((log) => log.habitId == habit.id && log.date == summary.today)
+        .firstOrNull
+        ?.targetCount;
+    final target = historicalTarget ?? habit.targetCount;
+    final completesHabit = previous < target && count >= target;
+    final completesTheDay = completesHabit && _pending.length == 1;
+    final saved = await controller.setTodayCount(habit.id, count);
+    if (!saved || !context.mounted || !completesHabit) return;
+    HabitCelebration.show(
+      context,
+      message: completesTheDay
+          ? context.l10n.allHabitsCompletedCelebration
+          : context.l10n.habitCompletedCelebration,
+      allDone: completesTheDay,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -160,7 +189,10 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     final home = ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
       children: [
-        HomeHeader(greeting: widget.greeting),
+        HomeHeader(
+          greeting: widget.greeting,
+          onAvatarTap: () => context.go('/profile'),
+        ),
         const SizedBox(height: 16),
         // Única racha de la app: la general del usuario. Ya no hay rachas
         // por ámbito ni por hábito (§1/§29).
@@ -230,6 +262,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
                   _toggleHabit(context, controller, habitId);
                 },
                 mode: HabitTileMode.trackCompact,
+                onSetDailyCount: (habitId, count) {
+                  final habit = summary.habits.firstWhere(
+                    (item) => item.id == habitId,
+                  );
+                  _setRepetitionCount(context, controller, habit, count);
+                },
               ),
             ],
           ],
@@ -249,6 +287,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
                 _toggleHabit(context, controller, habitId);
               },
               mode: HabitTileMode.trackCompact,
+              onSetDailyCount: (habitId, count) {
+                final habit = summary.habits.firstWhere(
+                  (item) => item.id == habitId,
+                );
+                _setRepetitionCount(context, controller, habit, count);
+              },
             ),
           ],
         ],

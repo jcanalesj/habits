@@ -72,8 +72,7 @@ class LogicalDate implements Comparable<LogicalDate> {
   LogicalDate get previous => addDays(-1);
 
   /// Días naturales de diferencia (`other` - `this`).
-  int differenceInDays(LogicalDate other) =>
-      other._utc.difference(_utc).inDays;
+  int differenceInDays(LogicalDate other) => other._utc.difference(_utc).inDays;
 
   bool isBefore(LogicalDate other) => compareTo(other) < 0;
   bool isAfter(LogicalDate other) => compareTo(other) > 0;

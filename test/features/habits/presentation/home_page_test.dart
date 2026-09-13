@@ -54,9 +54,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(GeneralStreakCard),
-        matching: find.image(
-          const AssetImage('assets/images/cards/card1.png'),
-        ),
+        matching: find.image(const AssetImage('assets/images/cards/card1.png')),
       ),
       findsOneWidget,
     );

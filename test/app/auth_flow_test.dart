@@ -97,6 +97,13 @@ void main() {
     // Logout desde Perfil.
     await tester.tap(find.text('Perfil'));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Cerrar sesión'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -140));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Cerrar sesión'));
     await tester.pumpAndSettle();
     expect(find.text('Inicia sesión'), findsOneWidget);

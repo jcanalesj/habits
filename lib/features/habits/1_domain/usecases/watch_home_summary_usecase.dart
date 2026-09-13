@@ -44,42 +44,45 @@ class WatchHomeSummaryUsecase {
     final periodStart = _calendar.startOfYear(day);
     final periodEnd = _calendar.endOfYear(day);
 
-    return combineLatestN([
-      _habits.watchAmbitos(),
-      _habits.watchActiveHabits(),
-      _habits.watchLogsBetween(periodStart, periodEnd),
-      _habits.watchActivityDays(),
-      _wildcards.watchProtectedDays(),
-      _wildcards.watchBalance(),
-    ], (values) {
-      final ambitos = values[0] as List<Ambito>;
-      final habits = values[1] as List<Habit>;
-      final yearLogs = values[2] as List<HabitLog>;
-      final activityDays = values[3] as Set<LogicalDate>;
-      final protectedDays = values[4] as Set<LogicalDate>;
-      final balance = values[5] as WildcardBalance?;
+    return combineLatestN(
+      [
+        _habits.watchAmbitos(),
+        _habits.watchActiveHabits(),
+        _habits.watchLogsBetween(periodStart, periodEnd),
+        _habits.watchActivityDays(),
+        _wildcards.watchProtectedDays(),
+        _wildcards.watchBalance(),
+      ],
+      (values) {
+        final ambitos = values[0] as List<Ambito>;
+        final habits = values[1] as List<Habit>;
+        final yearLogs = values[2] as List<HabitLog>;
+        final activityDays = values[3] as Set<LogicalDate>;
+        final protectedDays = values[4] as Set<LogicalDate>;
+        final balance = values[5] as WildcardBalance?;
 
-      return HomeSummary(
-        today: day,
-        streak: StreakCalculator.calculate(
-          activityDays: activityDays,
-          protectedDays: protectedDays,
+        return HomeSummary(
           today: day,
-        ),
-        wildcards: balance ?? WildcardBalance.empty,
-        ambitos: ambitos,
-        habits: habits,
-        progress: _goalProgress.forHabits(
+          streak: StreakCalculator.calculate(
+            activityDays: activityDays,
+            protectedDays: protectedDays,
+            today: day,
+          ),
+          wildcards: balance ?? WildcardBalance.empty,
+          ambitos: ambitos,
           habits: habits,
-          logs: yearLogs,
-          today: day,
-        ),
-        weekLogs: [
-          for (final log in yearLogs)
-            if (log.date.isAtOrAfter(monday) && log.date.isAtOrBefore(sunday))
-              log,
-        ],
-      );
-    });
+          progress: _goalProgress.forHabits(
+            habits: habits,
+            logs: yearLogs,
+            today: day,
+          ),
+          weekLogs: [
+            for (final log in yearLogs)
+              if (log.date.isAtOrAfter(monday) && log.date.isAtOrBefore(sunday))
+                log,
+          ],
+        );
+      },
+    );
   }
 }

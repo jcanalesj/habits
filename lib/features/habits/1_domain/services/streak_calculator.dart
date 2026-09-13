@@ -43,12 +43,8 @@ abstract final class StreakCalculator {
     bool isActivity(LogicalDate d) => activityDays.contains(d);
     bool isKept(LogicalDate d) => isActivity(d) || protectedDays.contains(d);
 
-    final firstDay = activityDays.reduce(
-      (a, b) => a.isBefore(b) ? a : b,
-    );
-    final lastActivityDay = activityDays.reduce(
-      (a, b) => a.isAfter(b) ? a : b,
-    );
+    final firstDay = activityDays.reduce((a, b) => a.isBefore(b) ? a : b);
+    final lastActivityDay = activityDays.reduce((a, b) => a.isAfter(b) ? a : b);
 
     /// Valor de la cadena que termina en [end]: retrocede mientras los días
     /// se mantengan y cuenta solo los de actividad. Acotado por [firstDay],
@@ -70,8 +66,9 @@ abstract final class StreakCalculator {
     // hoy (§17). Como la ventana se deriva de `today`, al pasar de día
     // desaparece sola: no hay estado que caducar ni tarea programada.
     final yesterdayIsGap = !isKept(yesterday);
-    final streakAtRisk =
-        yesterdayIsGap ? chainValueEndingAt(yesterday.previous) : 0;
+    final streakAtRisk = yesterdayIsGap
+        ? chainValueEndingAt(yesterday.previous)
+        : 0;
     final canRescue = yesterdayIsGap && streakAtRisk > 0;
 
     // ---- racha actual determinista ---------------------------------------

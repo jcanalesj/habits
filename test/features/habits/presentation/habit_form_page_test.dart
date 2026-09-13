@@ -76,6 +76,28 @@ void main() {
     expect((await env.habits.watchActiveHabits().first).length, antes);
   });
 
+  testWidgets('Ver todos permite elegir un emoji de la galería ampliada', (
+    tester,
+  ) async {
+    await tester.pumpWidget(appWith(const HabitFormPage()));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).first, 'Viajar');
+    await tester.tap(find.text('Ver todos'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('habit-emoji-✈️')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('habit-emoji-✈️')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Crear hábito'));
+    await tester.pumpAndSettle();
+
+    final habits = await env.habits.watchActiveHabits().first;
+    final creado = habits.firstWhere((habit) => habit.name == 'Viajar');
+    expect(creado.emoji, '✈️');
+    expect(creado.iconId, isNull);
+  });
+
   testWidgets(
     'cambiar el objetivo avisa de la fecha efectiva antes de guardar',
     (tester) async {

@@ -55,10 +55,8 @@ class ChangeHabitPeriodicityUsecase {
 
   /// Fecha en la que entraría en vigor el cambio, para previsualizarla en la
   /// UI sin guardar nada.
-  LogicalDate previewEffectiveDate(
-    Periodicity next,
-    LogicalDate today,
-  ) => _resolver.effectiveDateFor(next.type, today);
+  LogicalDate previewEffectiveDate(Periodicity next, LogicalDate today) =>
+      _resolver.effectiveDateFor(next.type, today);
 
   Future<ChangePeriodicityResult> execute({
     required Habit habit,
@@ -83,7 +81,8 @@ class ChangeHabitPeriodicityUsecase {
 
     final alreadyEffective =
         timeline.isNotEmpty && timeline.last.periodicity == next;
-    if (alreadyEffective && timeline.length == habit.periodicityTimeline.length) {
+    if (alreadyEffective &&
+        timeline.length == habit.periodicityTimeline.length) {
       return ChangePeriodicityUnchanged();
     }
 

@@ -7,13 +7,14 @@ import 'package:habits/features/auth/2_presentation/routes/routes.dart'
     as auth_routes;
 import 'package:habits/features/habits/2_presentation/pages/habits_list_page.dart';
 import 'package:habits/features/habits/2_presentation/pages/statistics_page.dart';
+import 'package:habits/features/profile/profile_page.dart';
+import 'package:habits/features/profile/avatar/avatar_picker_page.dart';
+import 'package:habits/features/profile/timezone/timezone_page.dart';
 import 'package:habits/features/habits/2_presentation/routes/routes.dart'
     as habits_routes;
 import 'package:habits/features/splash/2_presentation/routes/routes.dart'
     as splash_routes;
-import 'package:habits/localization/l10n.dart';
 import 'package:habits/widgets/app_shell.dart';
-import 'package:habits/widgets/placeholder_page.dart';
 
 const _splashPath = '/';
 const _verifyEmailPath = '/verify-email';
@@ -76,6 +77,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...authRoutes,
       // Fuera del shell: el formulario ocupa la pantalla completa.
       ...habitFormRoutes,
+      GoRoute(
+        path: '/profile/avatar',
+        builder: (context, state) => const AvatarPickerPage(),
+      ),
+      GoRoute(
+        path: '/profile/timezone',
+        builder: (context, state) => const TimezonePage(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             AppShell(navigationShell: navigationShell),
@@ -101,11 +110,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/profile',
-                builder: (context, state) => PlaceholderPage(
-                  title: context.l10n.navProfile,
-                  emoji: '👤',
-                  action: const SignOutButton(),
-                ),
+                builder: (context, state) => const ProfilePage(),
               ),
             ],
           ),

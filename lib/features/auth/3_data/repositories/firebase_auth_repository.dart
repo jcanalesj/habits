@@ -61,6 +61,17 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<void> signOut() => _guard(_auth.signOut);
 
   @override
+  Future<AppUser> updateDisplayName(String displayName) => _guard(() async {
+    final user = _auth.currentUser;
+    if (user == null) throw const AuthException(AuthFailure.noSession);
+    await user.updateDisplayName(displayName);
+    await user.reload();
+    return _requireUser(
+      _auth.currentUser ?? user,
+    ).copyWith(displayName: displayName);
+  });
+
+  @override
   Future<void> sendEmailVerification() {
     return _guard(() async {
       final user = _auth.currentUser;

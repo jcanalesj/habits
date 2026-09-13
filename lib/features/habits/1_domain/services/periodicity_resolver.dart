@@ -65,19 +65,18 @@ class PeriodicityResolver {
       switch (newType) {
         PeriodicityType.daily => today.next,
         PeriodicityType.weekly => _calendar.startOfWeek(today).addDays(7),
-        PeriodicityType.monthly =>
-          LogicalDate.normalized(today.year, today.month + 1, 1),
+        PeriodicityType.monthly => LogicalDate.normalized(
+          today.year,
+          today.month + 1,
+          1,
+        ),
         PeriodicityType.yearly => LogicalDate(today.year + 1, 1, 1),
       };
 
   /// Periodo natural completo del tipo [type] que contiene a [date].
   GoalPeriod periodFor(PeriodicityType type, LogicalDate date) =>
       switch (type) {
-        PeriodicityType.daily => GoalPeriod(
-          type: type,
-          start: date,
-          end: date,
-        ),
+        PeriodicityType.daily => GoalPeriod(type: type, start: date, end: date),
         PeriodicityType.weekly => GoalPeriod(
           type: type,
           start: _calendar.startOfWeek(date),
@@ -96,8 +95,6 @@ class PeriodicityResolver {
       };
 
   /// Periodo vigente de un hábito el día [date], según su línea temporal.
-  GoalPeriod currentPeriod(
-    List<PeriodicityEntry> timeline,
-    LogicalDate date,
-  ) => periodFor(configAt(timeline, date).type, date);
+  GoalPeriod currentPeriod(List<PeriodicityEntry> timeline, LogicalDate date) =>
+      periodFor(configAt(timeline, date).type, date);
 }

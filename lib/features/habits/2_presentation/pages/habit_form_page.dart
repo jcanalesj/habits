@@ -26,15 +26,7 @@ class HabitFormPage extends ConsumerStatefulWidget {
 }
 
 class _HabitFormPageState extends ConsumerState<HabitFormPage> {
-  static const _palette = [
-    AppColors.lilac,
-    AppColors.pink,
-    AppColors.green,
-    AppColors.orange,
-    AppColors.blue,
-    AppColors.primary,
-  ];
-  static const _emojis = [
+  static const _quickEmojis = [
     '💧',
     '📖',
     '🏋️',
@@ -48,14 +40,26 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     '✍️',
     '🌿',
   ];
-
+  static const _palette = [
+    AppColors.lilac,
+    AppColors.pink,
+    AppColors.green,
+    AppColors.orange,
+    AppColors.blue,
+    AppColors.primary,
+  ];
   final _nameController = TextEditingController();
   final _emojiController = TextEditingController(text: '💧');
+  final _unitController = TextEditingController();
+  final _displayGoalController = TextEditingController();
 
   String? _ambitoId;
   int _colorValue = 0xFF8B5CF6;
   Periodicity _periodicity = Periodicity.daily;
   TimeOfDay? _reminder;
+  HabitTrackingType _trackingType = HabitTrackingType.single;
+  int _targetCount = 2;
+  String _progressIconId = ProgressIconCatalog.fallbackId;
 
   /// Objetivo con el que se cargó el hábito, para saber si cambió.
   Periodicity? _originalPeriodicity;
@@ -64,10 +68,17 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
   bool _prefilled = false;
   Set<HabitValidationError> _errors = const {};
 
+  static String? _nullableText(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _emojiController.dispose();
+    _unitController.dispose();
+    _displayGoalController.dispose();
     super.dispose();
   }
 
@@ -79,6 +90,11 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     _emojiController.text = habit.emoji;
     _ambitoId = habit.ambitoId;
     _colorValue = habit.colorValue;
+    _trackingType = habit.trackingType;
+    _targetCount = habit.targetCount;
+    _unitController.text = habit.unit ?? '';
+    _displayGoalController.text = habit.displayGoal ?? '';
+    _progressIconId = habit.progressIconId;
     _periodicity = habit.periodicityOn(today);
     _originalPeriodicity = _periodicity;
     final reminder = habit.reminderTime;
@@ -126,11 +142,9 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     return context.l10n.frequencyChangeDeferred(effectiveFrom.key);
   }
 
-  void _notify(String message) {
+  void _notify(String message, {AppNoticeType type = AppNoticeType.success}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    AppNotice.show(context, message: message, type: type);
   }
 
   Future<void> _save(LogicalDate today) async {
@@ -158,7 +172,18 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
             periodicity: _periodicity,
             colorValue: _colorValue,
             emoji: _emojiController.text,
+            // El icono principal vuelve a ser un emoji. iconId se reserva
+            // para compatibilidad con documentos creados por versiones
+            // anteriores del selector SVG.
+            iconId: null,
             reminderTime: _reminderText,
+            trackingType: _trackingType,
+            targetCount: _trackingType == HabitTrackingType.single
+                ? 1
+                : _targetCount,
+            unit: _nullableText(_unitController.text),
+            displayGoal: _nullableText(_displayGoalController.text),
+            progressIconId: _progressIconId,
           ),
           today: today,
         );
@@ -169,7 +194,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
         setState(() => _errors = errors);
         return false;
       case CreateHabitFailed():
-        _notify(l10n.errorSaveFailed);
+        _notify(l10n.errorSaveFailed, type: AppNoticeType.error);
         return false;
     }
   }
@@ -190,9 +215,17 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
             // equivale a crear un hábito distinto.
             name: original.name,
             emoji: _emojiController.text,
+            iconId: null,
             colorValue: _colorValue,
             ambitoId: original.ambitoId,
             reminderTime: _reminderText,
+            trackingType: _trackingType,
+            targetCount: _trackingType == HabitTrackingType.single
+                ? 1
+                : _targetCount,
+            unit: _nullableText(_unitController.text),
+            displayGoal: _nullableText(_displayGoalController.text),
+            progressIconId: _progressIconId,
           ),
         );
     switch (result) {
@@ -200,7 +233,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
         setState(() => _errors = errors);
         return false;
       case UpdateHabitFailed():
-        _notify(l10n.errorSaveFailed);
+        _notify(l10n.errorSaveFailed, type: AppNoticeType.error);
         return false;
       case UpdateHabitSuccess(:final habit):
         if (_periodicity == _originalPeriodicity) return true;
@@ -215,7 +248,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
             setState(() => _errors = errors);
             return false;
           case ChangePeriodicityFailed():
-            _notify(l10n.errorSaveFailed);
+            _notify(l10n.errorSaveFailed, type: AppNoticeType.error);
             return false;
         }
     }
@@ -225,20 +258,10 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.deleteHabitConfirmTitle),
-        content: Text(l10n.deleteHabitConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: Text(l10n.delete),
-          ),
-        ],
+      barrierColor: AppColors.textPrimary.withValues(alpha: .48),
+      builder: (context) => _DeleteHabitDialog(
+        habitName: _nameController.text,
+        emoji: _emojiController.text,
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -251,7 +274,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
       _notify(l10n.habitDeleted);
       Navigator.of(context).pop();
     } else {
-      _notify(l10n.errorSaveFailed);
+      _notify(l10n.errorSaveFailed, type: AppNoticeType.error);
     }
   }
 
@@ -336,7 +359,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                 ],
                 _Label(l10n.habitEmojiLabel),
                 _EmojiPicker(
-                  emojis: _emojis,
+                  emojis: _quickEmojis,
                   selected: _emojiController.text,
                   onSelected: (emoji) =>
                       setState(() => _emojiController.text = emoji),
@@ -389,6 +412,94 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                   onChanged: (value) => setState(() => _periodicity = value),
                   deferredNotice: _deferredNotice(today),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SurfaceCard(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Label(l10n.habitTrackingQuestion),
+                SegmentedButton<HabitTrackingType>(
+                  segments: [
+                    ButtonSegment(
+                      value: HabitTrackingType.single,
+                      label: Text(l10n.habitTrackingOnce),
+                    ),
+                    ButtonSegment(
+                      value: HabitTrackingType.repetitions,
+                      label: Text(l10n.habitTrackingSeveral),
+                    ),
+                  ],
+                  selected: {_trackingType},
+                  onSelectionChanged: (value) =>
+                      setState(() => _trackingType = value.first),
+                ),
+                if (_trackingType == HabitTrackingType.repetitions) ...[
+                  const SizedBox(height: 20),
+                  _Label(l10n.habitTargetCount),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton.filledTonal(
+                        onPressed: _targetCount > 2
+                            ? () => setState(() => _targetCount--)
+                            : null,
+                        icon: const Icon(Icons.remove_rounded),
+                      ),
+                      SizedBox(
+                        width: 72,
+                        child: Text(
+                          '$_targetCount',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                      IconButton.filledTonal(
+                        onPressed: _targetCount < 999
+                            ? () => setState(() => _targetCount++)
+                            : null,
+                        icon: const Icon(Icons.add_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _unitController,
+                    maxLength: 24,
+                    decoration: InputDecoration(
+                      labelText: l10n.habitUnitOptional,
+                      hintText: l10n.habitUnitHint,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _displayGoalController,
+                    maxLength: 32,
+                    decoration: InputDecoration(
+                      labelText: l10n.habitDisplayGoalOptional,
+                      hintText: l10n.habitDisplayGoalHint,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _Label(l10n.habitProgressIcon),
+                  Text(
+                    l10n.habitProgressIconSubtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ProgressIconPicker(
+                    selectedId: _progressIconId,
+                    onSelected: (id) => setState(() => _progressIconId = id),
+                  ),
+                ],
               ],
             ),
           ),
@@ -454,6 +565,170 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
   }
 }
 
+class _DeleteHabitDialog extends StatelessWidget {
+  const _DeleteHabitDialog({required this.habitName, required this.emoji});
+
+  final String habitName;
+  final String emoji;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Material(
+          color: const Color(0xFFFFFCFD),
+          elevation: 0,
+          borderRadius: BorderRadius.circular(32),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 82,
+                      height: 82,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFEDEF),
+                        borderRadius: BorderRadius.circular(26),
+                      ),
+                      child: Text(emoji, style: const TextStyle(fontSize: 42)),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      l10n.deleteHabitConfirmTitle,
+                      textAlign: TextAlign.center,
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      habitName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: const Color(0xFFE05262),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF7F4FD),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.history_rounded,
+                            color: AppColors.primary,
+                            size: 23,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              l10n.deleteHabitConfirmBody,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: AppColors.textSecondary,
+                                height: 1.38,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: BorderSide(
+                                color: AppColors.primary.withValues(alpha: .35),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: Text(
+                              l10n.cancel,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFFFF6675),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 19,
+                                ),
+                                const SizedBox(width: 7),
+                                Text(
+                                  l10n.delete,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  tooltip: l10n.cancel,
+                  onPressed: () => Navigator.pop(context, false),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFFF4F1F8),
+                  ),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Scaffold extends StatelessWidget {
   const _Scaffold({required this.title, required this.child});
 
@@ -504,34 +779,319 @@ class _EmojiPicker extends StatelessWidget {
   final String selected;
   final ValueChanged<String> onSelected;
 
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final emoji in emojis)
-          GestureDetector(
-            onTap: () => onSelected(emoji),
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: emoji == selected
-                    ? AppColors.primary.withValues(alpha: 0.18)
-                    : Colors.black.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(14),
-                border: emoji == selected
-                    ? Border.all(color: AppColors.primary, width: 2)
-                    : null,
+  static const _allEmojis = [
+    '💧',
+    '🥤',
+    '☕',
+    '🍵',
+    '🥛',
+    '🍎',
+    '🍊',
+    '🍋',
+    '🥑',
+    '🥗',
+    '🥦',
+    '🍽️',
+    '💊',
+    '🪥',
+    '🧴',
+    '🩺',
+    '❤️',
+    '💜',
+    '🧠',
+    '🧘',
+    '🌿',
+    '🌱',
+    '🌻',
+    '☀️',
+    '🌙',
+    '⭐',
+    '✨',
+    '🔥',
+    '💪',
+    '🏋️',
+    '🏃',
+    '🚶',
+    '🚴',
+    '🏊',
+    '⚽',
+    '🏀',
+    '🎾',
+    '🧗',
+    '👟',
+    '😴',
+    '🛏️',
+    '⏰',
+    '📖',
+    '📚',
+    '✍️',
+    '📝',
+    '🎓',
+    '💻',
+    '🎨',
+    '🎸',
+    '🎹',
+    '🎧',
+    '💬',
+    '📵',
+    '🧹',
+    '🧺',
+    '🏠',
+    '💰',
+    '📅',
+    '✅',
+    '🎯',
+    '🏆',
+    '🐶',
+    '🐱',
+    '🐾',
+    '🌍',
+    '✈️',
+    '🙏',
+    '😊',
+    '🫶',
+    '🍓',
+    '🍇',
+    '🍉',
+    '🍌',
+    '🍒',
+    '🥝',
+    '🥕',
+    '🌽',
+    '🥒',
+    '🍅',
+    '🥚',
+    '🐟',
+    '🍗',
+    '🍚',
+    '🍞',
+    '🥣',
+    '🫗',
+    '🧃',
+    '🚰',
+    '🫖',
+    '🧼',
+    '🚿',
+    '🛁',
+    '🧽',
+    '🧖',
+    '🦷',
+    '👁️',
+    '👂',
+    '🫁',
+    '🫀',
+    '🩹',
+    '🌡️',
+    '⚕️',
+    '🧬',
+    '🧍',
+    '🤸',
+    '⛹️',
+    '🤾',
+    '🏌️',
+    '🏄',
+    '🚣',
+    '⛷️',
+    '🏂',
+    '🛹',
+    '🛼',
+    '🥊',
+    '🥋',
+    '🏓',
+    '🏸',
+    '🏐',
+    '🏉',
+    '⚾',
+    '🥎',
+    '🏹',
+    '🎣',
+    '♟️',
+    '🧩',
+    '🎲',
+    '🎮',
+    '🕹️',
+    '📓',
+    '📔',
+    '📕',
+    '📗',
+    '📘',
+    '📙',
+    '📑',
+    '🔖',
+    '🖊️',
+    '🖍️',
+    '📐',
+    '🔬',
+    '🔭',
+    '🧮',
+    '🗣️',
+    '🔤',
+    '💡',
+    '🧑‍💻',
+    '📊',
+    '📈',
+    '📋',
+    '📌',
+    '📧',
+    '☎️',
+    '⌛',
+    '⏱️',
+    '🗓️',
+    '🗂️',
+    '🔑',
+    '🛒',
+    '🧾',
+    '🎁',
+    '🪴',
+    '🌳',
+    '🌲',
+    '🌵',
+    '🍀',
+    '🌷',
+    '🌹',
+    '🪻',
+    '🍂',
+    '♻️',
+    '🐕',
+    '🐈',
+    '🐇',
+    '🐦',
+    '🐠',
+    '🐢',
+    '🐴',
+    '🦋',
+    '🐝',
+    '🚗',
+    '🚌',
+    '🚆',
+    '🚇',
+    '🚲',
+    '🛴',
+    '🗺️',
+    '🧳',
+    '🏕️',
+    '🏖️',
+    '⛰️',
+    '🌅',
+    '📷',
+    '🎬',
+    '🎤',
+    '🎻',
+    '🥁',
+    '🪡',
+    '🧶',
+    '🔨',
+    '🪛',
+    '🕯️',
+    '🧘‍♀️',
+    '🧘‍♂️',
+    '🤍',
+    '💚',
+    '💙',
+    '🧡',
+    '💛',
+    '💖',
+    '🌈',
+    '☁️',
+    '🌊',
+    '🎉',
+    '🚀',
+    '🔔',
+    '🔕',
+    '🛑',
+    '➕',
+    '➖',
+  ];
+
+  Widget _item(String emoji, {VoidCallback? onTap}) => Semantics(
+    button: true,
+    selected: emoji == selected,
+    label: emoji,
+    child: InkWell(
+      key: ValueKey('habit-emoji-$emoji'),
+      onTap: onTap ?? () => onSelected(emoji),
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: emoji == selected
+              ? AppColors.primary.withValues(alpha: .14)
+              : Colors.black.withValues(alpha: .035),
+          borderRadius: BorderRadius.circular(14),
+          border: emoji == selected
+              ? Border.all(color: AppColors.primary, width: 2)
+              : null,
+        ),
+        child: Text(emoji, style: const TextStyle(fontSize: 22)),
+      ),
+    ),
+  );
+
+  Future<void> _showAll(BuildContext context) async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.sizeOf(sheetContext).height * .62,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+                child: Text(
+                  context.l10n.habitEmojiLabel,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+                ),
               ),
-              child: Text(emoji, style: const TextStyle(fontSize: 20)),
-            ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                  ),
+                  itemCount: _allEmojis.length,
+                  itemBuilder: (_, index) {
+                    final emoji = _allEmojis[index];
+                    return _item(
+                      emoji,
+                      onTap: () => Navigator.pop(sheetContext, emoji),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-      ],
+        ),
+      ),
     );
+    if (picked != null) onSelected(picked);
   }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [for (final emoji in emojis) _item(emoji)],
+      ),
+      const SizedBox(height: 8),
+      TextButton.icon(
+        onPressed: () => _showAll(context),
+        icon: const Icon(Icons.add_reaction_outlined),
+        label: Text(context.l10n.seeAll),
+      ),
+    ],
+  );
 }
 
 class _ColorPicker extends StatelessWidget {

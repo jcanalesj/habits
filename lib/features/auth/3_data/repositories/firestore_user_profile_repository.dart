@@ -31,7 +31,9 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
     batch.set(userRef, {
       'email': profile.email,
       'displayName': profile.displayName,
+      'avatarId': 'traveler',
       'timezone': profile.timezone,
+      'timezoneAutomatic': true,
       'locale': profile.locale,
       // Único valor que las reglas permiten fijar desde cliente.
       'subscription': {'status': 'free'},
@@ -57,7 +59,46 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
   }
 
   @override
-  Stream<String?> watchTimezone(String userId) => _userRef(userId)
-      .snapshots()
-      .map((snapshot) => snapshot.data()?['timezone'] as String?);
+  Stream<String?> watchTimezone(String userId) => _userRef(
+    userId,
+  ).snapshots().map((snapshot) => snapshot.data()?['timezone'] as String?);
+
+  @override
+  Stream<String?> watchAvatarId(String userId) => _userRef(
+    userId,
+  ).snapshots().map((snapshot) => snapshot.data()?['avatarId'] as String?);
+
+  @override
+  Stream<bool> watchTimezoneAutomatic(String userId) =>
+      _userRef(userId).snapshots().map(
+        (snapshot) => snapshot.data()?['timezoneAutomatic'] as bool? ?? true,
+      );
+
+  @override
+  Future<void> updateDisplayName(String userId, String displayName) =>
+      _userRef(userId).update({
+        'displayName': displayName,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+  @override
+  Future<void> updateTimezone(String userId, String timezone) => _userRef(
+    userId,
+  ).update({'timezone': timezone, 'updatedAt': FieldValue.serverTimestamp()});
+
+  @override
+  Future<void> updateTimezoneSettings(
+    String userId, {
+    required String timezone,
+    required bool automatic,
+  }) => _userRef(userId).update({
+    'timezone': timezone,
+    'timezoneAutomatic': automatic,
+    'updatedAt': FieldValue.serverTimestamp(),
+  });
+
+  @override
+  Future<void> updateAvatarId(String userId, String avatarId) => _userRef(
+    userId,
+  ).update({'avatarId': avatarId, 'updatedAt': FieldValue.serverTimestamp()});
 }

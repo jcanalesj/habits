@@ -29,9 +29,7 @@ class LogicalCalendar {
 
   /// Se resuelve de forma perezosa: así construir un calendario (por ejemplo
   /// desde un provider) no obliga a que la base IANA ya esté cargada.
-  late final tz.Location _location = TimezoneDatabase.locationOf(
-    timezoneName,
-  );
+  late final tz.Location _location = TimezoneDatabase.locationOf(timezoneName);
 
   /// Día lógico al que pertenece [instant] en esta zona.
   LogicalDate dateOf(DateTime instant) {

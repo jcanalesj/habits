@@ -6,13 +6,25 @@ HabitDraft habitDraft({
   String ambitoId = 'salud',
   Periodicity periodicity = Periodicity.daily,
   String? reminderTime,
+  HabitTrackingType trackingType = HabitTrackingType.single,
+  int targetCount = 1,
+  String? unit,
+  String? displayGoal,
+  String progressIconId = 'check',
+  String? iconId = 'water_drop',
 }) => HabitDraft(
   name: name,
   ambitoId: ambitoId,
   periodicity: periodicity,
   colorValue: 0xFF38BDF8,
   emoji: '💧',
+  iconId: iconId,
   reminderTime: reminderTime,
+  trackingType: trackingType,
+  targetCount: targetCount,
+  unit: unit,
+  displayGoal: displayGoal,
+  progressIconId: progressIconId,
 );
 
 /// Borrador de ámbito válido para tests.

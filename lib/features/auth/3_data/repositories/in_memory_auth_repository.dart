@@ -100,6 +100,20 @@ class InMemoryAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AppUser> updateDisplayName(String displayName) async {
+    await _delay();
+    final user = _current;
+    if (user == null) throw const AuthException(AuthFailure.noSession);
+    final updated = user.copyWith(displayName: displayName);
+    final account = _accounts[user.email];
+    if (account != null) {
+      _accounts[user.email] = _Account(updated, account.password);
+    }
+    emit(updated);
+    return updated;
+  }
+
+  @override
   Future<void> sendEmailVerification() async {
     await _delay();
     final user = _current;

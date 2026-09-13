@@ -31,9 +31,11 @@ const ambito = (over = {}) => ({
   createdAt: ts(), updatedAt: ts(), ...over,
 });
 const habito = (over = {}) => ({
-  nombre: 'Beber agua', emoji: '💧', colorValue: 0xFF3B82F6, ambitoId: 'salud',
+  nombre: 'Beber agua', emoji: '💧', iconId: 'water_drop', colorValue: 0xFF3B82F6, ambitoId: 'salud',
   periodicidad: { tipo: 'daily', veces: 1 }, cambiosPeriodicidad: [],
   recordatorioHora: '18:00',
+  trackingType: 'single', targetCount: 1, unit: null,
+  displayGoal: null, progressIconId: 'check',
   orden: 0, deletedAt: null, createdAt: ts(), updatedAt: ts(), ...over,
 });
 
@@ -114,8 +116,27 @@ const saldo = (over = {}) => ({
   await check('perfil: update email falla', false, () => updateDoc(U(alice), { email: 'x@example.com', updatedAt: ts() }));
   await check('perfil: update sin updatedAt falla', false, () => updateDoc(U(alice), { timezone: 'Europe/Lisbon' }));
   await check('perfil: update timezone válido', true, () => updateDoc(U(alice), { timezone: 'Europe/Lisbon', updatedAt: ts() }));
+  await check('perfil: modo de zona automático válido', true, () => updateDoc(U(alice), { timezoneAutomatic: true, updatedAt: ts() }));
+  await check('perfil: modo de zona no booleano falla', false, () => updateDoc(U(alice), { timezoneAutomatic: 'sí', updatedAt: ts() }));
+  await check('perfil: update avatar válido', true, () => updateDoc(U(alice), { avatarId: 'friendly', updatedAt: ts() }));
+  await check('perfil: avatar desconocido falla', false, () => updateDoc(U(alice), { avatarId: 'avatar-inventado', updatedAt: ts() }));
   await check('perfil: lastActiveAt serverTimestamp', true, () => updateDoc(U(alice), { lastActiveAt: ts(), updatedAt: ts() }));
   await check('perfil: update posterior sin tocar lastActiveAt', true, () => updateDoc(U(alice), { locale: 'en', updatedAt: ts() }));
+  // Escrituras EXACTAS que hace la app, para que un cambio de esquema no
+  // vuelva a llegar a producción como permission-denied.
+  //
+  // updateTimezoneSettings(): zona y modo automático en la misma escritura.
+  await check('perfil: cambiar zona y modo a la vez (pantalla de zona horaria)', true,
+    () => updateDoc(U(alice), {
+      timezone: 'America/New_York', timezoneAutomatic: false, updatedAt: ts(),
+    }));
+  // create(): el alta siembra avatar por defecto y zona automática.
+  const frank = env.authenticatedContext('frank', { email: 'frank@example.com', email_verified: true }).firestore();
+  await check('perfil: alta con avatar y zona automática', true,
+    () => setDoc(doc(frank, 'users', 'frank'), user({
+      email: 'frank@example.com', avatarId: 'traveler', timezoneAutomatic: true,
+    })));
+
   await check('perfil: delete falla', false, () => deleteDoc(U(alice)));
   await check('listar users falla', false, () => getDocs(collection(alice, 'users')));
 
@@ -140,6 +161,14 @@ const saldo = (over = {}) => ({
   await check('habito hora 25:00 falla', false, () => setDoc(U(alice, 'habitos', 'h1'), habito({ recordatorioHora: '25:00' })));
   await check('habito creado ya borrado falla', false, () => setDoc(U(alice, 'habitos', 'h1'), habito({ deletedAt: ts() })));
   await check('habito válido se crea', true, () => setDoc(U(alice, 'habitos', 'h1'), habito()));
+  await check('habito legacy sin iconId se crea', true, () => { const h = habito({ nombre: 'Legacy' }); delete h.iconId; return setDoc(U(alice, 'habitos', 'legacy'), h); });
+  await check('habito legacy de prueba se archiva', true, () => updateDoc(U(alice, 'habitos', 'legacy'), { deletedAt: ts(), updatedAt: ts() }));
+  await check('habit iconId demasiado largo falla', false, () => setDoc(U(alice, 'habitos', 'bad-icon'), habito({ iconId: 'x'.repeat(33) })));
+  await check('habito con repeticiones se crea', true, () => setDoc(U(alice, 'habitos', 'h8'), habito({
+    nombre: 'Beber agua', trackingType: 'repetitions', targetCount: 6,
+    unit: 'vasos', displayGoal: '2 L', progressIconId: 'water_glass',
+  })));
+  await check('habito con objetivo de repeticiones inválido falla', false, () => setDoc(U(alice, 'habitos', 'h9'), habito({ trackingType: 'repetitions', targetCount: 0 })));
   await check('habito h2 se crea', true, () => setDoc(U(alice, 'habitos', 'h2'), habito({ nombre: 'Entrenar', recordatorioHora: null })));
   await check('habito con periodicidad flexible 3/semana se crea', true, () => setDoc(U(alice, 'habitos', 'h4'), habito({ nombre: 'Gimnasio', periodicidad: { tipo: 'weekly', veces: 3 } })));
   await check('habito con periodicidad string suelto (forma antigua) falla', false, () => setDoc(U(alice, 'habitos', 'h5'), habito({ periodicidad: 'weekly' })));
@@ -158,6 +187,10 @@ const saldo = (over = {}) => ({
 
   // ---------------- registros (antes de borrar h3)
   await check('registro de hoy se crea', true, () => setDoc(U(alice, 'registros', `h1_${HOY}`), registro()));
+  await check('registro parcial 4/6 se crea', true, () => setDoc(U(alice, 'registros', `h8_${HOY}`), registro({ habitoId: 'h8', completedCount: 4, targetCount: 6 })));
+  await check('registro parcial puede avanzar a 5/6', true, () => updateDoc(U(alice, 'registros', `h8_${HOY}`), { completedCount: 5 }));
+  await check('registro parcial no puede cambiar su objetivo histórico', false, () => updateDoc(U(alice, 'registros', `h8_${HOY}`), { targetCount: 8 }));
+  await check('registro no permite superar el objetivo', false, () => updateDoc(U(alice, 'registros', `h8_${HOY}`), { completedCount: 7 }));
   await check('registro en h3 se crea', true, () => setDoc(U(alice, 'registros', `h3_${HOY}`), registro({ habitoId: 'h3', dia: HOY })));
   await check('registro en h2 se crea', true, () => setDoc(U(alice, 'registros', `h2_${HOY}`), registro({ habitoId: 'h2' })));
   await check('registro id no coincide falla', false, () => setDoc(U(alice, 'registros', `h1_${AYER}`), registro()));
@@ -195,7 +228,7 @@ const saldo = (over = {}) => ({
   // ---------------- consultas reales de la app (validan reglas + índices en emulador)
   await check('query habitos activos ordenados', true, async () => {
     const snap = await getDocs(query(collection(alice, 'users', 'alice', 'habitos'), where('deletedAt', '==', null), orderBy('orden')));
-    if (snap.size !== 5) throw new Error('esperaba 5 activos, hay ' + snap.size);
+    if (snap.size !== 6) throw new Error('esperaba 6 activos, hay ' + snap.size);
   });
   await check('query registros por habito y rango de dias', true, async () => {
     const snap = await getDocs(query(collection(alice, 'users', 'alice', 'registros'),
@@ -204,7 +237,7 @@ const saldo = (over = {}) => ({
   });
   await check('query histórico completo de registros (motor de rachas)', true, async () => {
     const snap = await getDocs(query(collection(alice, 'users', 'alice', 'registros'), orderBy('dia')));
-    if (snap.size !== 2) throw new Error('esperaba 2 registros (h1, h3), hay ' + snap.size);
+    if (snap.size !== 3) throw new Error('esperaba 3 registros (h1, h3, h8), hay ' + snap.size);
   });
 
   // ---------------- ventana de fechas: qué es determinista y qué no

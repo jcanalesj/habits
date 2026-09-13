@@ -1,0 +1,51 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="paw" x1="43" y1="25" x2="80" y2="108" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#E6D5FF"/>
+    <stop offset="0.55" stop-color="#C3A7FF"/>
+    <stop offset="1" stop-color="#9C7AF4"/>
+  </linearGradient>
+</defs>
+
+<!-- Left toe -->
+<ellipse cx="30" cy="55" rx="12" ry="17"
+         transform="rotate(-25 30 55)"
+         fill="url(#paw)" stroke="#7655E8" stroke-width="3"/>
+
+<!-- Upper-left toe -->
+<ellipse cx="51" cy="37" rx="13" ry="19"
+         transform="rotate(-10 51 37)"
+         fill="url(#paw)" stroke="#7655E8" stroke-width="3"/>
+
+<!-- Upper-right toe -->
+<ellipse cx="77" cy="37" rx="13" ry="19"
+         transform="rotate(10 77 37)"
+         fill="url(#paw)" stroke="#7655E8" stroke-width="3"/>
+
+<!-- Right toe -->
+<ellipse cx="98" cy="55" rx="12" ry="17"
+         transform="rotate(25 98 55)"
+         fill="url(#paw)" stroke="#7655E8" stroke-width="3"/>
+
+<!-- Main pad -->
+<path d="M64 60
+C52 60 46 68 40 77
+C35 84 30 89 31 98
+C32 108 41 114 51 112
+C57 111 60 108 64 108
+C68 108 71 111 77 112
+C87 114 96 108 97 98
+C98 89 93 84 88 77
+C82 68 76 60 64 60Z"
+fill="url(#paw)" stroke="#7655E8" stroke-width="3" stroke-linejoin="round"/>
+
+<!-- Highlights -->
+<path d="M24 48C22 52 22 56 23 59"
+      stroke="white" stroke-width="4" stroke-linecap="round" opacity=".65"/>
+<path d="M45 29C42 33 42 38 43 41"
+      stroke="white" stroke-width="4" stroke-linecap="round" opacity=".65"/>
+<path d="M72 29C69 33 69 37 70 40"
+      stroke="white" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+<path d="M45 82C41 87 40 92 41 96"
+      stroke="white" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+</svg>

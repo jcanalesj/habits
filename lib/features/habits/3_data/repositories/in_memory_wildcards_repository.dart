@@ -66,10 +66,7 @@ class InMemoryWildcardsRepository implements WildcardsRepository {
     // Atómico: o se aplican las dos mutaciones o ninguna.
     _protectedDays.add(day);
     _emitBalance(
-      current.copyWith(
-        available: current.available - 1,
-        lastProtectedDay: day,
-      ),
+      current.copyWith(available: current.available - 1, lastProtectedDay: day),
     );
     _protectedController.add({..._protectedDays});
   }

@@ -34,8 +34,10 @@ void main() {
 
     test('una zona inexistente degrada a UTC sin romper la app', () {
       final roto = LogicalCalendar('Marte/Olympus_Mons');
-      expect(roto.dateOf(DateTime.utc(2026, 9, 11, 23, 0)),
-          const LogicalDate(2026, 9, 11));
+      expect(
+        roto.dateOf(DateTime.utc(2026, 9, 11, 23, 0)),
+        const LogicalDate(2026, 9, 11),
+      );
     });
   });
 

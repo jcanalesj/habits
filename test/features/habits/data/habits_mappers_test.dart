@@ -30,6 +30,7 @@ void main() {
         ],
         colorValue: 0xFFF59E0B,
         emoji: '📖',
+        iconId: 'book',
         reminderTime: '21:00',
         order: 3,
         createdAt: DateTime.utc(2026, 8, 1),
@@ -40,6 +41,7 @@ void main() {
       expect(map, {
         'nombre': 'Leer',
         'emoji': '📖',
+        'iconId': 'book',
         'colorValue': 0xFFF59E0B,
         'ambitoId': 'desarrollo',
         // La configuración inicial va en `periodicidad`...
@@ -51,6 +53,11 @@ void main() {
         ],
         'recordatorioHora': '21:00',
         'orden': 3,
+        'trackingType': 'single',
+        'targetCount': 1,
+        'unit': null,
+        'displayGoal': null,
+        'progressIconId': 'check',
       });
     });
 
@@ -77,6 +84,7 @@ void main() {
         ],
         colorValue: 0xFFF59E0B,
         emoji: '📖',
+        iconId: 'book',
         order: 3,
         createdAt: DateTime.utc(2026, 8, 1),
       );
@@ -85,6 +93,7 @@ void main() {
       final roundTripped = HabitsMappers.habitFromDto(dto);
 
       expect(roundTripped.periodicityTimeline, original.periodicityTimeline);
+      expect(roundTripped.iconId, 'book');
       expect(roundTripped.periodicityOn(day(2026, 9, 13)).timesPerPeriod, 3);
       expect(roundTripped.periodicityOn(day(2026, 9, 14)).timesPerPeriod, 5);
     });
@@ -105,8 +114,10 @@ void main() {
     });
 
     test('un valor de periodicidad corrupto cae a diario', () {
-      expect(HabitsMappers.periodicityTypeFromString('???'),
-          PeriodicityType.daily);
+      expect(
+        HabitsMappers.periodicityTypeFromString('???'),
+        PeriodicityType.daily,
+      );
       expect(HabitDto.normalizePeriodicidad(null), {
         'tipo': 'daily',
         'veces': 1,

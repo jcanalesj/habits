@@ -177,10 +177,12 @@ final activeHabitsProvider = StreamProvider.autoDispose<List<Habit>>((ref) {
 });
 
 /// Un hábito concreto por id, para la pantalla de edición. Null si no existe.
-final habitByIdProvider = FutureProvider.autoDispose
-    .family<Habit?, String>((ref, habitId) {
-      return ref.watch(habitsRepositoryProvider).getHabit(habitId);
-    });
+final habitByIdProvider = FutureProvider.autoDispose.family<Habit?, String>((
+  ref,
+  habitId,
+) {
+  return ref.watch(habitsRepositoryProvider).getHabit(habitId);
+});
 
 /// Nombre del usuario mostrado en el saludo: nickname de la cuenta o, si no
 /// lo tiene, la parte local del email.

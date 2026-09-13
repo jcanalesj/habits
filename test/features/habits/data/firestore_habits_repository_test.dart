@@ -42,24 +42,34 @@ void main() {
     });
 
     test('createHabit escribe exactamente los campos de las reglas', () async {
-      final habit = await repository.createHabit(habitDraft(reminderTime: '18:00'), today: today);
+      final habit = await repository.createHabit(
+        habitDraft(reminderTime: '18:00'),
+        today: today,
+      );
 
       final doc = await col('habitos').doc(habit.id).get();
       final data = doc.data()!;
       expect(data.keys.toSet(), {
         'nombre',
         'emoji',
+        'iconId',
         'colorValue',
         'ambitoId',
         'periodicidad',
         'cambiosPeriodicidad',
         'recordatorioHora',
         'orden',
+        'trackingType',
+        'targetCount',
+        'unit',
+        'displayGoal',
+        'progressIconId',
         'deletedAt',
         'createdAt',
         'updatedAt',
       });
       expect(data['nombre'], 'Beber agua');
+      expect(data['iconId'], 'water_drop');
       expect(data['periodicidad'], {'tipo': 'daily', 'veces': 1});
       expect(data['cambiosPeriodicidad'], isEmpty);
       expect(data['deletedAt'], isNull);
@@ -75,7 +85,10 @@ void main() {
       );
       await Future<void>.delayed(Duration.zero);
 
-      final a = await repository.createHabit(habitDraft(name: 'A'), today: today);
+      final a = await repository.createHabit(
+        habitDraft(name: 'A'),
+        today: today,
+      );
       await repository.createHabit(habitDraft(name: 'B'), today: today);
       await repository.softDeleteHabit(a.id);
       await Future<void>.delayed(Duration.zero);
@@ -118,10 +131,14 @@ void main() {
       final reloaded = await repository.getHabit(habit.id);
       expect(reloaded!.periodicityTimeline, hasLength(2));
       // El cambio es diferido: hasta el 14 sigue vigente el objetivo viejo.
-      expect(reloaded.periodicityOn(day(2026, 9, 13)).type,
-          PeriodicityType.daily);
-      expect(reloaded.periodicityOn(day(2026, 9, 14)).type,
-          PeriodicityType.weekly);
+      expect(
+        reloaded.periodicityOn(day(2026, 9, 13)).type,
+        PeriodicityType.daily,
+      );
+      expect(
+        reloaded.periodicityOn(day(2026, 9, 14)).type,
+        PeriodicityType.weekly,
+      );
     });
 
     test('los registros sobreviven al soft delete', () async {
@@ -166,6 +183,8 @@ void main() {
         'habitoId',
         'dia',
         'tipo',
+        'completedCount',
+        'targetCount',
         'tz',
         'createdAt',
       });
@@ -220,8 +239,14 @@ void main() {
     });
 
     test('consulta por rango de fechas y por hábito', () async {
-      final a = await repository.createHabit(habitDraft(name: 'A'), today: today);
-      final b = await repository.createHabit(habitDraft(name: 'B'), today: today);
+      final a = await repository.createHabit(
+        habitDraft(name: 'A'),
+        today: today,
+      );
+      final b = await repository.createHabit(
+        habitDraft(name: 'B'),
+        today: today,
+      );
       for (final d in [day(2026, 8, 31), day(2026, 9, 5), day(2026, 9, 10)]) {
         await repository.setHabitCompletion(
           habitId: a.id,
@@ -296,9 +321,18 @@ void main() {
 
     test('eliminar un ámbito reasigna todos sus hábitos a General', () async {
       final custom = await repository.createAmbito(ambitoDraft);
-      final active = await repository.createHabit(habitDraft(name: 'Activo', ambitoId: custom.id), today: today);
-      final deleted = await repository.createHabit(habitDraft(name: 'Borrado', ambitoId: custom.id), today: today);
-      final other = await repository.createHabit(habitDraft(name: 'Otro'), today: today);
+      final active = await repository.createHabit(
+        habitDraft(name: 'Activo', ambitoId: custom.id),
+        today: today,
+      );
+      final deleted = await repository.createHabit(
+        habitDraft(name: 'Borrado', ambitoId: custom.id),
+        today: today,
+      );
+      final other = await repository.createHabit(
+        habitDraft(name: 'Otro'),
+        today: today,
+      );
       await repository.setHabitCompletion(
         habitId: active.id,
         date: today,
@@ -335,10 +369,13 @@ void main() {
       expect((await col('ambitos').doc(Ambito.generalId).get()).exists, true);
     });
 
-    test('sin cache/rachas la app funciona: la caché es prescindible', () async {
-      expect(await repository.watchStreakCache().first, isNull);
-      expect(await repository.fetchStreakCache(), isNull);
-    });
+    test(
+      'sin cache/rachas la app funciona: la caché es prescindible',
+      () async {
+        expect(await repository.watchStreakCache().first, isNull);
+        expect(await repository.fetchStreakCache(), isNull);
+      },
+    );
 
     test('cache/rachas se mapea cuando existe', () async {
       await col('cache').doc('rachas').set({
@@ -359,29 +396,32 @@ void main() {
       expect(cache.algorithmVersion, 2);
     });
 
-    test('saveStreakCache escribe exactamente los campos de las reglas', () async {
-      await repository.saveStreakCache(
-        StreakCacheEntry(
-          currentStreak: 4,
-          bestStreak: 9,
-          lastActivityDay: today,
-          calculatedThrough: today,
-          algorithmVersion: 2,
-        ),
-      );
+    test(
+      'saveStreakCache escribe exactamente los campos de las reglas',
+      () async {
+        await repository.saveStreakCache(
+          StreakCacheEntry(
+            currentStreak: 4,
+            bestStreak: 9,
+            lastActivityDay: today,
+            calculatedThrough: today,
+            algorithmVersion: 2,
+          ),
+        );
 
-      final data = (await col('cache').doc('rachas').get()).data()!;
-      expect(data.keys.toSet(), {
-        'rachaActual',
-        'mejorRacha',
-        'ultimoDiaActividad',
-        'calculadoHasta',
-        'version',
-        'updatedAt',
-      });
-      expect(data['rachaActual'], 4);
-      expect(data['calculadoHasta'], '2026-09-10');
-    });
+        final data = (await col('cache').doc('rachas').get()).data()!;
+        expect(data.keys.toSet(), {
+          'rachaActual',
+          'mejorRacha',
+          'ultimoDiaActividad',
+          'calculadoHasta',
+          'version',
+          'updatedAt',
+        });
+        expect(data['rachaActual'], 4);
+        expect(data['calculadoHasta'], '2026-09-10');
+      },
+    );
 
     test('la caché se puede borrar entera', () async {
       await repository.saveStreakCache(

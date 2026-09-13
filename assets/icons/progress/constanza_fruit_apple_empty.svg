@@ -1,0 +1,43 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="emptyFill" x1="45" y1="40" x2="82" y2="110" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FCFBFF"/>
+      <stop offset="1" stop-color="#F1EFF8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- stem -->
+  <path
+    d="M65 39C65 31 68 25 73 20"
+    stroke="#AAA7BC"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+  <!-- leaf -->
+  <path
+    d="M71 29C78 20 89 20 95 24C91 34 82 40 72 36C70 34 70 31 71 29Z"
+    fill="#F4F2F9"
+    stroke="#AAA7BC"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+
+  <!-- apple -->
+  <path
+    d="M64 46C55 37 42 37 33 44C22 52 20 68 24 83C29 102 41 113 53 111C59 110 61 107 64 107C67 107 70 110 76 111C88 113 100 102 105 83C109 68 106 52 95 44C86 37 73 37 64 46Z"
+    fill="url(#emptyFill)"
+    stroke="#AAA7BC"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+
+  <!-- highlight -->
+  <path
+    d="M39 57C34 63 33 72 35 79"
+    stroke="white"
+    stroke-width="6"
+    stroke-linecap="round"
+    opacity="0.72"
+  />
+</svg>

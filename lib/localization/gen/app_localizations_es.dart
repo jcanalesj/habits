@@ -97,6 +97,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aún no tienes hábitos. Crea el primero con el botón +.';
 
   @override
+  String get homeEmptyHabitsBody =>
+      'Tu primer pequeño paso empieza aquí. Créalo con el botón Nuevo hábito.';
+
+  @override
   String get nextReminder => 'Próximo recordatorio';
 
   @override
@@ -120,10 +124,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get periodicityYearly => 'Anual';
 
   @override
-  String get navHome => 'Inicio';
+  String get navHome => 'Hábitos';
 
   @override
-  String get navHabits => 'Hábitos';
+  String get navHabits => 'Mis hábitos';
 
   @override
   String get navStats => 'Estadísticas';
@@ -317,6 +321,208 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get signOut => 'Cerrar sesión';
+
+  @override
+  String get profileSubtitle => 'Tu espacio personal';
+
+  @override
+  String get profileVerified => 'Cuenta verificada';
+
+  @override
+  String get profileYourProgress => 'Tu progreso';
+
+  @override
+  String get profileCurrentStreak => 'Racha actual';
+
+  @override
+  String get profileActiveHabits => 'Hábitos activos';
+
+  @override
+  String get profileProtectors => 'Protectores';
+
+  @override
+  String get profileManage => 'Gestiona tu experiencia';
+
+  @override
+  String get profileMyHabitsSubtitle => 'Organiza y edita tus hábitos';
+
+  @override
+  String get profileCalendarsSubtitle => 'Consulta todo tu historial';
+
+  @override
+  String get profileStatsSubtitle => 'Descubre cómo estás avanzando';
+
+  @override
+  String get profilePreferences => 'Preferencias';
+
+  @override
+  String get profileTimezone => 'Zona horaria';
+
+  @override
+  String get profileEdit => 'Editar perfil';
+
+  @override
+  String get profileViewStats => 'Ver estadísticas';
+
+  @override
+  String get profileTimezoneSubtitle => 'Configura tu zona horaria';
+
+  @override
+  String get profileNotifications => 'Notificaciones';
+
+  @override
+  String get profileNotificationsSubtitle => 'Personaliza tus recordatorios';
+
+  @override
+  String get profileAppearance => 'Apariencia';
+
+  @override
+  String get profileAppearanceSubtitle => 'Tema, color e icono de la app';
+
+  @override
+  String get profileSave => 'Guardar cambios';
+
+  @override
+  String get profileName => 'Nombre';
+
+  @override
+  String get profileChooseTimezone => 'Elige tu zona horaria';
+
+  @override
+  String get profileReminderSettings => 'Recordatorios de hábitos';
+
+  @override
+  String get profileReminderSettingsHint =>
+      'Toca un hábito para configurar su hora de aviso.';
+
+  @override
+  String get profileNoHabits => 'Aún no tienes hábitos que configurar.';
+
+  @override
+  String get profileWelcomeAnimation => 'Animación de bienvenida';
+
+  @override
+  String get profileWelcomeAnimationHint =>
+      'Mostrar mascota y motivación al abrir la app';
+
+  @override
+  String get profileChangesSaved => 'Cambios guardados';
+
+  @override
+  String get profileStreakEncouragement => '¡Sigue así! 💪';
+
+  @override
+  String get profileHabitsEncouragement =>
+      'Estás construyendo un gran hábito 💚';
+
+  @override
+  String profileProtectorEncouragement(int count) {
+    return 'Tienes $count para un mal día ✨';
+  }
+
+  @override
+  String get chooseAvatar => 'Elige tu avatar';
+
+  @override
+  String get chooseAvatarSubtitle =>
+      'Haz que Constanza sea un poquito más tuyo 💜';
+
+  @override
+  String get avatarTraveler => 'Gato viajero';
+
+  @override
+  String get avatarFriendly => 'Gato curioso';
+
+  @override
+  String get avatarMagic => 'Gato mágico';
+
+  @override
+  String get avatarGamer => 'Gato gamer';
+
+  @override
+  String get avatarZen => 'Gato zen';
+
+  @override
+  String get avatarNight => 'Gato nocturno';
+
+  @override
+  String get avatarAdventurer => 'Gato aventurero';
+
+  @override
+  String get avatarLegendary => 'Gato legendario';
+
+  @override
+  String get avatarSelected => 'Seleccionado';
+
+  @override
+  String get avatarAvailable => 'Disponible';
+
+  @override
+  String get avatarComingSoon => 'Próximamente';
+
+  @override
+  String get avatarLocked => 'bloqueado';
+
+  @override
+  String get avatarLockedTitle => 'Avatar bloqueado 🔒';
+
+  @override
+  String get avatarLockedBody => 'Este avatar estará disponible próximamente.';
+
+  @override
+  String get understood => 'Entendido';
+
+  @override
+  String get timezoneHeroTitle => 'Tu día, a tu hora';
+
+  @override
+  String get timezoneHeroBody =>
+      'Usamos tu zona horaria para saber cuándo empieza un nuevo día y mantener correctamente tus hábitos y tu racha.';
+
+  @override
+  String get timezoneAutomatic => 'Zona horaria automática';
+
+  @override
+  String get timezoneAutomaticSubtitle =>
+      'Usar la zona horaria del dispositivo';
+
+  @override
+  String get timezoneRecommended => 'Recomendado para la mayoría de usuarios.';
+
+  @override
+  String get timezoneCurrent => 'Tu zona horaria actual';
+
+  @override
+  String get timezoneActive => 'Activa';
+
+  @override
+  String timezoneCurrentTime(String time) {
+    return 'Hora actual: $time';
+  }
+
+  @override
+  String get timezoneManual => 'Seleccionar manualmente';
+
+  @override
+  String get timezoneManualSubtitle =>
+      'Si lo prefieres, puedes elegir otra zona horaria.';
+
+  @override
+  String get timezoneSearch => 'Buscar ciudad o zona horaria...';
+
+  @override
+  String get timezoneRecent => 'Zonas disponibles';
+
+  @override
+  String get timezoneTravelHint =>
+      'Si viajas, Constanza actualizará automáticamente tu zona horaria cuando esté activada esta opción, para que tus días sigan tu hora local.';
+
+  @override
+  String get profileAccount => 'Cuenta';
+
+  @override
+  String get profileSignOutHint =>
+      'Podrás volver a entrar con tu correo y contraseña.';
 
   @override
   String get nicknameTooLong =>
@@ -573,6 +779,56 @@ class AppLocalizationsEs extends AppLocalizations {
   String get habitTimesLabel => 'Veces por periodo';
 
   @override
+  String get habitTrackingQuestion => '¿Cuántas veces quieres hacerlo?';
+
+  @override
+  String get habitTrackingOnce => 'Una vez';
+
+  @override
+  String get habitTrackingSeveral => 'Varias veces';
+
+  @override
+  String get habitTargetCount => '¿Cuántas veces?';
+
+  @override
+  String get habitUnitOptional => 'Unidad (opcional)';
+
+  @override
+  String get habitUnitHint => 'Ejemplo: vasos';
+
+  @override
+  String get habitDisplayGoalOptional => 'Objetivo visible (opcional)';
+
+  @override
+  String get habitDisplayGoalHint => 'Ejemplo: 2 L';
+
+  @override
+  String get habitProgressIcon => 'Icono de progreso';
+
+  @override
+  String get habitProgressIconSubtitle =>
+      'Elige cómo quieres registrar cada vez que lo hagas.';
+
+  @override
+  String habitRepetitionProgress(Object completed, Object target, Object unit) {
+    return '$completed de $target$unit';
+  }
+
+  @override
+  String habitRepetitionItemCompleted(
+    Object index,
+    Object item,
+    Object target,
+  ) {
+    return '$item $index de $target, completado';
+  }
+
+  @override
+  String habitRepetitionItemPending(Object index, Object item, Object target) {
+    return '$item $index de $target, pendiente';
+  }
+
+  @override
   String get habitReminderLabel => 'Recordatorio';
 
   @override
@@ -635,6 +891,41 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get noHabitsYetLong =>
       'Aún no tienes hábitos.\nCrea el primero y empieza tu racha.';
+
+  @override
+  String get myHabitsManageSubtitle =>
+      'Aquí puedes ver y gestionar todos tus hábitos.';
+
+  @override
+  String get addHabit => 'Añadir hábito';
+
+  @override
+  String get emptyHabitsImageLabel => 'Gato esperando nuevos hábitos';
+
+  @override
+  String get emptyHabitsTitle => 'Aún no tienes hábitos';
+
+  @override
+  String get emptyHabitsBody =>
+      'Empieza añadiendo tu primer hábito y da el primer paso hacia la mejor versión de ti.';
+
+  @override
+  String get addFirstHabit => 'Añadir mi primer hábito';
+
+  @override
+  String get needIdeas => '¿Necesitas ideas?';
+
+  @override
+  String get habitIdeaExercise => 'Ejercicio';
+
+  @override
+  String get habitIdeaRead => 'Leer';
+
+  @override
+  String get habitIdeaWater => 'Beber agua';
+
+  @override
+  String get habitIdeaSleep => 'Dormir mejor';
 
   @override
   String get allHabitsTitle => 'Mis hábitos';
@@ -755,4 +1046,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get editHabitsHint =>
       'Para editar tus hábitos, ve a la pestaña Hábitos.';
+
+  @override
+  String get timezoneChangeConfirmTitle => '¿Cambiar tu zona horaria?';
+
+  @override
+  String get timezoneChangeConfirmAction => 'Cambiar';
 }

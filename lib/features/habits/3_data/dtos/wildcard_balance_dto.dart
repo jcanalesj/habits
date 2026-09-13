@@ -29,8 +29,7 @@ class WildcardBalanceDto {
           (data[FirestoreFields.ultimaConcesionYM] as num?)?.toInt() ?? 0,
       concedidosTotal:
           (data[FirestoreFields.concedidosTotal] as num?)?.toInt() ?? 0,
-      ultimoDiaProtegido:
-          data[FirestoreFields.ultimoDiaProtegido] as String?,
+      ultimoDiaProtegido: data[FirestoreFields.ultimoDiaProtegido] as String?,
     );
   }
 }
@@ -38,10 +37,7 @@ class WildcardBalanceDto {
 /// Documento `users/{uid}/diasProtegidos/{YYYY-MM-DD}`. El id ES el día, lo
 /// que hace estructuralmente imposible proteger dos veces el mismo día.
 class ProtectedDayDto {
-  const ProtectedDayDto({
-    required this.dia,
-    required this.createdAt,
-  });
+  const ProtectedDayDto({required this.dia, required this.createdAt});
 
   final String dia;
   final DateTime? createdAt;

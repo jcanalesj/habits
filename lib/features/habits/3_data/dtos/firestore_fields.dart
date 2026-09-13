@@ -27,6 +27,7 @@ abstract final class FirestoreFields {
 
   // Hábitos
   static const ambitoId = 'ambitoId';
+  static const iconId = 'iconId';
 
   /// Configuración inicial: mapa `{tipo, veces}`. En documentos anteriores a
   /// la fase 5 era un string suelto (`'weekly'`); el mapper lee ambas formas.
@@ -39,6 +40,12 @@ abstract final class FirestoreFields {
   static const cambiosPeriodicidad = 'cambiosPeriodicidad';
   static const desde = 'desde';
   static const recordatorioHora = 'recordatorioHora';
+  static const trackingType = 'trackingType';
+  static const targetCount = 'targetCount';
+  static const completedCount = 'completedCount';
+  static const unit = 'unit';
+  static const displayGoal = 'displayGoal';
+  static const progressIconId = 'progressIconId';
   static const deletedAt = 'deletedAt';
 
   /// Nombre anterior de [cambiosPeriodicidad] (fase 4). Solo lectura.

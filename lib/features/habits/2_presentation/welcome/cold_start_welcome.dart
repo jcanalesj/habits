@@ -3,8 +3,17 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 
-/// Configuración preparada para conectarse más adelante a Ajustes.
-final welcomeAnimationEnabledProvider = Provider<bool>((ref) => true);
+final welcomeAnimationEnabledProvider =
+    NotifierProvider<WelcomeAnimationController, bool>(
+      WelcomeAnimationController.new,
+    );
+
+class WelcomeAnimationController extends Notifier<bool> {
+  @override
+  bool build() => true;
+
+  void setEnabled(bool enabled) => state = enabled;
+}
 
 /// Estado en memoria del proceso. Se crea una vez con el [ProviderScope] raíz,
 /// por lo que volver a Home o reanudar la app no vuelve a abrir la bienvenida.

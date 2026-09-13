@@ -50,6 +50,10 @@ class UpdateHabitUsecase {
           : original.periodicityTimeline.last.periodicity,
       reminderTime: updated.reminderTime,
     );
+    if (updated.trackingType == HabitTrackingType.repetitions &&
+        updated.targetCount < 2) {
+      errors.add(HabitValidationError.invalidTimesPerPeriod);
+    }
     if (errors.isNotEmpty) return UpdateHabitValidationFailed(errors);
 
     final toSave = updated.copyWith(

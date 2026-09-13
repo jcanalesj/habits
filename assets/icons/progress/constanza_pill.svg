@@ -1,0 +1,35 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="purple" x1="37" y1="32" x2="67" y2="65" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#E2D3FF"/>
+    <stop offset="1" stop-color="#A985F5"/>
+  </linearGradient>
+  <linearGradient id="pink" x1="64" y1="64" x2="96" y2="98" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#FFCFDC"/>
+    <stop offset="1" stop-color="#F38EAE"/>
+  </linearGradient>
+</defs>
+
+<g transform="rotate(-45 64 64)">
+  <!-- capsule -->
+  <rect x="43" y="16" width="42" height="96" rx="21"
+        fill="#F8F6FF" stroke="#7655E8" stroke-width="3"/>
+
+  <!-- upper half -->
+  <path d="M43 64V37C43 25.4 52.4 16 64 16C75.6 16 85 25.4 85 37V64H43Z"
+        fill="url(#purple)"/>
+
+  <!-- lower half -->
+  <path d="M43 64H85V91C85 102.6 75.6 112 64 112C52.4 112 43 102.6 43 91V64Z"
+        fill="url(#pink)"/>
+
+  <!-- divider -->
+  <path d="M44.5 64H83.5" stroke="#7655E8" stroke-width="3"/>
+
+  <!-- highlights -->
+  <path d="M52 31C54 25 58 22 62 21"
+        stroke="white" stroke-width="5" stroke-linecap="round" opacity=".62"/>
+  <path d="M52 76V87"
+        stroke="white" stroke-width="5" stroke-linecap="round" opacity=".42"/>
+</g>
+</svg>

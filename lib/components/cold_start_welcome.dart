@@ -151,7 +151,7 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
                             scale:
                                 (lerpDouble(.88, 1, intro)! *
                                 lerpDouble(1, .34, move)!),
-                            child: const CatMascot(size: 156),
+                            child: const UserAvatar(size: 156),
                           ),
                         )
                       else
@@ -159,7 +159,7 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
                           opacity: 1 - reveal,
                           child: const Align(
                             alignment: Alignment(0, -.30),
-                            child: CatMascot(size: 132),
+                            child: UserAvatar(size: 132),
                           ),
                         ),
                       Align(

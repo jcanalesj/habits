@@ -24,6 +24,8 @@ abstract class AuthRepository {
 
   Future<void> signOut();
 
+  Future<AppUser> updateDisplayName(String displayName);
+
   /// Envía (o reenvía) el enlace de verificación al usuario con sesión.
   Future<void> sendEmailVerification();
 

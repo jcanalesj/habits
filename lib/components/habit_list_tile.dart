@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:habits/components/habit_icon_catalog.dart';
 import 'package:habits/components/periodicity_label.dart';
+import 'package:habits/components/progress_icon_picker.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -35,6 +37,7 @@ class HabitListTile extends StatelessWidget {
     this.progress,
     this.onTap,
     this.mode = HabitTileMode.manage,
+    this.onSetDailyCount,
   });
 
   final Habit habit;
@@ -49,6 +52,7 @@ class HabitListTile extends StatelessWidget {
   /// Solo se usa en [HabitTileMode.manage].
   final VoidCallback? onTap;
   final HabitTileMode mode;
+  final ValueChanged<int>? onSetDailyCount;
 
   bool get _isTracking => mode != HabitTileMode.manage;
   bool get _isCompact => mode == HabitTileMode.trackCompact;
@@ -56,6 +60,28 @@ class HabitListTile extends StatelessWidget {
   bool _isCompletedToday() => weekLogs.any(
     (log) => log.habitId == habit.id && log.isActivity && log.date == today,
   );
+
+  int _completedCountToday() {
+    for (final log in weekLogs) {
+      if (log.habitId == habit.id &&
+          log.date == today &&
+          log.type == HabitLogType.completed) {
+        return log.completedCount;
+      }
+    }
+    return 0;
+  }
+
+  int _targetCountToday() {
+    for (final log in weekLogs) {
+      if (log.habitId == habit.id &&
+          log.date == today &&
+          log.type == HabitLogType.completed) {
+        return log.targetCount;
+      }
+    }
+    return habit.targetCount;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +93,9 @@ class HabitListTile extends StatelessWidget {
     final actionColor = Color.lerp(color, AppColors.textPrimary, 0.42)!;
     final goal = progress;
     final completedToday = _isCompletedToday();
-    final action = _isTracking ? onToggleToday : onTap;
+    final repetitions = _isTracking && habit.hasRepetitions;
+    final action = _isTracking ? (repetitions ? null : onToggleToday) : onTap;
+    const iconSurface = Color(0xFFF4F1FC);
 
     // Diseño en dos líneas para que quepa en pantallas de móvil:
     // arriba nombre + progreso, debajo la semana a ancho completo.
@@ -96,16 +124,16 @@ class HabitListTile extends StatelessWidget {
                 : [Colors.white, color.withValues(alpha: 0.09)],
           ),
           borderRadius: BorderRadius.circular(_isCompact ? 20 : 28),
-          border: _isCompact
+          border: _isCompact || habit.hasRepetitions
               ? null
               : Border.all(color: Colors.white.withValues(alpha: 0.9)),
           boxShadow: _isCompact
               ? null
               : [
                   BoxShadow(
-                    color: color.withValues(alpha: 0.14),
-                    blurRadius: 24,
-                    offset: const Offset(0, 10),
+                    color: AppColors.textPrimary.withValues(alpha: 0.06),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
                   ),
                 ],
         ),
@@ -133,14 +161,15 @@ class HabitListTile extends StatelessWidget {
                         height: _isCompact ? 42 : 58,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.15),
+                          color: iconSurface,
                           borderRadius: BorderRadius.circular(
                             _isCompact ? 16 : 18,
                           ),
                         ),
-                        child: Text(
-                          habit.emoji,
-                          style: TextStyle(fontSize: _isCompact ? 22 : 26),
+                        child: HabitIcon(
+                          iconId: habit.iconId,
+                          legacyEmoji: habit.emoji,
+                          size: _isCompact ? 30 : 42,
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -158,7 +187,9 @@ class HabitListTile extends StatelessWidget {
                             ),
                             const SizedBox(height: 5),
                             Text(
-                              _isCompact
+                              habit.hasRepetitions && habit.displayGoal != null
+                                  ? habit.displayGoal!
+                                  : _isCompact
                                   ? '${PeriodicityLabel.of(l10n, habit.periodicityOn(today))}  ·  ${completedToday ? l10n.habitCompletedEncouragement : l10n.habitPendingEncouragement}'
                                   : PeriodicityLabel.of(
                                       l10n,
@@ -187,7 +218,43 @@ class HabitListTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      if (goal != null)
+                      if (habit.hasRepetitions && _isTracking)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: _isCompact ? 10 : 18,
+                            vertical: _isCompact ? 6 : 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: iconSurface,
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: '${_completedCountToday()}',
+                                  style: TextStyle(
+                                    color: actionColor,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' / ${_targetCountToday()}',
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            style:
+                                (_isCompact
+                                        ? textTheme.titleMedium
+                                        : textTheme.headlineSmall)
+                                    ?.copyWith(height: 1),
+                          ),
+                        )
+                      else if (goal != null)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -209,7 +276,7 @@ class HabitListTile extends StatelessWidget {
                           ],
                         ),
                       const SizedBox(width: 8),
-                      if (_isTracking)
+                      if (_isTracking && !repetitions)
                         ExcludeSemantics(
                           child: _TrackToggle(
                             // Clave estable para localizar el control de registro
@@ -227,6 +294,16 @@ class HabitListTile extends StatelessWidget {
                     ],
                   ),
                   if (!_isCompact) const SizedBox(height: 16),
+                  if (repetitions) ...[
+                    if (!_isCompact) const SizedBox(height: 2),
+                    _RepetitionProgress(
+                      habit: habit.copyWith(targetCount: _targetCountToday()),
+                      count: _completedCountToday(),
+                      compact: _isCompact,
+                      onChanged: onSetDailyCount,
+                    ),
+                    if (!_isCompact) const SizedBox(height: 14),
+                  ],
                   if (_isTracking && !_isCompact)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -285,6 +362,117 @@ class HabitListTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _RepetitionProgress extends StatelessWidget {
+  const _RepetitionProgress({
+    required this.habit,
+    required this.count,
+    required this.compact,
+    required this.onChanged,
+  });
+  final Habit habit;
+  final int count;
+  final bool compact;
+  final ValueChanged<int>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Color(habit.colorValue);
+    final target = habit.targetCount.clamp(1, 999);
+    final safeCount = count.clamp(0, target);
+    final unit = habit.unit == null ? '' : ' ${habit.unit}';
+    final l10n = context.l10n;
+    if (target > ProgressIconCatalog.individualIconLimit) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              HabitProgressIcon(
+                iconId: habit.progressIconId,
+                completed: safeCount >= target,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l10n.habitRepetitionProgress(safeCount, target, unit),
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const Spacer(),
+              IconButton.filledTonal(
+                visualDensity: VisualDensity.compact,
+                onPressed: safeCount > 0 && onChanged != null
+                    ? () => onChanged!(safeCount - 1)
+                    : null,
+                icon: const Icon(Icons.remove_rounded),
+              ),
+              const SizedBox(width: 6),
+              IconButton.filled(
+                visualDensity: VisualDensity.compact,
+                onPressed: safeCount < target && onChanged != null
+                    ? () => onChanged!(safeCount + 1)
+                    : null,
+                icon: const Icon(Icons.add_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: safeCount / target,
+              minHeight: 8,
+              color: color,
+              backgroundColor: color.withValues(alpha: .12),
+            ),
+          ),
+        ],
+      );
+    }
+    return Wrap(
+      spacing: compact ? 5 : 8,
+      runSpacing: 6,
+      children: List.generate(target, (index) {
+        final done = index < safeCount;
+        final nextCount = done ? safeCount - 1 : safeCount + 1;
+        final label = done
+            ? l10n.habitRepetitionItemCompleted(
+                habit.unit ?? habit.name,
+                index + 1,
+                target,
+              )
+            : l10n.habitRepetitionItemPending(
+                habit.unit ?? habit.name,
+                index + 1,
+                target,
+              );
+        return Semantics(
+          button: onChanged != null,
+          checked: done,
+          label: label,
+          child: InkWell(
+            onTap: onChanged == null ? null : () => onChanged!(nextCount),
+            borderRadius: BorderRadius.circular(15),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              width: compact ? 42 : 52,
+              height: compact ? 42 : 52,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F1FC),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: HabitProgressIcon(
+                iconId: habit.progressIconId,
+                completed: done,
+                size: compact ? 30 : 38,
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 }

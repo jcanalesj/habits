@@ -50,8 +50,6 @@ abstract class WildcardBalance with _$WildcardBalance {
 /// la racha general, y nunca suma un día (§16).
 @freezed
 abstract class ProtectedDay with _$ProtectedDay {
-  const factory ProtectedDay({
-    required LogicalDate day,
-    DateTime? createdAt,
-  }) = _ProtectedDay;
+  const factory ProtectedDay({required LogicalDate day, DateTime? createdAt}) =
+      _ProtectedDay;
 }

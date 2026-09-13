@@ -158,10 +158,7 @@ class _FailingCacheRepository implements HabitsRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>
-      Function.apply(
-        (_delegate as dynamic).noSuchMethod,
-        [invocation],
-      );
+      Function.apply((_delegate as dynamic).noSuchMethod, [invocation]);
 
   @override
   Future<Set<LogicalDate>> fetchActivityDays() => _delegate.fetchActivityDays();

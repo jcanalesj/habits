@@ -38,6 +38,10 @@ class CreateHabitUsecase {
       periodicity: draft.periodicity,
       reminderTime: draft.reminderTime,
     );
+    if (draft.trackingType == HabitTrackingType.repetitions &&
+        draft.targetCount < 2) {
+      errors.add(HabitValidationError.invalidTimesPerPeriod);
+    }
     if (errors.isNotEmpty) return CreateHabitValidationFailed(errors);
 
     try {

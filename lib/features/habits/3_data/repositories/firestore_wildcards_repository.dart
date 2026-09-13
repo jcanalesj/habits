@@ -33,9 +33,8 @@ class FirestoreWildcardsRepository implements WildcardsRepository {
   DocumentReference<Map<String, dynamic>> get _user =>
       _db.collection(FirestoreFields.users).doc(userId);
 
-  DocumentReference<Map<String, dynamic>> get _saldo => _user
-      .collection(FirestoreFields.comodines)
-      .doc(FirestoreFields.saldoDoc);
+  DocumentReference<Map<String, dynamic>> get _saldo =>
+      _user.collection(FirestoreFields.comodines).doc(FirestoreFields.saldoDoc);
 
   CollectionReference<Map<String, dynamic>> get _diasProtegidos =>
       _user.collection(FirestoreFields.diasProtegidos);
@@ -64,10 +63,7 @@ class FirestoreWildcardsRepository implements WildcardsRepository {
 
   @override
   Stream<Set<LogicalDate>> watchProtectedDays() => _guardStream(
-    _diasProtegidos
-        .orderBy(FirestoreFields.dia)
-        .snapshots()
-        .map(_daysOf),
+    _diasProtegidos.orderBy(FirestoreFields.dia).snapshots().map(_daysOf),
   );
 
   @override
@@ -185,8 +181,9 @@ class FirestoreWildcardsRepository implements WildcardsRepository {
       'permission-denied' => WildcardFailure.permissionDenied,
       // Sin red la transacción no llega a ejecutarse: es el comportamiento
       // buscado para un entitlement, no un error que haya que disimular.
-      'unavailable' || 'deadline-exceeded' || 'aborted' =>
-        WildcardFailure.requiresConnection,
+      'unavailable' ||
+      'deadline-exceeded' ||
+      'aborted' => WildcardFailure.requiresConnection,
       _ => WildcardFailure.unknown,
     };
     return WildcardException(failure, message: e.message);

@@ -71,9 +71,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   /// Login social: fuera de alcance en v1.
   void _showComingSoon() {
-    ScaffoldMessenger.of(
+    AppNotice.show(
       context,
-    ).showSnackBar(SnackBar(content: Text(context.l10n.comingSoon)));
+      message: context.l10n.comingSoon,
+      type: AppNoticeType.info,
+    );
   }
 
   @override

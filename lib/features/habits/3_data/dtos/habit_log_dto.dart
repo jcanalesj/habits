@@ -8,6 +8,8 @@ class HabitLogDto {
     required this.habitoId,
     required this.dia,
     required this.tipo,
+    required this.completedCount,
+    required this.targetCount,
   });
 
   final String id;
@@ -20,6 +22,8 @@ class HabitLogDto {
   /// `recovery` o `plannedRest`: se conservan pero no cuentan como
   /// actividad real.
   final String tipo;
+  final int completedCount;
+  final int targetCount;
 
   /// Id determinista del registro: marcar es `set`, desmarcar es `delete`.
   static String idFor(String habitoId, String dia) => '${habitoId}_$dia';
@@ -33,6 +37,9 @@ class HabitLogDto {
       tipo:
           data[FirestoreFields.tipo] as String? ??
           FirestoreFields.tipoCompleted,
+      completedCount:
+          (data[FirestoreFields.completedCount] as num?)?.toInt() ?? 1,
+      targetCount: (data[FirestoreFields.targetCount] as num?)?.toInt() ?? 1,
     );
   }
 }

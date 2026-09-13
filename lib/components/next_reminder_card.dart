@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habits/components/habit_icon_catalog.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -63,7 +64,11 @@ class NextReminderCard extends StatelessWidget {
                   color: color.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Text(habit.emoji, style: const TextStyle(fontSize: 20)),
+                child: HabitIcon(
+                  iconId: habit.iconId,
+                  legacyEmoji: habit.emoji,
+                  size: 27,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

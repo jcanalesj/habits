@@ -4,6 +4,7 @@ export 'goal_progress.dart';
 export 'habit.dart';
 export 'habit_draft.dart';
 export 'habit_log.dart';
+export 'habit_tracking.dart';
 export 'home_summary.dart';
 export 'logical_date.dart';
 export 'periodicity.dart';
