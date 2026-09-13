@@ -115,6 +115,18 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
       : '${_reminder!.hour.toString().padLeft(2, '0')}:'
             '${_reminder!.minute.toString().padLeft(2, '0')}';
 
+  bool get _canCreate {
+    if (_ambitoId == null || _emojiController.text.trim().isEmpty) return false;
+    final errors = HabitValidation.validateHabit(
+      name: _nameController.text,
+      emoji: _emojiController.text,
+      periodicity: _periodicity,
+      reminderTime: _reminderText,
+    );
+    if (errors.isNotEmpty) return false;
+    return _trackingType != HabitTrackingType.repetitions || _targetCount >= 2;
+  }
+
   String _errorFor(AppLocalizations l10n) {
     if (_errors.contains(HabitValidationError.nameRequired)) {
       return l10n.errorNameRequired;
@@ -544,11 +556,16 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
             ),
           ),
           const SizedBox(height: 24),
-          GradientButton(
-            label: widget.isEditing ? l10n.saveHabit : l10n.createHabit,
-            isLoading: _saving,
-            trailingArrow: false,
-            onPressed: () => _save(today),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _nameController,
+            builder: (context, value, child) => GradientButton(
+              label: widget.isEditing ? l10n.saveHabit : l10n.createHabit,
+              isLoading: _saving,
+              trailingArrow: false,
+              onPressed: widget.isEditing || _canCreate
+                  ? () => _save(today)
+                  : null,
+            ),
           ),
           if (widget.isEditing) ...[
             const SizedBox(height: 8),

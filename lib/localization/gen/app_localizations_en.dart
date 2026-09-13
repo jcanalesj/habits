@@ -380,6 +380,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAppearanceSubtitle => 'Theme, color and app icon';
 
   @override
+  String get appearanceHeroTitle => 'Make it a little more yours';
+
+  @override
+  String get appearanceHeroBody =>
+      'Customize how Constanza feels as it joins you each day.';
+
+  @override
+  String get appearancePreview => 'Preview';
+
+  @override
+  String get appearanceExperience => 'Experience';
+
+  @override
+  String get appearanceReducedMotion => 'Reduce motion';
+
+  @override
+  String get appearanceReducedMotionHint =>
+      'Follows your device accessibility setting';
+
+  @override
+  String get appearanceActive => 'Active';
+
+  @override
+  String get appearanceInactive => 'Inactive';
+
+  @override
+  String get appearanceTheme => 'Theme';
+
+  @override
+  String get appearanceLightTheme => 'Light';
+
+  @override
+  String get appearanceLightThemeHint => 'Constanza\'s current style';
+
+  @override
+  String get appearanceDarkTheme => 'Dark';
+
+  @override
+  String get appearanceComingSoon => 'A more comfortable experience at night';
+
+  @override
+  String get appearanceSoon => 'Coming soon';
+
+  @override
+  String get appearanceAppIcon => 'App icon';
+
+  @override
+  String get appearanceAppIconHint =>
+      'Choose how you want to recognize Constanza on your device.';
+
+  @override
+  String get appearanceClassic => 'Classic';
+
+  @override
+  String get appearanceSystemHint =>
+      'Reduced motion automatically follows your device accessibility settings.';
+
+  @override
   String get profileSave => 'Save changes';
 
   @override
@@ -394,6 +452,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileReminderSettingsHint =>
       'Tap a habit to configure its reminder time.';
+
+  @override
+  String get notificationHeroTitle => 'A little nudge on time';
+
+  @override
+  String get notificationHeroBody =>
+      'Choose when you want Constanza to remind you about each habit.';
+
+  @override
+  String notificationActiveSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active reminders',
+      one: '1 active reminder',
+      zero: 'No active reminders',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationActiveSummaryHint =>
+      'You can configure each one separately.';
+
+  @override
+  String get notificationHabitListHint =>
+      'Enable a habit or tap its time to change it.';
+
+  @override
+  String notificationEveryDayAt(String time) {
+    return 'Every day at $time';
+  }
+
+  @override
+  String get notificationChooseTime => 'Choose reminder time';
+
+  @override
+  String get notificationReminderSaved => 'Reminder updated';
+
+  @override
+  String get notificationTimezoneHint =>
+      'Reminders will follow the time zone configured in your profile.';
 
   @override
   String get profileNoHabits => 'You don\'t have any habits to configure yet.';
@@ -608,6 +708,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get streakStartToday => 'Complete a habit to start your streak.';
+
+  @override
+  String get collapseStreakCard => 'Collapse streak card';
+
+  @override
+  String get expandStreakCard => 'Expand streak card';
 
   @override
   String get useWildcard => 'Use wildcard';
@@ -1047,4 +1153,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timezoneChangeConfirmAction => 'Change';
+
+  @override
+  String get timezoneAutomaticConfirmBody =>
+      'Constanza will use the device time zone and update it automatically when you travel, so your days follow local time.';
+
+  @override
+  String get timezoneManualConfirmBody =>
+      'When you choose a time zone manually, it will no longer update automatically as you travel. Your habits and streak will follow the zone you select.';
 }

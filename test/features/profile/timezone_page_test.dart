@@ -72,8 +72,11 @@ void main() {
 
     // El aviso aparece justo antes de aplicar el cambio.
     expect(find.text('¿Cambiar tu zona horaria?'), findsOneWidget);
-    expect(find.textContaining('Si viajas'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Cambiar'));
+    expect(
+      find.textContaining('Al elegir una zona manualmente'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Cambiar'));
     await tester.pumpAndSettle();
 
     expect(env.profiles.timezoneAutomatic[verifiedUser.id], isFalse);
@@ -82,7 +85,7 @@ void main() {
     await tester.tap(find.text('Londres'));
     await tester.pumpAndSettle();
     expect(find.text('¿Cambiar tu zona horaria?'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Cambiar'));
+    await tester.tap(find.text('Cambiar'));
     await tester.pumpAndSettle();
 
     expect(env.profiles.profiles[verifiedUser.id]?.timezone, 'Europe/London');
@@ -94,11 +97,30 @@ void main() {
 
     await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancelar'));
     await tester.pumpAndSettle();
 
     expect(env.profiles.timezoneAutomatic[verifiedUser.id], isNull);
     expect(env.profiles.profiles[verifiedUser.id]?.timezone, antes);
+  });
+
+  testWidgets('al volver a automático muestra el texto correspondiente', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+
+    await tester.tap(find.byType(Switch).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cambiar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(Switch).first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Constanza usará la zona horaria del dispositivo'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('elegir la zona ya activa no pregunta nada', (tester) async {
@@ -106,7 +128,7 @@ void main() {
 
     await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Cambiar'));
+    await tester.tap(find.text('Cambiar'));
     await tester.pumpAndSettle();
     await scrollToZones(tester);
 

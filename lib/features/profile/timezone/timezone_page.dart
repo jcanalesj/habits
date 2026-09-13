@@ -103,30 +103,17 @@ class _TimezonePageState extends ConsumerState<TimezonePage> {
   /// Cambiar de zona horaria mueve el instante en que empieza un día nuevo,
   /// y con él el cálculo de la racha. Por eso se avisa justo antes de
   /// aplicarlo, en lugar de dejar un texto fijo que nadie lee.
-  Future<bool> _confirmChange() async {
-    final l10n = context.l10n;
+  Future<bool> _confirmChange({required bool automatic}) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.timezoneChangeConfirmTitle),
-        content: Text(l10n.timezoneTravelHint),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.timezoneChangeConfirmAction),
-          ),
-        ],
-      ),
+      barrierColor: AppColors.textPrimary.withValues(alpha: .48),
+      builder: (context) => _TimezoneChangeDialog(automatic: automatic),
     );
     return confirmed ?? false;
   }
 
   Future<void> _setAutomatic(bool automatic, String current) async {
-    if (!await _confirmChange()) return;
+    if (!await _confirmChange(automatic: automatic)) return;
 
     var timezone = current;
     if (automatic) {
@@ -144,7 +131,7 @@ class _TimezonePageState extends ConsumerState<TimezonePage> {
   /// es un cambio, así que no pregunta nada.
   Future<void> _selectZone(String zone, String current) async {
     if (zone == current) return;
-    if (!await _confirmChange()) return;
+    if (!await _confirmChange(automatic: false)) return;
     await _save(timezone: zone, automatic: false);
   }
 
@@ -210,6 +197,160 @@ class _TimezonePageState extends ConsumerState<TimezonePage> {
             onSelected: (zone) => _selectZone(zone, current),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TimezoneChangeDialog extends StatelessWidget {
+  const _TimezoneChangeDialog({required this.automatic});
+
+  final bool automatic;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
+    final body = automatic
+        ? l10n.timezoneAutomaticConfirmBody
+        : l10n.timezoneManualConfirmBody;
+
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Material(
+          color: const Color(0xFFFFFCFD),
+          elevation: 0,
+          borderRadius: BorderRadius.circular(32),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 82,
+                      height: 82,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0EAFF),
+                        borderRadius: BorderRadius.circular(26),
+                      ),
+                      child: Icon(
+                        automatic
+                            ? PhosphorIconsBold.globe
+                            : PhosphorIconsBold.mapPin,
+                        color: AppColors.primary,
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      l10n.timezoneChangeConfirmTitle,
+                      textAlign: TextAlign.center,
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF7F4FD),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            PhosphorIconsBold.info,
+                            color: AppColors.primary,
+                            size: 23,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              body,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: AppColors.textSecondary,
+                                height: 1.38,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: BorderSide(
+                                color: AppColors.primary.withValues(alpha: .35),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: Text(
+                              l10n.cancel,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            icon: const Icon(PhosphorIconsBold.check, size: 18),
+                            label: Text(
+                              l10n.timezoneChangeConfirmAction,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  tooltip: l10n.cancel,
+                  onPressed: () => Navigator.pop(context, false),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFFF4F1F8),
+                  ),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

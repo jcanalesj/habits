@@ -71,6 +71,30 @@ void main() {
     expect(find.text('Streaks by area'), findsNothing);
   });
 
+  testWidgets('la tarjeta de racha se puede reducir y volver a ampliar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_appUnderTest(locale: const Locale('es')));
+    await tester.pumpAndSettle();
+
+    final expandedHeight = tester
+        .getSize(find.byType(GeneralStreakCard))
+        .height;
+    await tester.tap(find.byKey(const Key('collapse-streak-card')));
+    await tester.pumpAndSettle();
+
+    final compactHeight = tester.getSize(find.byType(GeneralStreakCard)).height;
+    expect(compactHeight, lessThan(expandedHeight / 2));
+    expect(find.byKey(const Key('expand-streak-card')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('expand-streak-card')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSize(find.byType(GeneralStreakCard)).height,
+      expandedHeight,
+    );
+  });
+
   testWidgets('HomePage muestra el progreso del objetivo, no una racha', (
     tester,
   ) async {

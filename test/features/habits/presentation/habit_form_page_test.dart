@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habits/components/gradient_button.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/pages/habit_form_page.dart';
@@ -64,7 +65,9 @@ void main() {
     expect(creado.periodicityOn(testToday).timesPerPeriod, 3);
   });
 
-  testWidgets('un nombre vacío muestra error y no guarda', (tester) async {
+  testWidgets('un nombre vacío mantiene el botón deshabilitado y no guarda', (
+    tester,
+  ) async {
     await tester.pumpWidget(appWith(const HabitFormPage()));
     await tester.pumpAndSettle();
     final antes = (await env.habits.watchActiveHabits().first).length;
@@ -72,8 +75,28 @@ void main() {
     await tester.tap(find.text('Crear hábito'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Escribe un nombre'), findsOneWidget);
+    expect(
+      tester.widget<GradientButton>(find.byType(GradientButton)).onPressed,
+      isNull,
+    );
+    expect(find.text('Escribe un nombre'), findsNothing);
     expect((await env.habits.watchActiveHabits().first).length, antes);
+  });
+
+  testWidgets('Crear hábito se habilita al completar los obligatorios', (
+    tester,
+  ) async {
+    await tester.pumpWidget(appWith(const HabitFormPage()));
+    await tester.pumpAndSettle();
+
+    GradientButton button = tester.widget(find.byType(GradientButton));
+    expect(button.onPressed, isNull);
+
+    await tester.enterText(find.byType(TextField).first, 'Caminar');
+    await tester.pump();
+
+    button = tester.widget(find.byType(GradientButton));
+    expect(button.onPressed, isNotNull);
   });
 
   testWidgets('Ver todos permite elegir un emoji de la galería ampliada', (

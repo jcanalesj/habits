@@ -3,12 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/app_notice.dart';
 import 'package:habits/components/cat_mascot.dart';
-import 'package:habits/components/habit_icon_catalog.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/features/auth/2_presentation/widgets/sign_out_button.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
-import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -50,78 +48,6 @@ class ProfilePage extends ConsumerWidget {
     if (saved != true || name.isEmpty || name == currentName) return;
     await ref.read(authControllerProvider.notifier).updateDisplayName(name);
     if (context.mounted) _showSaved(context);
-  }
-
-  void _showReminders(BuildContext context, WidgetRef ref) {
-    final habits = ref.read(activeHabitsProvider).value ?? const [];
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (sheetContext) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).height * .68,
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: 16),
-            children: [
-              ListTile(
-                title: Text(
-                  context.l10n.profileReminderSettings,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: Text(context.l10n.profileReminderSettingsHint),
-              ),
-              if (habits.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(context.l10n.profileNoHabits),
-                )
-              else
-                for (final habit in habits)
-                  ListTile(
-                    leading: HabitIcon(
-                      iconId: habit.iconId,
-                      legacyEmoji: habit.emoji,
-                      size: 30,
-                    ),
-                    title: Text(habit.name),
-                    subtitle: Text(
-                      habit.reminderTime ?? context.l10n.habitReminderNone,
-                    ),
-                    trailing: const Icon(PhosphorIconsBold.caretRight),
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      context.push('/habit/${habit.id}');
-                    },
-                  ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showAppearance(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Consumer(
-          builder: (context, ref, _) => SwitchListTile.adaptive(
-            secondary: const Icon(
-              PhosphorIconsBold.sparkle,
-              color: AppColors.primary,
-            ),
-            title: Text(context.l10n.profileWelcomeAnimation),
-            subtitle: Text(context.l10n.profileWelcomeAnimationHint),
-            value: ref.watch(welcomeAnimationEnabledProvider),
-            onChanged: ref
-                .read(welcomeAnimationEnabledProvider.notifier)
-                .setEnabled,
-          ),
-        ),
-      ),
-    );
   }
 
   void _showSaved(BuildContext context) {
@@ -236,14 +162,14 @@ class ProfilePage extends ConsumerWidget {
                   color: AppColors.pink,
                   title: l10n.profileNotifications,
                   subtitle: l10n.profileNotificationsSubtitle,
-                  onTap: () => _showReminders(context, ref),
+                  onTap: () => context.push('/profile/notifications'),
                 ),
                 _ProfileLink(
                   icon: PhosphorIconsBold.palette,
                   color: AppColors.lilac,
                   title: l10n.profileAppearance,
                   subtitle: l10n.profileAppearanceSubtitle,
-                  onTap: () => _showAppearance(context, ref),
+                  onTap: () => context.push('/profile/appearance'),
                   showDivider: false,
                 ),
               ],

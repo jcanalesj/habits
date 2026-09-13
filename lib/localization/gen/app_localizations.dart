@@ -794,6 +794,114 @@ abstract class AppLocalizations {
   /// **'Theme, color and app icon'**
   String get profileAppearanceSubtitle;
 
+  /// No description provided for @appearanceHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it a little more yours'**
+  String get appearanceHeroTitle;
+
+  /// No description provided for @appearanceHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize how Constanza feels as it joins you each day.'**
+  String get appearanceHeroBody;
+
+  /// No description provided for @appearancePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get appearancePreview;
+
+  /// No description provided for @appearanceExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get appearanceExperience;
+
+  /// No description provided for @appearanceReducedMotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce motion'**
+  String get appearanceReducedMotion;
+
+  /// No description provided for @appearanceReducedMotionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Follows your device accessibility setting'**
+  String get appearanceReducedMotionHint;
+
+  /// No description provided for @appearanceActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get appearanceActive;
+
+  /// No description provided for @appearanceInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get appearanceInactive;
+
+  /// No description provided for @appearanceTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get appearanceTheme;
+
+  /// No description provided for @appearanceLightTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get appearanceLightTheme;
+
+  /// No description provided for @appearanceLightThemeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza\'s current style'**
+  String get appearanceLightThemeHint;
+
+  /// No description provided for @appearanceDarkTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get appearanceDarkTheme;
+
+  /// No description provided for @appearanceComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'A more comfortable experience at night'**
+  String get appearanceComingSoon;
+
+  /// No description provided for @appearanceSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get appearanceSoon;
+
+  /// No description provided for @appearanceAppIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'App icon'**
+  String get appearanceAppIcon;
+
+  /// No description provided for @appearanceAppIconHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how you want to recognize Constanza on your device.'**
+  String get appearanceAppIconHint;
+
+  /// No description provided for @appearanceClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get appearanceClassic;
+
+  /// No description provided for @appearanceSystemHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduced motion automatically follows your device accessibility settings.'**
+  String get appearanceSystemHint;
+
   /// No description provided for @profileSave.
   ///
   /// In en, this message translates to:
@@ -823,6 +931,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap a habit to configure its reminder time.'**
   String get profileReminderSettingsHint;
+
+  /// No description provided for @notificationHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A little nudge on time'**
+  String get notificationHeroTitle;
+
+  /// No description provided for @notificationHeroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose when you want Constanza to remind you about each habit.'**
+  String get notificationHeroBody;
+
+  /// No description provided for @notificationActiveSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No active reminders} =1{1 active reminder} other{{count} active reminders}}'**
+  String notificationActiveSummary(int count);
+
+  /// No description provided for @notificationActiveSummaryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can configure each one separately.'**
+  String get notificationActiveSummaryHint;
+
+  /// No description provided for @notificationHabitListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable a habit or tap its time to change it.'**
+  String get notificationHabitListHint;
+
+  /// No description provided for @notificationEveryDayAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day at {time}'**
+  String notificationEveryDayAt(String time);
+
+  /// No description provided for @notificationChooseTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose reminder time'**
+  String get notificationChooseTime;
+
+  /// No description provided for @notificationReminderSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder updated'**
+  String get notificationReminderSaved;
+
+  /// No description provided for @notificationTimezoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders will follow the time zone configured in your profile.'**
+  String get notificationTimezoneHint;
 
   /// No description provided for @profileNoHabits.
   ///
@@ -1219,6 +1381,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Complete a habit to start your streak.'**
   String get streakStartToday;
+
+  /// No description provided for @collapseStreakCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse streak card'**
+  String get collapseStreakCard;
+
+  /// No description provided for @expandStreakCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand streak card'**
+  String get expandStreakCard;
 
   /// No description provided for @useWildcard.
   ///
@@ -1933,6 +2107,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change'**
   String get timezoneChangeConfirmAction;
+
+  /// No description provided for @timezoneAutomaticConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza will use the device time zone and update it automatically when you travel, so your days follow local time.'**
+  String get timezoneAutomaticConfirmBody;
+
+  /// No description provided for @timezoneManualConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When you choose a time zone manually, it will no longer update automatically as you travel. Your habits and streak will follow the zone you select.'**
+  String get timezoneManualConfirmBody;
 }
 
 class _AppLocalizationsDelegate

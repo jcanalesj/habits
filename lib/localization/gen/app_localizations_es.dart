@@ -380,6 +380,64 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileAppearanceSubtitle => 'Tema, color e icono de la app';
 
   @override
+  String get appearanceHeroTitle => 'Hazla un poco más tuya';
+
+  @override
+  String get appearanceHeroBody =>
+      'Personaliza cómo se siente Constanza al acompañarte cada día.';
+
+  @override
+  String get appearancePreview => 'Vista previa';
+
+  @override
+  String get appearanceExperience => 'Experiencia';
+
+  @override
+  String get appearanceReducedMotion => 'Reducir movimiento';
+
+  @override
+  String get appearanceReducedMotionHint =>
+      'Sigue la configuración de accesibilidad del dispositivo';
+
+  @override
+  String get appearanceActive => 'Activo';
+
+  @override
+  String get appearanceInactive => 'Inactivo';
+
+  @override
+  String get appearanceTheme => 'Tema';
+
+  @override
+  String get appearanceLightTheme => 'Claro';
+
+  @override
+  String get appearanceLightThemeHint => 'El estilo actual de Constanza';
+
+  @override
+  String get appearanceDarkTheme => 'Oscuro';
+
+  @override
+  String get appearanceComingSoon => 'Una experiencia más cómoda por la noche';
+
+  @override
+  String get appearanceSoon => 'Próximamente';
+
+  @override
+  String get appearanceAppIcon => 'Icono de la app';
+
+  @override
+  String get appearanceAppIconHint =>
+      'Elige cómo quieres reconocer Constanza en tu dispositivo.';
+
+  @override
+  String get appearanceClassic => 'Clásico';
+
+  @override
+  String get appearanceSystemHint =>
+      'La reducción de movimiento se adapta automáticamente a los ajustes de accesibilidad del dispositivo.';
+
+  @override
   String get profileSave => 'Guardar cambios';
 
   @override
@@ -394,6 +452,48 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get profileReminderSettingsHint =>
       'Toca un hábito para configurar su hora de aviso.';
+
+  @override
+  String get notificationHeroTitle => 'Un empujoncito a tiempo';
+
+  @override
+  String get notificationHeroBody =>
+      'Elige cuándo quieres que Constanza te recuerde cada hábito.';
+
+  @override
+  String notificationActiveSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recordatorios activos',
+      one: '1 recordatorio activo',
+      zero: 'Ningún recordatorio activo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationActiveSummaryHint =>
+      'Puedes configurarlos por separado.';
+
+  @override
+  String get notificationHabitListHint =>
+      'Activa un hábito o toca su hora para cambiarla.';
+
+  @override
+  String notificationEveryDayAt(String time) {
+    return 'Cada día a las $time';
+  }
+
+  @override
+  String get notificationChooseTime => 'Elige la hora del recordatorio';
+
+  @override
+  String get notificationReminderSaved => 'Recordatorio actualizado';
+
+  @override
+  String get notificationTimezoneHint =>
+      'Los recordatorios seguirán la zona horaria configurada en tu perfil.';
 
   @override
   String get profileNoHabits => 'Aún no tienes hábitos que configurar.';
@@ -612,6 +712,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get streakStartToday => 'Completa un hábito para empezar tu racha.';
+
+  @override
+  String get collapseStreakCard => 'Reducir tarjeta de racha';
+
+  @override
+  String get expandStreakCard => 'Ampliar tarjeta de racha';
 
   @override
   String get useWildcard => 'Usar comodín';
@@ -1052,4 +1158,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timezoneChangeConfirmAction => 'Cambiar';
+
+  @override
+  String get timezoneAutomaticConfirmBody =>
+      'Constanza usará la zona horaria del dispositivo y la actualizará automáticamente cuando viajes, para que tus días sigan tu hora local.';
+
+  @override
+  String get timezoneManualConfirmBody =>
+      'Al elegir una zona manualmente, dejará de actualizarse automáticamente cuando viajes. Tus hábitos y tu racha seguirán la zona que selecciones.';
 }
