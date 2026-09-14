@@ -698,6 +698,444 @@ abstract class AppLocalizations {
   /// **'Your progress'**
   String get profileYourProgress;
 
+  /// No description provided for @profileHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health and wellbeing'**
+  String get profileHealth;
+
+  /// No description provided for @profileWeightSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your progress and your goal'**
+  String get profileWeightSubtitle;
+
+  /// No description provided for @weightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get weightTitle;
+
+  /// No description provided for @weightHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress, step by step'**
+  String get weightHeroTitle;
+
+  /// No description provided for @weightHeroEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your first measurement to start seeing your progress.'**
+  String get weightHeroEmpty;
+
+  /// No description provided for @weightHeroCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your latest measurement is {weight} kg.'**
+  String weightHeroCurrent(String weight);
+
+  /// No description provided for @weightHeroProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {weight} kg away from your goal.'**
+  String weightHeroProgress(String weight);
+
+  /// No description provided for @weightCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current weight'**
+  String get weightCurrent;
+
+  /// No description provided for @weightInitial.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting weight'**
+  String get weightInitial;
+
+  /// No description provided for @weightGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get weightGoal;
+
+  /// No description provided for @weightPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal'**
+  String get weightPlanTitle;
+
+  /// No description provided for @weightModifyGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit goals'**
+  String get weightModifyGoals;
+
+  /// No description provided for @weightSinceStart.
+  ///
+  /// In en, this message translates to:
+  /// **'since the start'**
+  String get weightSinceStart;
+
+  /// No description provided for @weightToGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'to go'**
+  String get weightToGoal;
+
+  /// No description provided for @weightGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {weight} kg'**
+  String weightGoalLabel(String weight);
+
+  /// No description provided for @weightViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get weightViewAll;
+
+  /// No description provided for @weightDailyCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'{calories} recommended kcal/day'**
+  String weightDailyCalories(int calories);
+
+  /// No description provided for @weightSetGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Set goal'**
+  String get weightSetGoal;
+
+  /// No description provided for @weightEvolution.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get weightEvolution;
+
+  /// No description provided for @weightHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get weightHistory;
+
+  /// No description provided for @weightRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Log weight'**
+  String get weightRegister;
+
+  /// No description provided for @weightGoalDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your target weight?'**
+  String get weightGoalDialog;
+
+  /// No description provided for @weightLogDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your weight'**
+  String get weightLogDialog;
+
+  /// No description provided for @weightGoalDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Set the goal you want to work towards.'**
+  String get weightGoalDialogHint;
+
+  /// No description provided for @weightLogDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current weight to track your progress.'**
+  String get weightLogDialogHint;
+
+  /// No description provided for @weightValidRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a value between 20 and 400 kg.'**
+  String get weightValidRange;
+
+  /// No description provided for @weightSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight updated'**
+  String get weightSaved;
+
+  /// No description provided for @weightChartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least two measurements to see your progress.'**
+  String get weightChartEmpty;
+
+  /// No description provided for @weightHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any measurements yet. Log the first one whenever you like.'**
+  String get weightHistoryEmpty;
+
+  /// No description provided for @weightLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your weight data. Check your connection or try again.'**
+  String get weightLoadError;
+
+  /// No description provided for @weightRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get weightRetry;
+
+  /// No description provided for @weightOnboardingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal plan'**
+  String get weightOnboardingTitle;
+
+  /// No description provided for @weightOnboardingStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String weightOnboardingStep(int current, int total);
+
+  /// No description provided for @weightQuestionGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your goal?'**
+  String get weightQuestionGoal;
+
+  /// No description provided for @weightQuestionGoalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We will use it to tailor the estimate to what you want to achieve.'**
+  String get weightQuestionGoalHint;
+
+  /// No description provided for @weightGoalLose.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose weight'**
+  String get weightGoalLose;
+
+  /// No description provided for @weightGoalLoseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce weight progressively'**
+  String get weightGoalLoseHint;
+
+  /// No description provided for @weightGoalMaintain.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain my weight'**
+  String get weightGoalMaintain;
+
+  /// No description provided for @weightGoalMaintainHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay close to my current weight'**
+  String get weightGoalMaintainHint;
+
+  /// No description provided for @weightGoalGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain weight'**
+  String get weightGoalGain;
+
+  /// No description provided for @weightGoalGainHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase weight gradually'**
+  String get weightGoalGainHint;
+
+  /// No description provided for @weightQuestionCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your current weight?'**
+  String get weightQuestionCurrent;
+
+  /// No description provided for @weightQuestionCurrentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This will be the starting point for your progress.'**
+  String get weightQuestionCurrentHint;
+
+  /// No description provided for @weightRangeKg.
+  ///
+  /// In en, this message translates to:
+  /// **'Between 20 and 400 kg'**
+  String get weightRangeKg;
+
+  /// No description provided for @weightQuestionTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'What weight do you want to reach?'**
+  String get weightQuestionTarget;
+
+  /// No description provided for @weightQuestionTargetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a realistic goal that you can review later.'**
+  String get weightQuestionTargetHint;
+
+  /// No description provided for @weightTargetGoalHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'It must match the goal you selected'**
+  String get weightTargetGoalHelper;
+
+  /// No description provided for @weightTargetGoalError.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the weight: it does not match your selected goal'**
+  String get weightTargetGoalError;
+
+  /// No description provided for @weightQuestionAboutYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us a little about yourself'**
+  String get weightQuestionAboutYou;
+
+  /// No description provided for @weightQuestionAboutYouHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Age and height are needed to estimate your energy requirements.'**
+  String get weightQuestionAboutYouHint;
+
+  /// No description provided for @weightYears.
+  ///
+  /// In en, this message translates to:
+  /// **'years'**
+  String get weightYears;
+
+  /// No description provided for @weightAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get weightAge;
+
+  /// No description provided for @weightHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get weightHeight;
+
+  /// No description provided for @weightQuestionSex.
+  ///
+  /// In en, this message translates to:
+  /// **'Biological data for the calculation'**
+  String get weightQuestionSex;
+
+  /// No description provided for @weightQuestionSexHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The equation uses this information to estimate resting metabolism. You may choose not to provide it.'**
+  String get weightQuestionSexHint;
+
+  /// No description provided for @weightSexFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get weightSexFemale;
+
+  /// No description provided for @weightSexFemaleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the female constant in the equation'**
+  String get weightSexFemaleHint;
+
+  /// No description provided for @weightSexMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get weightSexMale;
+
+  /// No description provided for @weightSexMaleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the male constant in the equation'**
+  String get weightSexMaleHint;
+
+  /// No description provided for @weightSexUnspecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer not to say'**
+  String get weightSexUnspecified;
+
+  /// No description provided for @weightSexUnspecifiedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'An intermediate estimate will be used'**
+  String get weightSexUnspecifiedHint;
+
+  /// No description provided for @weightQuestionActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your activity level?'**
+  String get weightQuestionActivity;
+
+  /// No description provided for @weightQuestionActivityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Think of a typical week, including work, travel and exercise.'**
+  String get weightQuestionActivityHint;
+
+  /// No description provided for @weightActivitySedentary.
+  ///
+  /// In en, this message translates to:
+  /// **'Sedentary · little exercise'**
+  String get weightActivitySedentary;
+
+  /// No description provided for @weightActivityLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light · 1–3 days per week'**
+  String get weightActivityLight;
+
+  /// No description provided for @weightActivityModerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate · 3–5 days per week'**
+  String get weightActivityModerate;
+
+  /// No description provided for @weightActivityActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active · 6–7 days per week'**
+  String get weightActivityActive;
+
+  /// No description provided for @weightActivityVeryActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Very active · intense exercise or physical work'**
+  String get weightActivityVeryActive;
+
+  /// No description provided for @weightResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your estimate is ready'**
+  String get weightResultTitle;
+
+  /// No description provided for @weightEstimatedCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated daily intake'**
+  String get weightEstimatedCalories;
+
+  /// No description provided for @weightPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'per day'**
+  String get weightPerDay;
+
+  /// No description provided for @weightMedicalDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'This is an estimate for adults, not medical advice. Do not use it during pregnancy or breastfeeding, or with a medical condition or eating disorder; consult a healthcare professional.'**
+  String get weightMedicalDisclaimer;
+
+  /// No description provided for @weightStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tracking'**
+  String get weightStart;
+
   /// No description provided for @profileCurrentStreak.
   ///
   /// In en, this message translates to:

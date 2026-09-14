@@ -117,6 +117,21 @@ class ProfilePage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 26),
+            _SectionLabel(l10n.profileHealth),
+            const SizedBox(height: 12),
+            _SettingsGroup(
+              children: [
+                _ProfileLink(
+                  icon: PhosphorIconsBold.scales,
+                  color: AppColors.blue,
+                  title: l10n.weightTitle,
+                  subtitle: l10n.profileWeightSubtitle,
+                  onTap: () => context.push('/profile/weight'),
+                  showDivider: false,
+                ),
+              ],
+            ),
+            const SizedBox(height: 26),
             _SectionLabel(l10n.profileManage),
             const SizedBox(height: 12),
             _SettingsGroup(

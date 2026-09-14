@@ -12,6 +12,7 @@ import 'package:habits/features/profile/avatar/avatar_picker_page.dart';
 import 'package:habits/features/profile/timezone/timezone_page.dart';
 import 'package:habits/features/profile/notifications/notification_settings_page.dart';
 import 'package:habits/features/profile/appearance/appearance_page.dart';
+import 'package:habits/features/profile/weight/weight_page.dart';
 import 'package:habits/features/habits/2_presentation/routes/routes.dart'
     as habits_routes;
 import 'package:habits/features/splash/2_presentation/routes/routes.dart'
@@ -94,6 +95,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile/appearance',
         builder: (context, state) => const AppearancePage(),
+      ),
+      GoRoute(
+        path: '/profile/weight',
+        builder: (context, state) => const WeightPage(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

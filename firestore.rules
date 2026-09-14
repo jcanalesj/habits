@@ -217,6 +217,63 @@ service cloud.firestore {
       }
     }
 
+    // ----------------------------------------------- users/{uid}/peso/{docId}
+    // Mediciones personales y objetivo. No intervienen en hábitos ni rachas.
+    match /users/{uid}/peso/{docId} {
+      allow read: if isOwner(uid);
+
+      allow create: if isOwner(uid)
+        && ((docId == 'config' && validWeightConfig(incoming()))
+          || (docId != 'config' && validWeightEntry(incoming())));
+
+      allow update: if isOwner(uid)
+        && docId == 'config'
+        && validWeightConfig(incoming());
+
+      allow delete: if false;
+
+      function validWeightConfig(d) {
+        return d.keys().hasOnly([
+            'tipo', 'objetivoKg', 'pesoActualKg', 'edad', 'alturaCm',
+            'sexoCalculo', 'nivelActividad', 'tipoObjetivo',
+            'caloriasEstimadas', 'onboardingCompleted', 'updatedAt'
+          ])
+          && d.keys().hasAll(['tipo', 'objetivoKg', 'updatedAt'])
+          && d.tipo == 'config'
+          && d.objetivoKg is number
+          && d.objetivoKg >= 20 && d.objetivoKg <= 400
+          && (!('onboardingCompleted' in d) || (
+            d.onboardingCompleted == true
+            && d.keys().hasAll([
+              'pesoActualKg', 'edad', 'alturaCm', 'sexoCalculo',
+              'nivelActividad', 'tipoObjetivo', 'caloriasEstimadas'
+            ])
+            && d.pesoActualKg is number
+            && d.pesoActualKg >= 20 && d.pesoActualKg <= 400
+            && d.edad is int && d.edad >= 18 && d.edad <= 100
+            && d.alturaCm is number && d.alturaCm >= 120 && d.alturaCm <= 230
+            && d.sexoCalculo in ['female', 'male', 'unspecified']
+            && d.nivelActividad in ['sedentary', 'light', 'moderate', 'active', 'veryActive']
+            && d.tipoObjetivo in ['lose', 'maintain', 'gain']
+            && d.caloriasEstimadas is int
+            && d.caloriasEstimadas >= 1200 && d.caloriasEstimadas <= 4500
+          ))
+          && isServerTime(d.updatedAt);
+      }
+
+      function validWeightEntry(d) {
+        return d.keys().hasOnly(['tipo', 'pesoKg', 'recordedAt', 'createdAt'])
+          && d.keys().hasAll(['tipo', 'pesoKg', 'recordedAt', 'createdAt'])
+          && d.tipo == 'medicion'
+          && d.pesoKg is number
+          && d.pesoKg >= 20 && d.pesoKg <= 400
+          && d.recordedAt is timestamp
+          && d.recordedAt <= request.time
+          && d.recordedAt >= request.time - duration.value(3660, 'd')
+          && isServerTime(d.createdAt);
+      }
+    }
+
     // ------------------------------------------------- users/{uid}/habitos/{id}
     // Configuración de hábitos. Sin rachas. Soft delete vía deletedAt.
     match /users/{uid}/habitos/{habitoId} {

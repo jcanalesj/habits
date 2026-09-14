@@ -332,6 +332,250 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileYourProgress => 'Your progress';
 
   @override
+  String get profileHealth => 'Health and wellbeing';
+
+  @override
+  String get profileWeightSubtitle => 'Track your progress and your goal';
+
+  @override
+  String get weightTitle => 'Weight';
+
+  @override
+  String get weightHeroTitle => 'Your progress, step by step';
+
+  @override
+  String get weightHeroEmpty =>
+      'Log your first measurement to start seeing your progress.';
+
+  @override
+  String weightHeroCurrent(String weight) {
+    return 'Your latest measurement is $weight kg.';
+  }
+
+  @override
+  String weightHeroProgress(String weight) {
+    return 'You are $weight kg away from your goal.';
+  }
+
+  @override
+  String get weightCurrent => 'Current weight';
+
+  @override
+  String get weightInitial => 'Starting weight';
+
+  @override
+  String get weightGoal => 'Goal';
+
+  @override
+  String get weightPlanTitle => 'Your goal';
+
+  @override
+  String get weightModifyGoals => 'Edit goals';
+
+  @override
+  String get weightSinceStart => 'since the start';
+
+  @override
+  String get weightToGoal => 'to go';
+
+  @override
+  String weightGoalLabel(String weight) {
+    return 'Goal $weight kg';
+  }
+
+  @override
+  String get weightViewAll => 'View all';
+
+  @override
+  String weightDailyCalories(int calories) {
+    return '$calories recommended kcal/day';
+  }
+
+  @override
+  String get weightSetGoal => 'Set goal';
+
+  @override
+  String get weightEvolution => 'Progress';
+
+  @override
+  String get weightHistory => 'History';
+
+  @override
+  String get weightRegister => 'Log weight';
+
+  @override
+  String get weightGoalDialog => 'What is your target weight?';
+
+  @override
+  String get weightLogDialog => 'Log your weight';
+
+  @override
+  String get weightGoalDialogHint => 'Set the goal you want to work towards.';
+
+  @override
+  String get weightLogDialogHint =>
+      'Enter your current weight to track your progress.';
+
+  @override
+  String get weightValidRange => 'Enter a value between 20 and 400 kg.';
+
+  @override
+  String get weightSaved => 'Weight updated';
+
+  @override
+  String get weightChartEmpty =>
+      'Add at least two measurements to see your progress.';
+
+  @override
+  String get weightHistoryEmpty =>
+      'You don\'t have any measurements yet. Log the first one whenever you like.';
+
+  @override
+  String get weightLoadError =>
+      'We couldn\'t load your weight data. Check your connection or try again.';
+
+  @override
+  String get weightRetry => 'Try again';
+
+  @override
+  String get weightOnboardingTitle => 'Your personal plan';
+
+  @override
+  String weightOnboardingStep(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get weightQuestionGoal => 'What is your goal?';
+
+  @override
+  String get weightQuestionGoalHint =>
+      'We will use it to tailor the estimate to what you want to achieve.';
+
+  @override
+  String get weightGoalLose => 'Lose weight';
+
+  @override
+  String get weightGoalLoseHint => 'Reduce weight progressively';
+
+  @override
+  String get weightGoalMaintain => 'Maintain my weight';
+
+  @override
+  String get weightGoalMaintainHint => 'Stay close to my current weight';
+
+  @override
+  String get weightGoalGain => 'Gain weight';
+
+  @override
+  String get weightGoalGainHint => 'Increase weight gradually';
+
+  @override
+  String get weightQuestionCurrent => 'What is your current weight?';
+
+  @override
+  String get weightQuestionCurrentHint =>
+      'This will be the starting point for your progress.';
+
+  @override
+  String get weightRangeKg => 'Between 20 and 400 kg';
+
+  @override
+  String get weightQuestionTarget => 'What weight do you want to reach?';
+
+  @override
+  String get weightQuestionTargetHint =>
+      'Choose a realistic goal that you can review later.';
+
+  @override
+  String get weightTargetGoalHelper => 'It must match the goal you selected';
+
+  @override
+  String get weightTargetGoalError =>
+      'Check the weight: it does not match your selected goal';
+
+  @override
+  String get weightQuestionAboutYou => 'Tell us a little about yourself';
+
+  @override
+  String get weightQuestionAboutYouHint =>
+      'Age and height are needed to estimate your energy requirements.';
+
+  @override
+  String get weightYears => 'years';
+
+  @override
+  String get weightAge => 'Age';
+
+  @override
+  String get weightHeight => 'Height';
+
+  @override
+  String get weightQuestionSex => 'Biological data for the calculation';
+
+  @override
+  String get weightQuestionSexHint =>
+      'The equation uses this information to estimate resting metabolism. You may choose not to provide it.';
+
+  @override
+  String get weightSexFemale => 'Female';
+
+  @override
+  String get weightSexFemaleHint => 'Use the female constant in the equation';
+
+  @override
+  String get weightSexMale => 'Male';
+
+  @override
+  String get weightSexMaleHint => 'Use the male constant in the equation';
+
+  @override
+  String get weightSexUnspecified => 'Prefer not to say';
+
+  @override
+  String get weightSexUnspecifiedHint =>
+      'An intermediate estimate will be used';
+
+  @override
+  String get weightQuestionActivity => 'What is your activity level?';
+
+  @override
+  String get weightQuestionActivityHint =>
+      'Think of a typical week, including work, travel and exercise.';
+
+  @override
+  String get weightActivitySedentary => 'Sedentary · little exercise';
+
+  @override
+  String get weightActivityLight => 'Light · 1–3 days per week';
+
+  @override
+  String get weightActivityModerate => 'Moderate · 3–5 days per week';
+
+  @override
+  String get weightActivityActive => 'Active · 6–7 days per week';
+
+  @override
+  String get weightActivityVeryActive =>
+      'Very active · intense exercise or physical work';
+
+  @override
+  String get weightResultTitle => 'Your estimate is ready';
+
+  @override
+  String get weightEstimatedCalories => 'Estimated daily intake';
+
+  @override
+  String get weightPerDay => 'per day';
+
+  @override
+  String get weightMedicalDisclaimer =>
+      'This is an estimate for adults, not medical advice. Do not use it during pregnancy or breastfeeding, or with a medical condition or eating disorder; consult a healthcare professional.';
+
+  @override
+  String get weightStart => 'Start tracking';
+
+  @override
   String get profileCurrentStreak => 'Current streak';
 
   @override

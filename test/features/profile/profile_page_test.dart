@@ -19,6 +19,14 @@ void main() {
     expect(find.text('alex@example.com'), findsOneWidget);
     expect(find.text('Cuenta verificada'), findsNothing);
     expect(find.text('Tu progreso'), findsOneWidget);
+    expect(find.text('Salud y bienestar'), findsOneWidget);
+    expect(find.text('Peso'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Gestiona tu experiencia'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Gestiona tu experiencia'), findsOneWidget);
 
     await tester.scrollUntilVisible(
