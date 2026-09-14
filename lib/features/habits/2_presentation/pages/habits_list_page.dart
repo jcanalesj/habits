@@ -13,6 +13,23 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 class HabitsListPage extends ConsumerWidget {
   const HabitsListPage({super.key});
 
+  static const freeHabitLimit = 5;
+
+  static Future<void> openCreateHabit(
+    BuildContext context, {
+    required int activeHabitCount,
+  }) async {
+    if (activeHabitCount >= freeHabitLimit) {
+      final continueToCreate = await showDialog<bool>(
+        context: context,
+        barrierColor: AppColors.textPrimary.withValues(alpha: 0.62),
+        builder: (_) => const _PremiumHabitLimitDialog(),
+      );
+      if (continueToCreate != true || !context.mounted) return;
+    }
+    context.push('/habit/new');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -35,7 +52,8 @@ class HabitsListPage extends ConsumerWidget {
       floatingActionButton: switch (summaryAsync) {
         AsyncData(:final value) when value.habits.isNotEmpty =>
           FloatingActionButton.extended(
-            onPressed: () => context.push('/habit/new'),
+            onPressed: () =>
+                openCreateHabit(context, activeHabitCount: value.habits.length),
             icon: const Icon(Icons.add_rounded),
             label: Text(l10n.newHabit),
           ),
@@ -43,6 +61,191 @@ class HabitsListPage extends ConsumerWidget {
       },
     );
   }
+}
+
+class _PremiumHabitLimitDialog extends StatelessWidget {
+  const _PremiumHabitLimitDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Dialog(
+      key: const ValueKey('premium-habit-limit-dialog'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      backgroundColor: const Color(0xFFFCFBFF),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480, maxHeight: 760),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(22, 16, 22, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/premium.png',
+                width: 230,
+                height: 190,
+                fit: BoxFit.contain,
+                semanticLabel: l10n.premiumCatImageLabel,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                l10n.premiumHabitLimitTitle,
+                textAlign: TextAlign.center,
+                style: textTheme.headlineSmall?.copyWith(
+                  color: AppColors.authHeading,
+                  fontWeight: FontWeight.w900,
+                  height: 1.15,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.premiumHabitLimitBody,
+                textAlign: TextAlign.center,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: AppColors.authSecondary,
+                  height: 1.42,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: .055),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  children: [
+                    _PremiumBenefit(
+                      icon: PhosphorIconsBold.infinity,
+                      title: l10n.premiumUnlimitedHabits,
+                      subtitle: l10n.premiumUnlimitedHabitsBody,
+                    ),
+                    const SizedBox(height: 16),
+                    _PremiumBenefit(
+                      icon: PhosphorIconsBold.chartBar,
+                      title: l10n.premiumAdvancedStats,
+                      subtitle: l10n.premiumAdvancedStatsBody,
+                    ),
+                    const SizedBox(height: 16),
+                    _PremiumBenefit(
+                      icon: PhosphorIconsBold.star,
+                      title: l10n.premiumNewFeatures,
+                      subtitle: l10n.premiumNewFeaturesBody,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(
+                          color: AppColors.gradientStart,
+                          width: 1.5,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: const StadiumBorder(),
+                      ),
+                      child: Text(l10n.premiumNotNow),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.gradientStart,
+                            AppColors.gradientEnd,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(999)),
+                      ),
+                      child: FilledButton(
+                        key: const ValueKey('view-premium-plans'),
+                        onPressed: () => Navigator.pop(context, true),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: const StadiumBorder(),
+                        ),
+                        child: Text(
+                          l10n.premiumViewPlans,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PremiumBenefit extends StatelessWidget {
+  const _PremiumBenefit({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: .1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: AppColors.gradientEnd, size: 26),
+      ),
+      const SizedBox(width: 14),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppColors.authHeading,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.authSecondary),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
 }
 
 class _Content extends ConsumerWidget {

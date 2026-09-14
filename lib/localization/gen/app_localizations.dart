@@ -2522,11 +2522,59 @@ abstract class AppLocalizations {
   /// **'Great job! One step closer 💪'**
   String get habitCompletedCelebration;
 
+  /// No description provided for @habitCompletedCelebration2.
+  ///
+  /// In en, this message translates to:
+  /// **'Amazing! Your consistency is growing ✨'**
+  String get habitCompletedCelebration2;
+
+  /// No description provided for @habitCompletedCelebration3.
+  ///
+  /// In en, this message translates to:
+  /// **'Done! You chose yourself again today 💜'**
+  String get habitCompletedCelebration3;
+
+  /// No description provided for @habitCompletedCelebration4.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice work! Every step counts 🌱'**
+  String get habitCompletedCelebration4;
+
+  /// No description provided for @habitCompletedCelebration5.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going! You\'re building something great 🚀'**
+  String get habitCompletedCelebration5;
+
+  /// No description provided for @habitCompletedCelebration6.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal complete! You\'ve got this ⭐'**
+  String get habitCompletedCelebration6;
+
   /// No description provided for @allHabitsCompletedCelebration.
   ///
   /// In en, this message translates to:
   /// **'Day complete! You\'re unstoppable'**
   String get allHabitsCompletedCelebration;
+
+  /// No description provided for @allHabitsCompletedCelebration2.
+  ///
+  /// In en, this message translates to:
+  /// **'All done for today! Great work 🎉'**
+  String get allHabitsCompletedCelebration2;
+
+  /// No description provided for @allHabitsCompletedCelebration3.
+  ///
+  /// In en, this message translates to:
+  /// **'A perfect day! Your consistency shines ✨'**
+  String get allHabitsCompletedCelebration3;
+
+  /// No description provided for @allHabitsCompletedCelebration4.
+  ///
+  /// In en, this message translates to:
+  /// **'Every habit done! See you tomorrow 💜'**
+  String get allHabitsCompletedCelebration4;
 
   /// No description provided for @editHabitsHint.
   ///
@@ -2599,6 +2647,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{No reminders scheduled} =1{1 reminder scheduled} other{{count} reminders scheduled}}'**
   String notificationsScheduled(int count);
+
+  /// No description provided for @premiumHabitLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock more habits with Premium'**
+  String get premiumHabitLimitTitle;
+
+  /// No description provided for @premiumHabitLimitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the limit of 5 habits on the free version. With Premium you can create as many habits as you want and keep moving forward.'**
+  String get premiumHabitLimitBody;
+
+  /// No description provided for @premiumUnlimitedHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited habits'**
+  String get premiumUnlimitedHabits;
+
+  /// No description provided for @premiumUnlimitedHabitsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create all the habits you need.'**
+  String get premiumUnlimitedHabitsBody;
+
+  /// No description provided for @premiumAdvancedStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced statistics'**
+  String get premiumAdvancedStats;
+
+  /// No description provided for @premiumAdvancedStatsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See your progress in detail.'**
+  String get premiumAdvancedStatsBody;
+
+  /// No description provided for @premiumNewFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'New features'**
+  String get premiumNewFeatures;
+
+  /// No description provided for @premiumNewFeaturesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'More exclusive tools coming soon.'**
+  String get premiumNewFeaturesBody;
+
+  /// No description provided for @premiumNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get premiumNotNow;
+
+  /// No description provided for @premiumViewPlans.
+  ///
+  /// In en, this message translates to:
+  /// **'View Premium plans'**
+  String get premiumViewPlans;
+
+  /// No description provided for @premiumCatImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium cat wearing a crown'**
+  String get premiumCatImageLabel;
 }
 
 class _AppLocalizationsDelegate

@@ -62,6 +62,27 @@ void main() {
     expect(find.text('Anuales'), findsOneWidget);
   });
 
+  testWidgets('Nuevo hábito muestra Premium cuando ya hay 5 hábitos', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_appUnderTest(locale: const Locale('es')));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('home-new-habit')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const ValueKey('home-new-habit')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('premium-habit-limit-dialog')),
+      findsOneWidget,
+    );
+    expect(find.text('Desbloquea más hábitos con Premium'), findsOneWidget);
+  });
+
   testWidgets('HomePage shows the overall streak in English', (tester) async {
     await tester.pumpWidget(_appUnderTest(locale: const Locale('en')));
     await tester.pumpAndSettle();

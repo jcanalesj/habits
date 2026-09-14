@@ -586,7 +586,15 @@
   "habitPendingEncouragement": "Small steps, big results ✨",
   "habitCompletedEncouragement": "Goal completed! 🎉",
   "habitCompletedCelebration": "Great job! One step closer 💪",
+  "habitCompletedCelebration2": "Amazing! Your consistency is growing ✨",
+  "habitCompletedCelebration3": "Done! You chose yourself again today 💜",
+  "habitCompletedCelebration4": "Nice work! Every step counts 🌱",
+  "habitCompletedCelebration5": "Keep going! You're building something great 🚀",
+  "habitCompletedCelebration6": "Goal complete! You've got this ⭐",
   "allHabitsCompletedCelebration": "Day complete! You're unstoppable",
+  "allHabitsCompletedCelebration2": "All done for today! Great work 🎉",
+  "allHabitsCompletedCelebration3": "A perfect day! Your consistency shines ✨",
+  "allHabitsCompletedCelebration4": "Every habit done! See you tomorrow 💜",
   "editHabitsHint": "To edit your habits, go to the Habits tab.",
   "timezoneChangeConfirmTitle": "Change your time zone?",
   "timezoneChangeConfirmAction": "Change",
@@ -612,5 +620,16 @@
         "type": "int"
       }
     }
-  }
+  },
+  "premiumHabitLimitTitle": "Unlock more habits with Premium",
+  "premiumHabitLimitBody": "You've reached the limit of 5 habits on the free version. With Premium you can create as many habits as you want and keep moving forward.",
+  "premiumUnlimitedHabits": "Unlimited habits",
+  "premiumUnlimitedHabitsBody": "Create all the habits you need.",
+  "premiumAdvancedStats": "Advanced statistics",
+  "premiumAdvancedStatsBody": "See your progress in detail.",
+  "premiumNewFeatures": "New features",
+  "premiumNewFeaturesBody": "More exclusive tools coming soon.",
+  "premiumNotNow": "Not now",
+  "premiumViewPlans": "View Premium plans",
+  "premiumCatImageLabel": "Premium cat wearing a crown"
 }

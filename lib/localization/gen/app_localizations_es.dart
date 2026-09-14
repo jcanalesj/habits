@@ -1393,7 +1393,37 @@ class AppLocalizationsEs extends AppLocalizations {
   String get habitCompletedCelebration => '¡Muy bien! Un paso más 💪';
 
   @override
+  String get habitCompletedCelebration2 =>
+      '¡Genial! Tu constancia está creciendo ✨';
+
+  @override
+  String get habitCompletedCelebration3 => '¡Hecho! Hoy vuelves a elegirte 💜';
+
+  @override
+  String get habitCompletedCelebration4 => '¡Buen trabajo! Cada paso cuenta 🌱';
+
+  @override
+  String get habitCompletedCelebration5 =>
+      '¡Sigue así! Estás creando algo grande 🚀';
+
+  @override
+  String get habitCompletedCelebration6 =>
+      '¡Objetivo cumplido! Tú puedes con esto ⭐';
+
+  @override
   String get allHabitsCompletedCelebration => '¡Día completado! Eres imparable';
+
+  @override
+  String get allHabitsCompletedCelebration2 =>
+      '¡Todo listo por hoy! Qué gran trabajo 🎉';
+
+  @override
+  String get allHabitsCompletedCelebration3 =>
+      '¡Día redondo! Tu constancia brilla ✨';
+
+  @override
+  String get allHabitsCompletedCelebration4 =>
+      '¡Todos cumplidos! Mañana seguimos 💜';
 
   @override
   String get editHabitsHint =>
@@ -1447,4 +1477,40 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get premiumHabitLimitTitle => 'Desbloquea más hábitos con Premium';
+
+  @override
+  String get premiumHabitLimitBody =>
+      'Has alcanzado el límite de 5 hábitos en la versión gratuita. Con Premium podrás crear todos los hábitos que quieras y seguir avanzando.';
+
+  @override
+  String get premiumUnlimitedHabits => 'Hábitos ilimitados';
+
+  @override
+  String get premiumUnlimitedHabitsBody =>
+      'Crea todos los hábitos que necesites.';
+
+  @override
+  String get premiumAdvancedStats => 'Estadísticas avanzadas';
+
+  @override
+  String get premiumAdvancedStatsBody => 'Visualiza tu progreso en detalle.';
+
+  @override
+  String get premiumNewFeatures => 'Nuevas funcionalidades';
+
+  @override
+  String get premiumNewFeaturesBody =>
+      'Próximamente, más herramientas exclusivas.';
+
+  @override
+  String get premiumNotNow => 'Ahora no';
+
+  @override
+  String get premiumViewPlans => 'Ver planes Premium';
+
+  @override
+  String get premiumCatImageLabel => 'Gato con corona Premium';
 }

@@ -74,6 +74,34 @@ void main() {
     );
   });
 
+  testWidgets('muestra Premium al intentar superar 5 hábitos', (tester) async {
+    await tester.pumpWidget(appWith());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FloatingActionButton, 'Nuevo hábito'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('premium-habit-limit-dialog')),
+      findsOneWidget,
+    );
+    expect(find.text('Desbloquea más hábitos con Premium'), findsOneWidget);
+    expect(find.textContaining('límite de 5 hábitos'), findsOneWidget);
+    expect(find.text('Hábitos ilimitados'), findsOneWidget);
+    expect(find.text('Estadísticas avanzadas'), findsOneWidget);
+    expect(find.text('Nuevas funcionalidades'), findsOneWidget);
+    expect(find.text('Ahora no'), findsOneWidget);
+    expect(find.text('Ver planes Premium'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Ahora no'));
+    await tester.tap(find.text('Ahora no'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('premium-habit-limit-dialog')),
+      findsNothing,
+    );
+  });
+
   testWidgets('avisa antes de abrir la edición', (tester) async {
     await tester.pumpWidget(appWith());
     await tester.pumpAndSettle();

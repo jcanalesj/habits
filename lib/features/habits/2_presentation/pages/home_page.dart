@@ -5,6 +5,7 @@ import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
+import 'package:habits/features/habits/2_presentation/pages/habits_list_page.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/localization/l10n.dart';
@@ -59,6 +60,8 @@ class _HomeContent extends ConsumerStatefulWidget {
 class _HomeContentState extends ConsumerState<_HomeContent> {
   _HabitFilter _filter = _HabitFilter.all;
   bool _hideAllDone = false;
+  int _habitCelebrationIndex = 0;
+  int _dayCelebrationIndex = 0;
   late bool _showColdStartWelcome;
   late final int _welcomeMessageIndex;
 
@@ -131,6 +134,32 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       if (summary.isCompletedOn(habit.id, summary.today)) habit,
   ];
 
+  String _nextCelebrationMessage({required bool allDone}) {
+    final l10n = context.l10n;
+    final messages = allDone
+        ? [
+            l10n.allHabitsCompletedCelebration,
+            l10n.allHabitsCompletedCelebration2,
+            l10n.allHabitsCompletedCelebration3,
+            l10n.allHabitsCompletedCelebration4,
+          ]
+        : [
+            l10n.habitCompletedCelebration,
+            l10n.habitCompletedCelebration2,
+            l10n.habitCompletedCelebration3,
+            l10n.habitCompletedCelebration4,
+            l10n.habitCompletedCelebration5,
+            l10n.habitCompletedCelebration6,
+          ];
+    final index = allDone ? _dayCelebrationIndex : _habitCelebrationIndex;
+    if (allDone) {
+      _dayCelebrationIndex = (index + 1) % messages.length;
+    } else {
+      _habitCelebrationIndex = (index + 1) % messages.length;
+    }
+    return messages[index];
+  }
+
   Future<void> _toggleHabit(
     BuildContext context,
     HomeController controller,
@@ -145,9 +174,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     if (wasCompleted) return;
     HabitCelebration.show(
       context,
-      message: completesTheDay
-          ? context.l10n.allHabitsCompletedCelebration
-          : context.l10n.habitCompletedCelebration,
+      message: _nextCelebrationMessage(allDone: completesTheDay),
       allDone: completesTheDay,
     );
   }
@@ -170,9 +197,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     if (!saved || !context.mounted || !completesHabit) return;
     HabitCelebration.show(
       context,
-      message: completesTheDay
-          ? context.l10n.allHabitsCompletedCelebration
-          : context.l10n.habitCompletedCelebration,
+      message: _nextCelebrationMessage(allDone: completesTheDay),
       allDone: completesTheDay,
     );
   }
@@ -208,7 +233,11 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
           children: [
             Expanded(child: SectionHeader(title: l10n.myHabits)),
             FilledButton.tonalIcon(
-              onPressed: () => context.push('/habit/new'),
+              key: const ValueKey('home-new-habit'),
+              onPressed: () => HabitsListPage.openCreateHabit(
+                context,
+                activeHabitCount: summary.habits.length,
+              ),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -243,7 +272,10 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         else ...[
           if (_pending.isEmpty && !_hideAllDone)
             _AllDoneCard(
-              onCreate: () => context.push('/habit/new'),
+              onCreate: () => HabitsListPage.openCreateHabit(
+                context,
+                activeHabitCount: summary.habits.length,
+              ),
               onDismiss: () => setState(() => _hideAllDone = true),
             )
           else ...[

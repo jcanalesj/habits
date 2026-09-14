@@ -1386,8 +1386,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get habitCompletedCelebration => 'Great job! One step closer 💪';
 
   @override
+  String get habitCompletedCelebration2 =>
+      'Amazing! Your consistency is growing ✨';
+
+  @override
+  String get habitCompletedCelebration3 =>
+      'Done! You chose yourself again today 💜';
+
+  @override
+  String get habitCompletedCelebration4 => 'Nice work! Every step counts 🌱';
+
+  @override
+  String get habitCompletedCelebration5 =>
+      'Keep going! You\'re building something great 🚀';
+
+  @override
+  String get habitCompletedCelebration6 => 'Goal complete! You\'ve got this ⭐';
+
+  @override
   String get allHabitsCompletedCelebration =>
       'Day complete! You\'re unstoppable';
+
+  @override
+  String get allHabitsCompletedCelebration2 =>
+      'All done for today! Great work 🎉';
+
+  @override
+  String get allHabitsCompletedCelebration3 =>
+      'A perfect day! Your consistency shines ✨';
+
+  @override
+  String get allHabitsCompletedCelebration4 =>
+      'Every habit done! See you tomorrow 💜';
 
   @override
   String get editHabitsHint => 'To edit your habits, go to the Habits tab.';
@@ -1440,4 +1470,38 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get premiumHabitLimitTitle => 'Unlock more habits with Premium';
+
+  @override
+  String get premiumHabitLimitBody =>
+      'You\'ve reached the limit of 5 habits on the free version. With Premium you can create as many habits as you want and keep moving forward.';
+
+  @override
+  String get premiumUnlimitedHabits => 'Unlimited habits';
+
+  @override
+  String get premiumUnlimitedHabitsBody => 'Create all the habits you need.';
+
+  @override
+  String get premiumAdvancedStats => 'Advanced statistics';
+
+  @override
+  String get premiumAdvancedStatsBody => 'See your progress in detail.';
+
+  @override
+  String get premiumNewFeatures => 'New features';
+
+  @override
+  String get premiumNewFeaturesBody => 'More exclusive tools coming soon.';
+
+  @override
+  String get premiumNotNow => 'Not now';
+
+  @override
+  String get premiumViewPlans => 'View Premium plans';
+
+  @override
+  String get premiumCatImageLabel => 'Premium cat wearing a crown';
 }
