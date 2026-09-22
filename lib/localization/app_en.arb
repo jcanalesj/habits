@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
   "appTitle": "Constanza",
-  "goodMorning": "Good morning, {name}! 👋",
+  "goodMorning": "Good morning, {name}!",
   "@goodMorning": {
     "placeholders": {
       "name": {
@@ -9,7 +9,7 @@
       }
     }
   },
-  "goodAfternoon": "Good afternoon, {name}! 👋",
+  "goodAfternoon": "Good afternoon, {name}!",
   "@goodAfternoon": {
     "placeholders": {
       "name": {
@@ -17,7 +17,7 @@
       }
     }
   },
-  "goodEvening": "Good evening, {name}! 👋",
+  "goodEvening": "Good evening, {name}!",
   "@goodEvening": {
     "placeholders": {
       "name": {

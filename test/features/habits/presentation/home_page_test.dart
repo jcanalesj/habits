@@ -29,8 +29,41 @@ Widget _appUnderTest({
   );
 }
 
+Widget _streakCardAtHour(int hour) => MaterialApp(
+  locale: const Locale('es'),
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Scaffold(
+    body: GeneralStreakCard(
+      streak: StreakState.empty,
+      wildcards: WildcardBalance.empty,
+      deviceHour: hour,
+    ),
+  ),
+);
+
 void main() {
   setUpAll(initializeTimezones);
+
+  testWidgets('la tarjeta usa la escena correspondiente a cada franja', (
+    tester,
+  ) async {
+    const scenes = {
+      0: 'assets/images/cards/00:00-5:00.png',
+      6: 'assets/images/cards/6:00-8:00.png',
+      9: 'assets/images/cards/9:00-12:00.png',
+      13: 'assets/images/cards/13:00-15:00.png',
+      16: 'assets/images/cards/16:00-18:00.png',
+      19: 'assets/images/cards/19:00-20:00.png',
+      21: 'assets/images/cards/21:00-23:00.png',
+    };
+
+    for (final MapEntry(key: hour, value: asset) in scenes.entries) {
+      await tester.pumpWidget(_streakCardAtHour(hour));
+      await tester.pump();
+      expect(find.image(AssetImage(asset)), findsOneWidget);
+    }
+  });
 
   testWidgets('HomePage muestra la racha general y los hábitos', (
     tester,
@@ -54,7 +87,9 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(GeneralStreakCard),
-        matching: find.image(const AssetImage('assets/images/cards/card1.png')),
+        matching: find.image(
+          const AssetImage('assets/images/cards/9:00-12:00.png'),
+        ),
       ),
       findsOneWidget,
     );

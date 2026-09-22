@@ -26,7 +26,10 @@ class HomeHeader extends StatelessWidget {
             children: [
               Text(
                 greeting,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: textTheme.headlineSmall?.copyWith(
+                  fontSize: 21,
                   fontWeight: FontWeight.w800,
                 ),
               ),

@@ -13,17 +13,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String goodMorning(String name) {
-    return 'Good morning, $name! 👋';
+    return 'Good morning, $name!';
   }
 
   @override
   String goodAfternoon(String name) {
-    return 'Good afternoon, $name! 👋';
+    return 'Good afternoon, $name!';
   }
 
   @override
   String goodEvening(String name) {
-    return 'Good evening, $name! 👋';
+    return 'Good evening, $name!';
   }
 
   @override

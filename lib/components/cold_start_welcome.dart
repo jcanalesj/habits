@@ -134,7 +134,7 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
                               sigmaY: 18,
                             ),
                             child: Image.asset(
-                              'assets/images/cards/card1.png',
+                              'assets/images/cards/21:00-23:00.png',
                               fit: BoxFit.cover,
                             ),
                           ),

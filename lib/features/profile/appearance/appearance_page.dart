@@ -206,7 +206,7 @@ class _PreviewCard extends StatelessWidget {
       children: [
         Positioned.fill(
           child: Image.asset(
-            'assets/images/cards/card1.png',
+            'assets/images/cards/21:00-23:00.png',
             fit: BoxFit.cover,
           ),
         ),

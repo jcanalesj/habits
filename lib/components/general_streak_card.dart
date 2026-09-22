@@ -3,6 +3,80 @@ import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 
+class _StreakCardScene {
+  const _StreakCardScene({
+    required this.assetPath,
+    required this.overlayStartOpacity,
+    required this.overlayMiddleOpacity,
+    required this.shadowColor,
+    this.flipHorizontally = false,
+  });
+
+  final String assetPath;
+  final double overlayStartOpacity;
+  final double overlayMiddleOpacity;
+  final Color shadowColor;
+  final bool flipHorizontally;
+
+  static _StreakCardScene forHour(int hour) {
+    if (hour < 6) {
+      return const _StreakCardScene(
+        assetPath: 'assets/images/cards/00:00-5:00.png',
+        overlayStartOpacity: .22,
+        overlayMiddleOpacity: .06,
+        shadowColor: Color(0xFF253C9B),
+      );
+    }
+    if (hour < 9) {
+      return const _StreakCardScene(
+        assetPath: 'assets/images/cards/6:00-8:00.png',
+        overlayStartOpacity: .50,
+        overlayMiddleOpacity: .18,
+        shadowColor: Color(0xFFF59E76),
+        flipHorizontally: true,
+      );
+    }
+    if (hour < 13) {
+      return const _StreakCardScene(
+        assetPath: 'assets/images/cards/9:00-12:00.png',
+        overlayStartOpacity: .50,
+        overlayMiddleOpacity: .17,
+        shadowColor: Color(0xFF5790E8),
+      );
+    }
+    if (hour < 16) {
+      return const _StreakCardScene(
+        assetPath: 'assets/images/cards/13:00-15:00.png',
+        overlayStartOpacity: .56,
+        overlayMiddleOpacity: .20,
+        shadowColor: Color(0xFFF2B46E),
+      );
+    }
+    if (hour < 19) {
+      return const _StreakCardScene(
+        assetPath: 'assets/images/cards/16:00-18:00.png',
+        overlayStartOpacity: .46,
+        overlayMiddleOpacity: .15,
+        shadowColor: Color(0xFFE4A05E),
+      );
+    }
+    if (hour < 21) {
+      return const _StreakCardScene(
+        assetPath: 'assets/images/cards/19:00-20:00.png',
+        overlayStartOpacity: .48,
+        overlayMiddleOpacity: .16,
+        shadowColor: Color(0xFF697EDC),
+      );
+    }
+    return const _StreakCardScene(
+      assetPath: 'assets/images/cards/21:00-23:00.png',
+      overlayStartOpacity: .30,
+      overlayMiddleOpacity: .08,
+      shadowColor: Color(0xFF7547D8),
+    );
+  }
+}
+
 /// Tarjeta destacada con la racha general del usuario.
 ///
 /// Muestra tres situaciones distintas (§36):
@@ -19,13 +93,17 @@ class GeneralStreakCard extends StatefulWidget {
     required this.streak,
     required this.wildcards,
     this.onUseWildcard,
-  });
+    this.deviceHour,
+  }) : assert(deviceHour == null || (deviceHour >= 0 && deviceHour <= 23));
 
   final StreakState streak;
   final WildcardBalance wildcards;
 
   /// Null si no hay nada que rescatar o si no hay saldo.
   final VoidCallback? onUseWildcard;
+
+  /// Hora local usada para escoger la escena. Se puede fijar en pruebas.
+  final int? deviceHour;
 
   @override
   State<GeneralStreakCard> createState() => _GeneralStreakCardState();
@@ -47,6 +125,9 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
+    final scene = _StreakCardScene.forHour(
+      widget.deviceHour ?? DateTime.now().hour,
+    );
     // En peligro el degradado pasa a tonos de alerta para que el estado se
     // lea de un vistazo sin cambiar la estructura de la tarjeta.
     final colors = _atRisk
@@ -69,7 +150,9 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: colors.last.withValues(alpha: 0.35),
+              color: (_atRisk ? colors.last : scene.shadowColor).withValues(
+                alpha: 0.35,
+              ),
               blurRadius: 24,
               offset: const Offset(0, 12),
             ),
@@ -78,10 +161,13 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(
-                'assets/images/cards/card1.png',
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
+              child: Transform.flip(
+                flipX: scene.flipHorizontally,
+                child: Image.asset(
+                  scene.assetPath,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                ),
               ),
             ),
             Positioned.fill(
@@ -90,9 +176,14 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
+                    stops: const [0, .38, .68],
                     colors: [
-                      Colors.black.withValues(alpha: 0.30),
-                      Colors.black.withValues(alpha: 0.06),
+                      Colors.black.withValues(
+                        alpha: scene.overlayStartOpacity,
+                      ),
+                      Colors.black.withValues(
+                        alpha: scene.overlayMiddleOpacity,
+                      ),
                       Colors.transparent,
                     ],
                   ),
@@ -132,7 +223,10 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.22),
+                              color: Colors.black.withValues(alpha: 0.24),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: .22),
+                              ),
                               borderRadius: BorderRadius.circular(18),
                             ),
                             child: Text(
@@ -151,8 +245,8 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                           visualDensity: VisualDensity.compact,
                           style: IconButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: Colors.white.withValues(
-                              alpha: 0.18,
+                            backgroundColor: Colors.black.withValues(
+                              alpha: 0.24,
                             ),
                           ),
                           icon: const Icon(Icons.keyboard_arrow_up_rounded),

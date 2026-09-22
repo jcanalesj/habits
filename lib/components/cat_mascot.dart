@@ -71,7 +71,7 @@ class CatMascot extends StatelessWidget {
       scale: 2.15,
       alignment: const Alignment(.62, .48),
       child: Image.asset(
-        'assets/images/cards/card1.png',
+        'assets/images/cards/9:00-12:00.png',
         fit: BoxFit.cover,
         alignment: const Alignment(.72, .46),
       ),

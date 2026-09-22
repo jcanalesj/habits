@@ -1,9 +1,9 @@
 {
   "@@locale": "es",
   "appTitle": "Constanza",
-  "goodMorning": "¡Buenos días, {name}! 👋",
-  "goodAfternoon": "¡Buenas tardes, {name}! 👋",
-  "goodEvening": "¡Buenas noches, {name}! 👋",
+  "goodMorning": "¡Buenos días, {name}!",
+  "goodAfternoon": "¡Buenas tardes, {name}!",
+  "goodEvening": "¡Buenas noches, {name}!",
   "tagline": "Pequeñas acciones, grandes cambios.",
   "welcomeMessage1": "Un pequeño paso también cuenta.",
   "welcomeMessage2": "La constancia gana a la perfección.",
