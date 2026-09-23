@@ -332,10 +332,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileYourProgress => 'Tu progreso';
 
   @override
-  String get profileHealth => 'Salud y bienestar';
+  String get profileHealth => 'Salud';
 
   @override
-  String get profileWeightSubtitle => 'Registra tu evolución y tu objetivo';
+  String get profileWeightTitle => 'Peso y objetivos';
+
+  @override
+  String get profileWeightSubtitle => 'Sigue tu evolución';
+
+  @override
+  String get profileChangePhoto => 'Cambiar foto';
 
   @override
   String get weightTitle => 'Peso';
@@ -587,16 +593,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileProtectors => 'Protectores';
 
   @override
-  String get profileManage => 'Gestiona tu experiencia';
+  String get profileManage => 'Gestión';
 
   @override
-  String get profileMyHabitsSubtitle => 'Organiza y edita tus hábitos';
+  String get profileMyHabitsSubtitle => 'Edita y organiza tus hábitos';
 
   @override
-  String get profileCalendarsSubtitle => 'Consulta todo tu historial';
+  String get profileCalendarsSubtitle => 'Consulta todo tu progreso';
 
   @override
-  String get profileStatsSubtitle => 'Descubre cómo estás avanzando';
+  String get profileStatsSubtitle => 'Analiza tu constancia';
 
   @override
   String get profilePreferences => 'Preferencias';
@@ -774,28 +780,51 @@ class AppLocalizationsEs extends AppLocalizations {
       'Haz que Constanza sea un poquito más tuyo 💜';
 
   @override
-  String get avatarTraveler => 'Gato viajero';
+  String get avatarTraveler => 'Cloud';
 
   @override
-  String get avatarFriendly => 'Gato curioso';
+  String get avatarFriendly => 'Licorice';
 
   @override
-  String get avatarMagic => 'Gato mágico';
+  String get avatarMagic => 'Pearl';
 
   @override
-  String get avatarGamer => 'Gato gamer';
+  String get avatarGamer => 'Peaches';
 
   @override
-  String get avatarZen => 'Gato zen';
+  String get avatarZen => 'Snowball';
 
   @override
-  String get avatarNight => 'Gato nocturno';
+  String get avatarNight => 'Mocha';
 
   @override
-  String get avatarAdventurer => 'Gato aventurero';
+  String get avatarAdventurer => 'Yarn';
 
   @override
-  String get avatarLegendary => 'Gato legendario';
+  String get avatarLegendary => 'Tangerine';
+
+  @override
+  String get avatarHazel => 'Hazel';
+
+  @override
+  String get avatarCookie => 'Cookie';
+
+  @override
+  String get avatarPremium => 'Premium';
+
+  @override
+  String get avatarPremiumTitle => 'Personaliza tu perfil con Premium';
+
+  @override
+  String get avatarPremiumBody =>
+      'Este avatar forma parte de la colección Premium. Desbloquéalo y dale a tu perfil un estilo todavía más personal.';
+
+  @override
+  String get avatarPremiumBenefitTitle => 'Personalizaciones exclusivas';
+
+  @override
+  String get avatarPremiumBenefitBody =>
+      'Accede a avatares especiales y a nuevas opciones visuales.';
 
   @override
   String get avatarSelected => 'Seleccionado';

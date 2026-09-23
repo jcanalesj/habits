@@ -18,16 +18,16 @@ void main() {
     expect(find.text('Alex'), findsOneWidget);
     expect(find.text('alex@example.com'), findsOneWidget);
     expect(find.text('Cuenta verificada'), findsNothing);
-    expect(find.text('Tu progreso'), findsOneWidget);
-    expect(find.text('Salud y bienestar'), findsOneWidget);
-    expect(find.text('Peso'), findsOneWidget);
+    expect(find.text('Cambiar foto'), findsOneWidget);
+    expect(find.text('Salud'), findsOneWidget);
+    expect(find.text('Peso y objetivos'), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.text('Gestiona tu experiencia'),
+      find.text('Gestión'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Gestiona tu experiencia'), findsOneWidget);
+    expect(find.text('Gestión'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('Cerrar sesión'),
@@ -47,7 +47,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Editar perfil'));
+    await tester.tap(find.byKey(const ValueKey('profile-edit-name')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'Alejandra');
     await tester.tap(find.text('Guardar cambios'));

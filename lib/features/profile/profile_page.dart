@@ -9,7 +9,6 @@ import 'package:habits/features/auth/2_presentation/widgets/sign_out_button.dart
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/localization/l10n.dart';
-import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
@@ -83,9 +82,7 @@ class ProfilePage extends ConsumerWidget {
               onEdit: () => _editProfile(context, ref, name),
               onAvatarTap: () => context.push('/profile/avatar'),
             ),
-            const SizedBox(height: 24),
-            _SectionLabel(l10n.profileYourProgress),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -94,7 +91,6 @@ class ProfilePage extends ConsumerWidget {
                     color: AppColors.orange,
                     value: '${summary?.streak.displayStreak ?? 0}',
                     label: l10n.profileCurrentStreak,
-                    encouragement: l10n.profileStreakEncouragement,
                   ),
                 ),
                 const SizedBox(width: 9),
@@ -104,7 +100,6 @@ class ProfilePage extends ConsumerWidget {
                     color: AppColors.green,
                     value: '${summary?.habits.length ?? 0}',
                     label: l10n.profileActiveHabits,
-                    encouragement: l10n.profileHabitsEncouragement,
                   ),
                 ),
                 const SizedBox(width: 9),
@@ -114,9 +109,6 @@ class ProfilePage extends ConsumerWidget {
                     color: AppColors.lilac,
                     value: '${summary?.wildcards.available ?? 0}',
                     label: l10n.profileProtectors,
-                    encouragement: l10n.profileProtectorEncouragement(
-                      summary?.wildcards.available ?? 0,
-                    ),
                   ),
                 ),
               ],
@@ -129,7 +121,7 @@ class ProfilePage extends ConsumerWidget {
                 _ProfileLink(
                   icon: PhosphorIconsBold.scales,
                   color: AppColors.blue,
-                  title: l10n.weightTitle,
+                  title: l10n.profileWeightTitle,
                   subtitle: l10n.profileWeightSubtitle,
                   onTap: () => context.push('/profile/weight'),
                   showDivider: false,
@@ -146,7 +138,7 @@ class ProfilePage extends ConsumerWidget {
                   color: AppColors.blue,
                   title: l10n.myHabits,
                   subtitle: l10n.profileMyHabitsSubtitle,
-                  onTap: () => context.go('/habits'),
+                  onTap: () => context.go('/habits/manage'),
                 ),
                 _ProfileLink(
                   icon: PhosphorIconsBold.calendarDots,
@@ -240,164 +232,106 @@ class _ProfileHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Container(
-      height: 204,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        // El PNG conserva transparencia en sus esquinas redondeadas. Este
-        // fondo evita que en el contorno asome el blanco del Scaffold.
-        color: const Color(0xFF9E83EC),
-        borderRadius: BorderRadius.circular(26),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'assets/images/cards/21:00-23:00.png',
-            fit: BoxFit.cover,
-            alignment: Alignment.centerRight,
-            color: Colors.white.withValues(alpha: .22),
-            colorBlendMode: BlendMode.srcOver,
+    return Column(
+      children: [
+        Text(
+          l10n.navProfile,
+          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+            fontSize: 30,
+            fontWeight: FontWeight.w900,
           ),
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xAAF0EAFF),
-                  Color(0x55F0EAFF),
-                  Color(0x0FFFFFFF),
-                ],
-                stops: [0, .55, 1],
-              ),
-            ),
-          ),
-          const Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 82,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x00EEE9FF), Color(0xA8EEE9FF)],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        const SizedBox(height: 18),
+        Semantics(
+          button: true,
+          label: l10n.chooseAvatar,
+          child: GestureDetector(
+            onTap: onAvatarTap,
+            child: Stack(
+              clipBehavior: Clip.none,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Semantics(
-                      button: true,
-                      label: l10n.chooseAvatar,
-                      child: GestureDetector(
-                        onTap: onAvatarTap,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const UserAvatar(size: 72),
-                            ),
-                            Positioned(
-                              right: -3,
-                              bottom: -3,
-                              child: Container(
-                                width: 29,
-                                height: 29,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  PhosphorIconsFill.sparkle,
-                                  size: 17,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: AppDimensions.screenTitleFontSize,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          Text(
-                            email,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFF514B70),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 3),
-                    TextButton.icon(
-                      onPressed: onEdit,
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: .82),
-                        foregroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 7),
-                        minimumSize: const Size(0, 38),
-                      ),
-                      icon: const Icon(
-                        PhosphorIconsFill.pencilSimple,
-                        size: 16,
-                      ),
-                      label: Text(
-                        l10n.profileEdit,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const UserAvatar(size: 132),
                 ),
-                const Spacer(),
-                Text(
-                  '“${l10n.tagline}” 💜',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    shadows: [Shadow(color: Color(0xCCFFFFFF), blurRadius: 8)],
+                Positioned(
+                  right: -2,
+                  bottom: 5,
+                  child: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 4),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x337C5CE0),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      PhosphorIconsBold.camera,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+        TextButton(
+          onPressed: onAvatarTap,
+          child: Text(
+            l10n.profileChangePhoto,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              key: const ValueKey('profile-edit-name'),
+              onPressed: onEdit,
+              tooltip: l10n.profileEdit,
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: .75),
+                foregroundColor: AppColors.primary,
+              ),
+              icon: const Icon(PhosphorIconsBold.pencilSimple, size: 20),
+            ),
+          ],
+        ),
+        Text(
+          email,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -422,67 +356,81 @@ class _ProfileMetric extends StatelessWidget {
     required this.color,
     required this.value,
     required this.label,
-    required this.encouragement,
   });
   final IconData icon;
   final Color color;
   final String value;
   final String label;
-  final String encouragement;
 
   @override
   Widget build(BuildContext context) => Container(
-    height: 152,
-    padding: const EdgeInsets.fromLTRB(11, 11, 11, 10),
+    height: 96,
+    padding: const EdgeInsets.all(11),
     decoration: BoxDecoration(
-      color: color.withValues(alpha: .055),
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: Colors.white.withValues(alpha: .85)),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: .90),
+          color.withValues(alpha: .10),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: color.withValues(alpha: .16)),
+      boxShadow: [
+        BoxShadow(
+          color: color.withValues(alpha: .07),
+          blurRadius: 14,
+          offset: const Offset(0, 6),
+        ),
+      ],
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: .14),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: color, size: 21),
+        Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: .16),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: FittedBox(
+                alignment: Alignment.centerLeft,
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-        ),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const Spacer(),
-        Container(
+        const SizedBox(height: 9),
+        SizedBox(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: .09),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            encouragement,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color.withValues(alpha: .95),
-              fontSize: 9,
-              height: 1.2,
-              fontWeight: FontWeight.w700,
+          child: FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              softWrap: false,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),

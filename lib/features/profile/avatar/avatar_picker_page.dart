@@ -28,44 +28,123 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
     'night' => context.l10n.avatarNight,
     'adventurer' => context.l10n.avatarAdventurer,
     'legendary' => context.l10n.avatarLegendary,
+    'hazel' => context.l10n.avatarHazel,
+    'cookie' => context.l10n.avatarCookie,
     _ => key,
   };
 
   Future<void> _tap(ProfileAvatar avatar) async {
     if (!avatar.isSelectable) {
-      await showModalBottomSheet<void>(
+      await showDialog<void>(
         context: context,
-        showDragHandle: true,
-        builder: (context) => SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+        builder: (context) => Dialog(
+          key: const ValueKey('premium-avatar-dialog'),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          backgroundColor: const Color(0xFFFCFBFF),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  PhosphorIconsFill.lock,
-                  color: AppColors.primary,
-                  size: 38,
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CatMascot(size: 126, avatarId: avatar.id),
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                      ),
+                      child: const Icon(
+                        PhosphorIconsFill.lock,
+                        color: Colors.white,
+                        size: 19,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 18),
                 Text(
-                  context.l10n.avatarLockedTitle,
+                  context.l10n.avatarPremiumTitle,
+                  textAlign: TextAlign.center,
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
                 ),
-                const SizedBox(height: 7),
+                const SizedBox(height: 10),
                 Text(
-                  context.l10n.avatarLockedBody,
+                  context.l10n.avatarPremiumBody,
                   textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(context.l10n.understood),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
                   ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: .08),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        PhosphorIconsFill.sparkle,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              context.l10n.avatarPremiumBenefitTitle,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              context.l10n.avatarPremiumBenefitBody,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(context.l10n.premiumNotNow),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: FilledButton(
+                        key: const ValueKey('avatar-view-premium-plans'),
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          context.l10n.premiumViewPlans,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -191,7 +270,7 @@ class _AvatarCard extends StatelessWidget {
                           opacity: locked ? .58 : 1,
                           child: CatMascot(
                             size: 118,
-                            circular: false,
+                            circular: true,
                             avatarId: avatar.id,
                           ),
                         ),
@@ -235,7 +314,7 @@ class _AvatarCard extends StatelessWidget {
                     selected
                         ? context.l10n.avatarSelected
                         : locked
-                        ? context.l10n.avatarComingSoon
+                        ? context.l10n.avatarPremium
                         : context.l10n.avatarAvailable,
                     style: TextStyle(
                       color: selected

@@ -48,6 +48,24 @@ class CatMascot extends StatelessWidget {
 
   Widget _image() {
     final avatar = AvatarCatalog.byId(avatarId);
+    if (avatar.assetPath case final assetPath?) {
+      // Cada exportación deja un margen diferente. La escala definida en el
+      // catálogo hace que el medallón llene el hueco sin aplicar un zoom
+      // excesivo a los avatares que ya llegan hasta el borde.
+      return Transform.scale(
+        scale: avatar.displayScale,
+        child: Center(
+          child: Image.asset(
+            assetPath,
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+            alignment: Alignment.center,
+            filterQuality: FilterQuality.high,
+          ),
+        ),
+      );
+    }
     if (avatar.atlasIndex case final index?) {
       final column = index % 4;
       final row = index ~/ 4;

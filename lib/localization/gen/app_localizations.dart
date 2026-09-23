@@ -701,14 +701,26 @@ abstract class AppLocalizations {
   /// No description provided for @profileHealth.
   ///
   /// In en, this message translates to:
-  /// **'Health and wellbeing'**
+  /// **'Health'**
   String get profileHealth;
+
+  /// No description provided for @profileWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight and goals'**
+  String get profileWeightTitle;
 
   /// No description provided for @profileWeightSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Track your progress and your goal'**
+  /// **'Track your progress'**
   String get profileWeightSubtitle;
+
+  /// No description provided for @profileChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get profileChangePhoto;
 
   /// No description provided for @weightTitle.
   ///
@@ -1157,25 +1169,25 @@ abstract class AppLocalizations {
   /// No description provided for @profileManage.
   ///
   /// In en, this message translates to:
-  /// **'Manage your experience'**
+  /// **'Management'**
   String get profileManage;
 
   /// No description provided for @profileMyHabitsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Organize and edit your habits'**
+  /// **'Edit and organize your habits'**
   String get profileMyHabitsSubtitle;
 
   /// No description provided for @profileCalendarsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'View your full history'**
+  /// **'View all your progress'**
   String get profileCalendarsSubtitle;
 
   /// No description provided for @profileStatsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'See how you\'re progressing'**
+  /// **'Analyze your consistency'**
   String get profileStatsSubtitle;
 
   /// No description provided for @profilePreferences.
@@ -1481,50 +1493,92 @@ abstract class AppLocalizations {
   /// No description provided for @avatarTraveler.
   ///
   /// In en, this message translates to:
-  /// **'Traveler cat'**
+  /// **'Cloud'**
   String get avatarTraveler;
 
   /// No description provided for @avatarFriendly.
   ///
   /// In en, this message translates to:
-  /// **'Curious cat'**
+  /// **'Licorice'**
   String get avatarFriendly;
 
   /// No description provided for @avatarMagic.
   ///
   /// In en, this message translates to:
-  /// **'Magic cat'**
+  /// **'Pearl'**
   String get avatarMagic;
 
   /// No description provided for @avatarGamer.
   ///
   /// In en, this message translates to:
-  /// **'Gamer cat'**
+  /// **'Peaches'**
   String get avatarGamer;
 
   /// No description provided for @avatarZen.
   ///
   /// In en, this message translates to:
-  /// **'Zen cat'**
+  /// **'Snowball'**
   String get avatarZen;
 
   /// No description provided for @avatarNight.
   ///
   /// In en, this message translates to:
-  /// **'Night cat'**
+  /// **'Mocha'**
   String get avatarNight;
 
   /// No description provided for @avatarAdventurer.
   ///
   /// In en, this message translates to:
-  /// **'Adventurer cat'**
+  /// **'Yarn'**
   String get avatarAdventurer;
 
   /// No description provided for @avatarLegendary.
   ///
   /// In en, this message translates to:
-  /// **'Legendary cat'**
+  /// **'Tangerine'**
   String get avatarLegendary;
+
+  /// No description provided for @avatarHazel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazel'**
+  String get avatarHazel;
+
+  /// No description provided for @avatarCookie.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookie'**
+  String get avatarCookie;
+
+  /// No description provided for @avatarPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get avatarPremium;
+
+  /// No description provided for @avatarPremiumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your profile with Premium'**
+  String get avatarPremiumTitle;
+
+  /// No description provided for @avatarPremiumBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This avatar is part of the Premium collection. Unlock it and give your profile an even more personal style.'**
+  String get avatarPremiumBody;
+
+  /// No description provided for @avatarPremiumBenefitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclusive customization'**
+  String get avatarPremiumBenefitTitle;
+
+  /// No description provided for @avatarPremiumBenefitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Access special avatars and new visual options.'**
+  String get avatarPremiumBenefitBody;
 
   /// No description provided for @avatarSelected.
   ///

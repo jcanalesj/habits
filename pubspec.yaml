@@ -50,5 +50,6 @@ flutter:
     - assets/icons/habits/
     - assets/icons/progress/
     - assets/images/
+    - assets/images/avatars/
     - assets/images/cards/
     - assets/logo/
