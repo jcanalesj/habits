@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 
 /// Título de sección con acción opcional a la derecha ("Ver todos >").
@@ -23,7 +24,10 @@ class SectionHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            style: textTheme.titleLarge?.copyWith(
+              fontSize: AppDimensions.sectionTitleFontSize,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
         if (actionLabel != null)

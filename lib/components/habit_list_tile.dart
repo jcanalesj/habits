@@ -4,6 +4,7 @@ import 'package:habits/components/periodicity_label.dart';
 import 'package:habits/components/progress_icon_picker.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/localization/l10n.dart';
+import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
@@ -144,7 +145,7 @@ class HabitListTile extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: textTheme.titleMedium?.copyWith(
-                            fontSize: 17,
+                            fontSize: AppDimensions.cardTitleFontSize,
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w800,
                           ),
@@ -176,7 +177,7 @@ class HabitListTile extends StatelessWidget {
                           ? (completedToday ? '1 / 1' : '0 / 1')
                           : '${goal.completed} / ${goal.goal}',
                       style: textTheme.titleMedium?.copyWith(
-                        fontSize: 17,
+                        fontSize: AppDimensions.cardTitleFontSize,
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -620,7 +621,7 @@ class _CompactRepetitionAction extends StatelessWidget {
         Text(
           '$safeCount / $target',
           style: textTheme.titleMedium?.copyWith(
-            fontSize: 17,
+            fontSize: AppDimensions.cardTitleFontSize,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/localization/l10n.dart';
+import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 
 /// Cabecera de la Home: saludo, lema y avatar.
@@ -29,7 +30,7 @@ class HomeHeader extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.headlineSmall?.copyWith(
-                  fontSize: 21,
+                  fontSize: AppDimensions.screenTitleFontSize,
                   fontWeight: FontWeight.w800,
                 ),
               ),

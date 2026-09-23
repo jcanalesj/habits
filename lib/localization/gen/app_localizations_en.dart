@@ -1338,7 +1338,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsProtectors => 'Protectors available';
 
   @override
-  String get statsWeeklyProgress => 'Your progress this week';
+  String get statsWeeklyProgress => 'Weekly activity';
 
   @override
   String get statsMonthlyProgress => 'Your progress this month';
@@ -1347,7 +1347,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsYearlyProgress => 'Your progress this year';
 
   @override
-  String get statsSeeCalendar => 'View calendar';
+  String get statsSeeCalendar => 'Calendar';
 
   @override
   String get statsHabits => 'Habits';

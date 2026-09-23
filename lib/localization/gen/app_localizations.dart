@@ -2447,7 +2447,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsWeeklyProgress.
   ///
   /// In en, this message translates to:
-  /// **'Your progress this week'**
+  /// **'Weekly activity'**
   String get statsWeeklyProgress;
 
   /// No description provided for @statsMonthlyProgress.
@@ -2465,7 +2465,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsSeeCalendar.
   ///
   /// In en, this message translates to:
-  /// **'View calendar'**
+  /// **'Calendar'**
   String get statsSeeCalendar;
 
   /// No description provided for @statsHabits.

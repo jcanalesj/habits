@@ -3,6 +3,11 @@
 /// Los nombres describen el uso, no una pantalla concreta, para mantener
 /// tamaños coherentes entre componentes equivalentes.
 abstract final class AppDimensions {
+  // Tipografía compartida de la aplicación autenticada.
+  static const double screenTitleFontSize = 22;
+  static const double sectionTitleFontSize = 22;
+  static const double cardTitleFontSize = 17;
+
   static const double authContentMaxWidth = 430;
   static const double authTitleFontSize = 28;
   static const double authSubtitleFontSize = 16;

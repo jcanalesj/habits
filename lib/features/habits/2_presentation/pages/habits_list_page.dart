@@ -5,6 +5,7 @@ import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/localization/l10n.dart';
+import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
@@ -541,6 +542,7 @@ class _EmptyHabits extends StatelessWidget {
                   Text(
                     l10n.allHabitsTitle,
                     style: textTheme.headlineSmall?.copyWith(
+                      fontSize: AppDimensions.screenTitleFontSize,
                       fontWeight: FontWeight.w900,
                     ),
                   ),

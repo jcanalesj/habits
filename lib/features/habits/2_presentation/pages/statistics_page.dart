@@ -9,6 +9,7 @@ import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/localization/l10n.dart';
+import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -153,6 +154,7 @@ class _StatisticsContent extends StatelessWidget {
                 l10n.navStats,
                 maxLines: 1,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  fontSize: AppDimensions.screenTitleFontSize,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -169,7 +171,45 @@ class _StatisticsContent extends StatelessWidget {
             context,
           ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 108,
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: .10),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Text(
+                    l10n.habitPendingEncouragement,
+                    maxLines: 2,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.primaryDeep,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Image.asset(
+                  'assets/images/cat.png',
+                  key: const ValueKey('statistics-cat'),
+                  height: 108,
+                  fit: BoxFit.contain,
+                  semanticLabel: 'Constanza',
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
         _StreakSummary(streak: summary.streak),
         const SizedBox(height: 16),
         Row(
@@ -228,7 +268,7 @@ class _StatisticsContent extends StatelessWidget {
         _SectionTitle(
           title: l10n.statsHabits,
           action: l10n.seeAll,
-          onTap: () => context.go('/habits'),
+          onTap: () => context.go('/habits/manage'),
         ),
         const SizedBox(height: 10),
         Container(
@@ -642,59 +682,200 @@ class _WeekBarsPage extends StatelessWidget {
               .where((log) => log.isActivity && log.date == day)
               .length;
         });
-        final maximum = math.max(1, counts.reduce(math.max));
+        final highestCount = math.max(1, counts.reduce(math.max));
+        final maximum = math.max(10, (highestCount / 5).ceil() * 5);
 
-        return Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  PhosphorIconsRegular.caretLeft,
-                  size: 14,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  range,
-                  key: ValueKey('week-range-${weekStart.key}'),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  PhosphorIconsRegular.caretRight,
-                  size: 14,
-                  color: weekEnd.isBefore(today)
-                      ? AppColors.textSecondary
-                      : AppColors.textSecondary.withValues(alpha: .20),
-                ),
-              ],
+        return Semantics(
+          key: ValueKey('week-range-${weekStart.key}'),
+          label: range,
+          child: _WeeklyBarChart(
+            counts: counts,
+            maximum: maximum,
+            labels: context.l10n.weekdayInitials.split(','),
+            futureDays: List<bool>.generate(
+              7,
+              (index) => weekStart.addDays(index).isAfter(today),
             ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  for (var index = 0; index < 7; index++)
-                    Expanded(
-                      child: _DayBar(
-                        label: context.l10n.weekdayInitials.split(',')[index],
-                        count: counts[index],
-                        maximum: maximum,
-                        isFuture: weekStart.addDays(index).isAfter(today),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+          ),
         );
       },
     );
   }
+}
+
+class _WeeklyBarChart extends StatelessWidget {
+  const _WeeklyBarChart({
+    required this.counts,
+    required this.maximum,
+    required this.labels,
+    required this.futureDays,
+  });
+
+  final List<int> counts;
+  final int maximum;
+  final List<String> labels;
+  final List<bool> futureDays;
+
+  @override
+  Widget build(BuildContext context) {
+    const labelWidth = 28.0;
+    const dayLabelHeight = 24.0;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          SizedBox(
+            width: labelWidth,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: dayLabelHeight),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$maximum', style: _axisLabelStyle),
+                  Text('${maximum ~/ 2}', style: _axisLabelStyle),
+                  const Text('0', style: _axisLabelStyle),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  bottom: dayLabelHeight,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      _ChartGridLine(),
+                      _ChartGridLine(),
+                      _ChartGridLine(solid: true),
+                    ],
+                  ),
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    for (var index = 0; index < 7; index++)
+                      Expanded(
+                        child: _WeeklyBar(
+                          label: labels[index],
+                          count: counts[index],
+                          maximum: maximum,
+                          outlined: futureDays[index],
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+const _axisLabelStyle = TextStyle(
+  color: AppColors.textSecondary,
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+);
+
+class _ChartGridLine extends StatelessWidget {
+  const _ChartGridLine({this.solid = false});
+
+  final bool solid;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 1,
+    color: AppColors.primary.withValues(alpha: solid ? .14 : .08),
+  );
+}
+
+class _WeeklyBar extends StatelessWidget {
+  const _WeeklyBar({
+    required this.label,
+    required this.count,
+    required this.maximum,
+    required this.outlined,
+  });
+
+  final String label;
+  final int count;
+  final int maximum;
+  final bool outlined;
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = (count / maximum).clamp(0.0, 1.0);
+    final heightFactor = outlined ? .42 : math.max(.06, ratio);
+
+    return Column(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: FractionallySizedBox(
+              heightFactor: heightFactor,
+              child: outlined
+                  ? CustomPaint(
+                      painter: _DashedRoundedBorderPainter(),
+                      child: const SizedBox(width: 26),
+                    )
+                  : Container(
+                      width: 26,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [AppColors.gradientStart, AppColors.primary],
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 7),
+        SizedBox(height: 17, child: Text(label, style: _axisLabelStyle)),
+      ],
+    );
+  }
+}
+
+class _DashedRoundedBorderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(7)),
+      );
+    final paint = Paint()
+      ..color = AppColors.primary.withValues(alpha: .42)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    const dashLength = 4.0;
+    const gapLength = 3.0;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        canvas.drawPath(
+          metric.extractPath(
+            distance,
+            math.min(distance + dashLength, metric.length),
+          ),
+          paint,
+        );
+        distance += dashLength + gapLength;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _DayBar extends StatelessWidget {
@@ -776,9 +957,10 @@ class _SectionTitle extends StatelessWidget {
             child: Text(
               title,
               maxLines: 1,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: AppDimensions.sectionTitleFontSize,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ),

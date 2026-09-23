@@ -9,6 +9,7 @@ import 'package:habits/features/auth/2_presentation/widgets/sign_out_button.dart
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/localization/l10n.dart';
+import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
@@ -340,7 +341,7 @@ class _ProfileHero extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 25,
+                              fontSize: AppDimensions.screenTitleFontSize,
                               fontWeight: FontWeight.w900,
                             ),
                           ),

@@ -9,6 +9,7 @@ import 'package:habits/features/habits/2_presentation/pages/habits_list_page.dar
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/localization/l10n.dart';
+import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
@@ -286,7 +287,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
             if (pending.isNotEmpty) ...[
               _SubSection(
                 label: l10n.pendingHabitsWithCount(pending.length),
-                onSeeAll: () => context.go('/habits'),
+                onSeeAll: () => context.go('/habits/manage'),
               ),
               const SizedBox(height: 8),
               HabitsListCard(
@@ -313,7 +314,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
             const SizedBox(height: 20),
             _SubSection(
               label: l10n.completedHabitsWithCount(completed.length),
-              onSeeAll: () => context.go('/habits'),
+              onSeeAll: () => context.go('/habits/manage'),
             ),
             const SizedBox(height: 8),
             HabitsListCard(
@@ -433,6 +434,7 @@ class _SubSection extends StatelessWidget {
           child: Text(
             label,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontSize: AppDimensions.sectionTitleFontSize,
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w800,
             ),

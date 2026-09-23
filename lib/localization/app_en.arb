@@ -545,10 +545,10 @@
   "statsCompletedRecords": "Habits completed",
   "statsActiveDays": "Active days",
   "statsProtectors": "Protectors available",
-  "statsWeeklyProgress": "Your progress this week",
+  "statsWeeklyProgress": "Weekly activity",
   "statsMonthlyProgress": "Your progress this month",
   "statsYearlyProgress": "Your progress this year",
-  "statsSeeCalendar": "View calendar",
+  "statsSeeCalendar": "Calendar",
   "statsHabits": "Habits",
   "pendingHabitsWithCount": "Pending ({count})",
   "@pendingHabitsWithCount": {

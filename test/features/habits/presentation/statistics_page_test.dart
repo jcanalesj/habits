@@ -54,8 +54,8 @@ void main() {
     expect(find.text('Esta semana'), findsOneWidget);
     expect(find.text('Racha actual'), findsOneWidget);
     expect(find.text('Mejor racha'), findsOneWidget);
-    expect(find.text('Tu progreso esta semana'), findsOneWidget);
-    expect(find.text('Ver calendario'), findsOneWidget);
+    expect(find.text('Actividad semanal'), findsOneWidget);
+    expect(find.text('Calendario'), findsOneWidget);
     expect(find.byKey(const ValueKey('week-range-2026-09-07')), findsOneWidget);
 
     await tester.drag(find.byType(ListView), const Offset(0, -400));
