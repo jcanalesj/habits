@@ -11,6 +11,9 @@ class AppBottomNavBar extends StatelessWidget {
     required this.onTap,
   });
 
+  /// Espacio inferior reservado por las pantallas que quedan bajo la barra.
+  static const double contentClearance = 150;
+
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -50,8 +53,8 @@ class AppBottomNavBar extends StatelessWidget {
               Expanded(
                 child: _NavItem(
                   icon: currentIndex == 1
-                      ? PhosphorIconsFill.checkCircle
-                      : PhosphorIconsRegular.checkCircle,
+                      ? PhosphorIconsFill.calendarDots
+                      : PhosphorIconsRegular.calendarDots,
                   label: l10n.navHabits,
                   selected: currentIndex == 1,
                   onTap: () => onTap(1),

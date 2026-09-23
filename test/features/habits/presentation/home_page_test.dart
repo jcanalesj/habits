@@ -88,7 +88,15 @@ void main() {
       find.descendant(
         of: find.byType(GeneralStreakCard),
         matching: find.image(
-          const AssetImage('assets/images/cards/9:00-12:00.png'),
+          AssetImage(switch (DateTime.now().hour) {
+            < 6 => 'assets/images/cards/00:00-5:00.png',
+            < 9 => 'assets/images/cards/6:00-8:00.png',
+            < 13 => 'assets/images/cards/9:00-12:00.png',
+            < 16 => 'assets/images/cards/13:00-15:00.png',
+            < 19 => 'assets/images/cards/16:00-18:00.png',
+            < 21 => 'assets/images/cards/19:00-20:00.png',
+            _ => 'assets/images/cards/21:00-23:00.png',
+          }),
         ),
       ),
       findsOneWidget,
@@ -165,7 +173,7 @@ void main() {
 
     // "Entrenar" está sembrado como 3 veces por semana.
     expect(find.textContaining('3 veces por semana'), findsOneWidget);
-    expect(find.textContaining('esta semana'), findsWidgets);
+    expect(find.textContaining('/ 3'), findsOneWidget);
   });
 
   testWidgets('HomePage sin hábitos muestra el estado vacío y racha a cero', (
@@ -259,14 +267,13 @@ void main() {
       expect(find.textContaining('Completados hoy'), findsNothing);
     });
 
-    testWidgets('toda la tarjeta registra sin llevar a la edición', (
+    testWidgets('la card abre edición y solo el control registra', (
       tester,
     ) async {
       await tester.pumpWidget(_appUnderTest(locale: const Locale('es')));
       await tester.pumpAndSettle();
 
-      // Sin chevron: al tocar cualquier punto de la tarjeta se registra;
-      // editar sigue viviendo exclusivamente en la pestaña Hábitos.
+      // Sin chevron: toda la superficie libre de la card abre la edición.
       expect(
         find.descendant(
           of: find.byType(HabitListTile),
@@ -291,7 +298,9 @@ void main() {
 
       await tester.tap(find.text('Beber agua'));
       await tester.pumpAndSettle();
-      expect(find.text('Completados hoy (1)'), findsOneWidget);
+      expect(find.text('Editar hábito'), findsOneWidget);
+      expect(find.text('Pendientes (5)'), findsOneWidget);
+      expect(find.textContaining('Completados hoy'), findsNothing);
     });
 
     testWidgets('las cards compactas no muestran la semana en Inicio', (

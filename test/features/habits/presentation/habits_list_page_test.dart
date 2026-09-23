@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/pages/habits_list_page.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
 import '../../../helpers/auth_test_helpers.dart';
 
@@ -30,6 +31,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Mis hábitos'), findsOneWidget);
+    expect(find.text('Edita y organiza tus hábitos'), findsOneWidget);
     expect(find.byKey(const ValueKey('open-habit-calendars')), findsOneWidget);
     expect(find.text('Beber agua'), findsOneWidget);
     expect(find.text('Salud'), findsOneWidget);
@@ -52,7 +54,8 @@ void main() {
     );
     expect(find.text('3 veces por semana'), findsOneWidget);
     expect(find.text('Energía'), findsOneWidget);
-    expect(find.text('Editar hábito'), findsWidgets);
+    expect(find.byIcon(PhosphorIconsBold.pencilSimple), findsWidgets);
+    expect(find.text('Editar hábito'), findsNothing);
     expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
   });
 
@@ -68,17 +71,15 @@ void main() {
     await tester.pumpWidget(appWith());
     await tester.pumpAndSettle();
 
-    expect(
-      find.widgetWithText(FloatingActionButton, 'Nuevo hábito'),
-      findsOneWidget,
-    );
+    expect(find.byKey(const ValueKey('add-habit-inline')), findsOneWidget);
+    expect(find.text('Añadir hábito'), findsOneWidget);
   });
 
   testWidgets('muestra Premium al intentar superar 5 hábitos', (tester) async {
     await tester.pumpWidget(appWith());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(FloatingActionButton, 'Nuevo hábito'));
+    await tester.tap(find.byKey(const ValueKey('add-habit-inline')));
     await tester.pumpAndSettle();
 
     expect(
@@ -109,7 +110,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('habit-edit-agua')));
     await tester.pumpAndSettle();
 
-    expect(find.text('¿Cambiar frecuencia?'), findsOneWidget);
+    expect(find.text('Editar hábito'), findsOneWidget);
     expect(find.textContaining('progreso se recalculará'), findsOneWidget);
     expect(find.text('Tu historial se mantendrá.'), findsOneWidget);
     expect(find.text('Tu racha no se borrará.'), findsOneWidget);

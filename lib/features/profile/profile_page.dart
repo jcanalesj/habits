@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habits/components/app_bottom_nav_bar.dart';
 import 'package:habits/components/app_notice.dart';
 import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
@@ -65,12 +66,15 @@ class ProfilePage extends ConsumerWidget {
     final timezone = ref.watch(profileTimezoneProvider).value ?? 'UTC';
     final name = ref.watch(userNameProvider);
     final l10n = context.l10n;
+    final bottomClearance =
+        AppBottomNavBar.contentClearance +
+        MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 150),
+          padding: EdgeInsets.fromLTRB(20, 18, 20, bottomClearance),
           children: [
             _ProfileHero(
               name: name,

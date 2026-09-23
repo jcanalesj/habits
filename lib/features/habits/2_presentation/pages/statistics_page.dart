@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habits/components/app_bottom_nav_bar.dart';
 import 'package:habits/components/habit_icon_catalog.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
@@ -138,8 +139,12 @@ class _StatisticsContent extends StatelessWidget {
         .toSet()
         .length;
 
+    final bottomClearance =
+        AppBottomNavBar.contentClearance +
+        MediaQuery.viewPaddingOf(context).bottom;
+
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 125),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, bottomClearance),
       children: [
         Row(
           children: [

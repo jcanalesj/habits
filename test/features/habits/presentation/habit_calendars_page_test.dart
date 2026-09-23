@@ -43,4 +43,28 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('en la pestaña muestra Mis hábitos y la acción de editar', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+
+    await tester.pumpWidget(
+      localizedApp(
+        const HabitCalendarsPage(isHabitsTab: true),
+        overrides: env.overrides,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mis hábitos'), findsOneWidget);
+    expect(find.byKey(const ValueKey('edit-habits-action')), findsOneWidget);
+    expect(find.text('Editar hábitos'), findsOneWidget);
+
+    final list = tester.widget<ListView>(find.byType(ListView));
+    expect(
+      (list.padding! as EdgeInsets).bottom,
+      HabitCalendarsPage.bottomBarClearance,
+    );
+  });
 }

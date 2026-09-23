@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habits/components/habit_icon_catalog.dart';
+import 'package:go_router/go_router.dart';
+import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
@@ -10,7 +11,11 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 
 /// Historial mensual de todos los hábitos activos.
 class HabitCalendarsPage extends ConsumerStatefulWidget {
-  const HabitCalendarsPage({super.key});
+  const HabitCalendarsPage({super.key, this.isHabitsTab = false});
+
+  static const double bottomBarClearance = 120;
+
+  final bool isHabitsTab;
 
   @override
   ConsumerState<HabitCalendarsPage> createState() => _HabitCalendarsPageState();
@@ -37,21 +42,26 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
     final summaryAsync = ref.watch(homeControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          context.l10n.habitCalendarsTitle,
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-        backgroundColor: AppColors.background,
-        surfaceTintColor: Colors.transparent,
+      appBar: widget.isHabitsTab
+          ? null
+          : AppBar(
+              title: Text(
+                context.l10n.habitCalendarsTitle,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              backgroundColor: AppColors.background,
+              surfaceTintColor: Colors.transparent,
+            ),
+      body: SafeArea(
+        bottom: false,
+        child: switch (summaryAsync) {
+          AsyncData(:final value) => _buildContent(context, value),
+          AsyncError(:final error) => Center(
+            child: Text(context.l10n.somethingWentWrong('$error')),
+          ),
+          _ => const Center(child: CircularProgressIndicator()),
+        },
       ),
-      body: switch (summaryAsync) {
-        AsyncData(:final value) => _buildContent(context, value),
-        AsyncError(:final error) => Center(
-          child: Text(context.l10n.somethingWentWrong('$error')),
-        ),
-        _ => const Center(child: CircularProgressIndicator()),
-      },
     );
   }
 
@@ -67,8 +77,39 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
       builder: (context, snapshot) {
         final monthLogs = snapshot.data;
         return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            widget.isHabitsTab ? 16 : 8,
+            20,
+            widget.isHabitsTab ? HabitCalendarsPage.bottomBarClearance : 40,
+          ),
           children: [
+            if (widget.isHabitsTab) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: SectionHeader(title: context.l10n.allHabitsTitle),
+                  ),
+                  FilledButton.tonalIcon(
+                    key: const ValueKey('edit-habits-action'),
+                    onPressed: () => context.go('/habits/manage'),
+                    style: FilledButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      backgroundColor: AppColors.primary.withValues(
+                        alpha: 0.10,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 11,
+                      ),
+                    ),
+                    icon: const Icon(PhosphorIconsBold.pencilSimple, size: 19),
+                    label: Text(context.l10n.editHabitsAction),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
             _MonthSelector(
               month: month,
               onPrevious: () => _changeMonth(month, -1),
@@ -281,6 +322,7 @@ class _HabitMonthCard extends StatelessWidget {
           GridView.count(
             crossAxisCount: 7,
             shrinkWrap: true,
+            padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
             mainAxisSpacing: 7,
             crossAxisSpacing: 7,

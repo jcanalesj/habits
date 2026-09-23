@@ -124,7 +124,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get periodicityYearly => 'Anual';
 
   @override
-  String get navHome => 'Hábitos';
+  String get navHome => 'Inicio';
 
   @override
   String get navHabits => 'Mis hábitos';
@@ -1089,7 +1089,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get editHabitTitle => 'Editar hábito';
 
   @override
-  String get editHabitWarningTitle => '¿Cambiar frecuencia?';
+  String get editHabitWarningTitle => 'Editar hábito';
 
   @override
   String get editHabitWarningBody =>
@@ -1245,8 +1245,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aún no tienes hábitos.\nCrea el primero y empieza tu racha.';
 
   @override
-  String get myHabitsManageSubtitle =>
-      'Aquí puedes ver y gestionar todos tus hábitos.';
+  String get myHabitsManageSubtitle => 'Edita y organiza tus hábitos';
 
   @override
   String get addHabit => 'Añadir hábito';
@@ -1284,6 +1283,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get habitCalendarsAction => 'Calendarios';
+
+  @override
+  String get editHabitsAction => 'Editar hábitos';
 
   @override
   String get habitCalendarsTitle => 'Calendarios de hábitos';

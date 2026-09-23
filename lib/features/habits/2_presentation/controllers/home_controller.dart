@@ -99,9 +99,8 @@ class HomeController extends StreamNotifier<HomeSummary> {
             if (progress == null || !progress.isMet) return false;
             return progress.period.contains(day);
           },
-          title: (reminder) => l10n.reminderNotificationTitle(
-            reminder.habitName,
-          ),
+          title: (reminder) =>
+              l10n.reminderNotificationTitle(reminder.habitName),
           body: (reminder) => l10n.reminderNotificationBody,
         );
   }
@@ -171,6 +170,37 @@ class HomeController extends StreamNotifier<HomeSummary> {
     } catch (_) {
       return false;
     }
+  }
+
+  /// Reordena los hábitos dentro de un ámbito y persiste el nuevo orden.
+  Future<void> reorderHabitsInAmbito(
+    String ambitoId,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    final summary = state.value;
+    if (summary == null) return;
+    final habits = [
+      for (final habit in summary.habits)
+        if (habit.ambitoId == ambitoId) habit,
+    ];
+    if (oldIndex < 0 || oldIndex >= habits.length) return;
+    if (newIndex > oldIndex) newIndex--;
+    if (newIndex < 0 || newIndex >= habits.length || oldIndex == newIndex) {
+      return;
+    }
+
+    final availableOrders = habits.map((habit) => habit.order).toList()..sort();
+    final moved = habits.removeAt(oldIndex);
+    habits.insert(newIndex, moved);
+    final repository = ref.read(habitsRepositoryProvider);
+    await Future.wait([
+      for (var index = 0; index < habits.length; index++)
+        if (habits[index].order != availableOrders[index])
+          repository.updateHabit(
+            habits[index].copyWith(order: availableOrders[index]),
+          ),
+    ]);
   }
 
   /// Gasta un comodín para proteger el día en peligro.

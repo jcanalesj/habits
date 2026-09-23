@@ -311,7 +311,7 @@ abstract class AppLocalizations {
   /// No description provided for @navHome.
   ///
   /// In en, this message translates to:
-  /// **'Habits'**
+  /// **'Home'**
   String get navHome;
 
   /// No description provided for @navHabits.
@@ -1991,7 +1991,7 @@ abstract class AppLocalizations {
   /// No description provided for @editHabitWarningTitle.
   ///
   /// In en, this message translates to:
-  /// **'Change frequency?'**
+  /// **'Edit habit'**
   String get editHabitWarningTitle;
 
   /// No description provided for @editHabitWarningBody.
@@ -2267,7 +2267,7 @@ abstract class AppLocalizations {
   /// No description provided for @myHabitsManageSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Here you can view and manage all your habits.'**
+  /// **'Edit and organize your habits'**
   String get myHabitsManageSubtitle;
 
   /// No description provided for @addHabit.
@@ -2341,6 +2341,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Calendars'**
   String get habitCalendarsAction;
+
+  /// No description provided for @editHabitsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit habits'**
+  String get editHabitsAction;
 
   /// No description provided for @habitCalendarsTitle.
   ///

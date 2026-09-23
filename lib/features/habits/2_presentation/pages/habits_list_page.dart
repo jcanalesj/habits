@@ -15,6 +15,17 @@ class HabitsListPage extends ConsumerWidget {
 
   static const freeHabitLimit = 5;
 
+  static Future<void> openEditHabit(BuildContext context, Habit habit) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: AppColors.textPrimary.withValues(alpha: 0.62),
+      builder: (_) => const _EditHabitWarningDialog(),
+    );
+    if (confirmed == true && context.mounted) {
+      context.push('/habit/${habit.id}');
+    }
+  }
+
   static Future<void> openCreateHabit(
     BuildContext context, {
     required int activeHabitCount,
@@ -49,16 +60,6 @@ class HabitsListPage extends ConsumerWidget {
           _ => const Center(child: CircularProgressIndicator()),
         },
       ),
-      floatingActionButton: switch (summaryAsync) {
-        AsyncData(:final value) when value.habits.isNotEmpty =>
-          FloatingActionButton.extended(
-            onPressed: () =>
-                openCreateHabit(context, activeHabitCount: value.habits.length),
-            icon: const Icon(Icons.add_rounded),
-            label: Text(l10n.newHabit),
-          ),
-        _ => null,
-      },
     );
   }
 }
@@ -253,35 +254,45 @@ class _Content extends ConsumerWidget {
 
   final HomeSummary summary;
 
-  Future<void> _openEditor(BuildContext context, Habit habit) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: AppColors.textPrimary.withValues(alpha: 0.62),
-      builder: (_) => const _EditHabitWarningDialog(),
-    );
-    if (confirmed == true && context.mounted) {
-      context.push('/habit/${habit.id}');
-    }
-  }
+  void _openEditor(BuildContext context, Habit habit) =>
+      HabitsListPage.openEditHabit(context, habit);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final controller = ref.read(homeControllerProvider.notifier);
 
     if (summary.habits.isEmpty) {
       return const _EmptyHabits();
     }
+
+    final visibleAmbitos = [
+      for (final ambito in summary.ambitos)
+        if (summary.habits.any((habit) => habit.ambitoId == ambito.id)) ambito,
+    ];
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
       children: [
         Row(
           children: [
-            Expanded(child: SectionHeader(title: l10n.allHabitsTitle)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionHeader(title: l10n.allHabitsTitle),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.myHabitsManageSubtitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             FilledButton.tonalIcon(
               key: const ValueKey('open-habit-calendars'),
-              onPressed: () => context.push('/habit-calendars'),
+              onPressed: () => context.go('/habits'),
               style: FilledButton.styleFrom(
                 foregroundColor: AppColors.primary,
                 backgroundColor: AppColors.primary.withValues(alpha: 0.10),
@@ -296,24 +307,214 @@ class _Content extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 20),
-        for (final ambito in summary.ambitos)
-          if (summary.habits.any((habit) => habit.ambitoId == ambito.id)) ...[
-            _AmbitoHeader(ambito: ambito),
-            const SizedBox(height: 8),
-            HabitsListCard(
-              habits: [
-                for (final habit in summary.habits)
-                  if (habit.ambitoId == ambito.id) habit,
-              ],
-              weekLogs: summary.weekLogs,
-              today: summary.today,
-              progressOf: summary.progressOf,
-              onToggleToday: controller.toggleToday,
-              onHabitTap: (habit) => _openEditor(context, habit),
-            ),
-            const SizedBox(height: 20),
-          ],
+        for (var index = 0; index < visibleAmbitos.length; index++) ...[
+          Row(
+            children: [
+              Expanded(child: _AmbitoHeader(ambito: visibleAmbitos[index])),
+              if (index == 0)
+                FilledButton.icon(
+                  key: const ValueKey('add-habit-inline'),
+                  onPressed: () => HabitsListPage.openCreateHabit(
+                    context,
+                    activeHabitCount: summary.habits.length,
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 11,
+                    ),
+                  ),
+                  icon: const Icon(PhosphorIconsBold.plusCircle, size: 19),
+                  label: Text(l10n.addHabit),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _ManageHabitsGroup(
+            habits: [
+              for (final habit in summary.habits)
+                if (habit.ambitoId == visibleAmbitos[index].id) habit,
+            ],
+            today: summary.today,
+            onEdit: (habit) => _openEditor(context, habit),
+            onReorder: (oldIndex, newIndex) => ref
+                .read(homeControllerProvider.notifier)
+                .reorderHabitsInAmbito(
+                  visibleAmbitos[index].id,
+                  oldIndex,
+                  newIndex,
+                ),
+          ),
+          const SizedBox(height: 20),
+        ],
       ],
+    );
+  }
+}
+
+class _ManageHabitsGroup extends StatelessWidget {
+  const _ManageHabitsGroup({
+    required this.habits,
+    required this.today,
+    required this.onEdit,
+    required this.onReorder,
+  });
+
+  final List<Habit> habits;
+  final LogicalDate today;
+  final ValueChanged<Habit> onEdit;
+  final ReorderCallback onReorder;
+
+  @override
+  Widget build(BuildContext context) {
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      buildDefaultDragHandles: false,
+      itemCount: habits.length,
+      onReorder: onReorder,
+      proxyDecorator: (child, index, animation) => Material(
+        color: Colors.transparent,
+        elevation: 6,
+        borderRadius: BorderRadius.circular(24),
+        child: child,
+      ),
+      itemBuilder: (context, index) {
+        final habit = habits[index];
+        return Padding(
+          key: ValueKey('habit-edit-${habit.id}'),
+          padding: const EdgeInsets.only(bottom: 10),
+          child: _ManageHabitCard(
+            habit: habit,
+            today: today,
+            onTap: () => onEdit(habit),
+            dragHandle: ReorderableDragStartListener(
+              index: index,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 16),
+                child: Icon(
+                  Icons.drag_indicator_rounded,
+                  color: AppColors.textSecondary,
+                  size: 28,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ManageHabitCard extends StatelessWidget {
+  const _ManageHabitCard({
+    required this.habit,
+    required this.today,
+    required this.onTap,
+    required this.dragHandle,
+  });
+
+  final Habit habit;
+  final LogicalDate today;
+  final VoidCallback onTap;
+  final Widget dragHandle;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Color(habit.colorValue);
+    final textTheme = Theme.of(context).textTheme;
+
+    return Semantics(
+      button: true,
+      label: context.l10n.editHabitTitle,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Ink(
+            padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: 0.72),
+                  color.withValues(alpha: 0.18),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
+            ),
+            child: Row(
+              children: [
+                dragHandle,
+                const SizedBox(width: 6),
+                Container(
+                  width: 72,
+                  height: 72,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F1FC),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: HabitIcon(
+                    iconId: habit.iconId,
+                    legacyEmoji: habit.emoji,
+                    size: 52,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        habit.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        PeriodicityLabel.of(
+                          context.l10n,
+                          habit.periodicityOn(today),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 46,
+                  height: 46,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.55),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    PhosphorIconsBold.pencilSimple,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

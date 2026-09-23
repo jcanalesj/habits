@@ -83,8 +83,127 @@ class HabitListTile extends StatelessWidget {
     return habit.targetCount;
   }
 
+  Widget _buildCompact(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final l10n = context.l10n;
+    final color = Color(habit.colorValue);
+    final completedToday = _isCompletedToday();
+    final repetitions = habit.hasRepetitions;
+    final goal = progress;
+
+    return Semantics(
+      button: onTap != null,
+      label: onTap == null ? null : l10n.editHabitTitle,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              color.withValues(alpha: 0.10),
+              color.withValues(alpha: completedToday ? 0.22 : 0.15),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(24),
+            splashColor: color.withValues(alpha: 0.14),
+            highlightColor: color.withValues(alpha: 0.07),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 68,
+                    height: 68,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.58),
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: HabitIcon(
+                      iconId: habit.iconId,
+                      legacyEmoji: habit.emoji,
+                      size: 46,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          habit.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontSize: 17,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          PeriodicityLabel.of(l10n, habit.periodicityOn(today)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.bodySmall?.copyWith(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  if (repetitions)
+                    _CompactRepetitionAction(
+                      habit: habit.copyWith(targetCount: _targetCountToday()),
+                      count: _completedCountToday(),
+                      onChanged: onSetDailyCount,
+                    )
+                  else ...[
+                    Text(
+                      goal == null
+                          ? (completedToday ? '1 / 1' : '0 / 1')
+                          : '${goal.completed} / ${goal.goal}',
+                      style: textTheme.titleMedium?.copyWith(
+                        fontSize: 17,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _TrackToggle(
+                      key: ValueKey('habit-track-${habit.id}'),
+                      habitName: habit.name,
+                      completed: completedToday,
+                      color: color,
+                      compact: true,
+                      onPressed: onToggleToday,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isCompact) return _buildCompact(context);
+
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
     final color = Color(habit.colorValue);
@@ -477,6 +596,47 @@ class _RepetitionProgress extends StatelessWidget {
   }
 }
 
+class _CompactRepetitionAction extends StatelessWidget {
+  const _CompactRepetitionAction({
+    required this.habit,
+    required this.count,
+    required this.onChanged,
+  });
+
+  final Habit habit;
+  final int count;
+  final ValueChanged<int>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final target = habit.targetCount.clamp(1, 999);
+    final safeCount = count.clamp(0, target);
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '$safeCount / $target',
+          style: textTheme.titleMedium?.copyWith(
+            fontSize: 17,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _RepetitionProgress(
+          habit: habit,
+          count: safeCount,
+          compact: true,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+}
+
 class _WeekDots extends StatelessWidget {
   const _WeekDots({
     required this.habitId,
@@ -651,7 +811,11 @@ class _TrackToggle extends StatelessWidget {
             ],
           ),
           child: Icon(
-            completed ? PhosphorIconsBold.check : PhosphorIconsFill.play,
+            completed
+                ? PhosphorIconsBold.check
+                : compact
+                ? PhosphorIconsRegular.plus
+                : PhosphorIconsFill.play,
             size: compact ? 24 : 28,
             color: completed ? Colors.white : color,
           ),

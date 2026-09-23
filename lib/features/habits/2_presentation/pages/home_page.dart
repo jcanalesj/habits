@@ -59,7 +59,6 @@ class _HomeContent extends ConsumerStatefulWidget {
 
 class _HomeContentState extends ConsumerState<_HomeContent> {
   _HabitFilter _filter = _HabitFilter.all;
-  int _previewCardHour = 9;
   bool _hideAllDone = false;
   int _habitCelebrationIndex = 0;
   int _dayCelebrationIndex = 0;
@@ -211,27 +210,24 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     final pending = _pending.where(_matchesFilter).toList();
     final completed = _completed.where(_matchesFilter).toList();
     final hasHabits = summary.habits.isNotEmpty;
+    final bottomClearance =
+        AppBottomNavBar.contentClearance +
+        MediaQuery.viewPaddingOf(context).bottom;
 
     final home = ListView(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, bottomClearance),
       children: [
         HomeHeader(
           greeting: widget.greeting,
           onAvatarTap: () => context.go('/profile'),
         ),
         const SizedBox(height: 16),
-        _CardSceneSelector(
-          selectedHour: _previewCardHour,
-          onChanged: (hour) => setState(() => _previewCardHour = hour),
-        ),
-        const SizedBox(height: 10),
         // Única racha de la app: la general del usuario. Ya no hay rachas
         // por ámbito ni por hábito (§1/§29).
         GeneralStreakCard(
           streak: summary.streak,
           wildcards: summary.wildcards,
-          // Selector temporal para revisar todas las escenas y contrastes.
-          deviceHour: _previewCardHour,
+          deviceHour: DateTime.now().hour,
           onUseWildcard: summary.streak.canRescue && summary.wildcards.hasAny
               ? () => _useWildcard(context, ref)
               : null,
@@ -301,6 +297,8 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
                 onToggleToday: (habitId) {
                   _toggleHabit(context, controller, habitId);
                 },
+                onHabitTap: (habit) =>
+                    HabitsListPage.openEditHabit(context, habit),
                 mode: HabitTileMode.trackCompact,
                 onSetDailyCount: (habitId, count) {
                   final habit = summary.habits.firstWhere(
@@ -326,6 +324,8 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
               onToggleToday: (habitId) {
                 _toggleHabit(context, controller, habitId);
               },
+              onHabitTap: (habit) =>
+                  HabitsListPage.openEditHabit(context, habit),
               mode: HabitTileMode.trackCompact,
               onSetDailyCount: (habitId, count) {
                 final habit = summary.habits.firstWhere(
@@ -369,68 +369,6 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       _HabitFilter.yearly => type == PeriodicityType.yearly,
     };
   }
-}
-
-class _CardSceneSelector extends StatelessWidget {
-  const _CardSceneSelector({
-    required this.selectedHour,
-    required this.onChanged,
-  });
-
-  static const _options = [
-    (hour: 0, label: '00:00–05:59'),
-    (hour: 6, label: '06:00–08:59'),
-    (hour: 9, label: '09:00–12:59'),
-    (hour: 13, label: '13:00–15:59'),
-    (hour: 16, label: '16:00–18:59'),
-    (hour: 19, label: '19:00–20:59'),
-    (hour: 21, label: '21:00–23:59'),
-  ];
-
-  final int selectedHour;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: AppColors.surface,
-    borderRadius: BorderRadius.circular(14),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      child: Row(
-        children: [
-          const Icon(Icons.schedule_rounded, color: AppColors.primary),
-          const SizedBox(width: 10),
-          Text(
-            'Vista de tarjeta',
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                key: const ValueKey('card-scene-selector'),
-                value: selectedHour,
-                isExpanded: true,
-                borderRadius: BorderRadius.circular(14),
-                items: [
-                  for (final option in _options)
-                    DropdownMenuItem(
-                      value: option.hour,
-                      child: Text(option.label, textAlign: TextAlign.end),
-                    ),
-                ],
-                onChanged: (hour) {
-                  if (hour != null) onChanged(hour);
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
 }
 
 class _HabitFilters extends StatelessWidget {
