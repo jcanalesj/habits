@@ -42,6 +42,7 @@ void main() {
           'avatarId',
           'timezone',
           'timezoneAutomatic',
+          'welcomeAnimationEnabled',
           'locale',
           'subscription',
           'onboardingCompleted',
@@ -54,12 +55,24 @@ void main() {
         expect(data['avatarId'], 'traveler');
         expect(data['timezone'], 'Europe/Madrid');
         expect(data['timezoneAutomatic'], isTrue);
+        expect(data['welcomeAnimationEnabled'], isTrue);
         expect(data['locale'], 'es');
         expect(data['subscription'], {'status': 'free'});
         expect(data['onboardingCompleted'], isFalse);
         expect(data['createdAt'], isNotNull);
       },
     );
+
+    test('guarda y emite la preferencia de animación', () async {
+      await repository.create(profile());
+
+      await repository.updateWelcomeAnimationEnabled('uid-1', false);
+
+      expect(
+        await repository.watchWelcomeAnimationEnabled('uid-1').first,
+        isFalse,
+      );
+    });
 
     test('create siembra los cinco ámbitos predefinidos', () async {
       await repository.create(profile());

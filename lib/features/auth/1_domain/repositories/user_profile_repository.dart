@@ -24,6 +24,8 @@ abstract class UserProfileRepository {
 
   Stream<bool> watchTimezoneAutomatic(String userId);
 
+  Stream<bool?> watchWelcomeAnimationEnabled(String userId);
+
   Future<void> updateDisplayName(String userId, String displayName);
 
   Future<void> updateTimezone(String userId, String timezone);
@@ -35,4 +37,6 @@ abstract class UserProfileRepository {
   });
 
   Future<void> updateAvatarId(String userId, String avatarId);
+
+  Future<void> updateWelcomeAnimationEnabled(String userId, bool enabled);
 }

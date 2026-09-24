@@ -5,6 +5,7 @@ import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/pages/home_page.dart';
+import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 
 import '../../../helpers/auth_test_helpers.dart';
@@ -370,6 +371,32 @@ void main() {
     await tester.pump(ColdStartWelcome.duration);
     await tester.pumpAndSettle();
     expect(welcome, findsNothing);
+    expect(find.text('Racha general'), findsOneWidget);
+  });
+
+  testWidgets('no muestra la bienvenida si Firebase la desactiva', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser, seededHabits: true);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ...env.overrides,
+          remoteWelcomeAnimationEnabledProvider.overrideWith(
+            (ref) => Stream.value(false),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const HomePage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('cold-start-welcome')), findsNothing);
     expect(find.text('Racha general'), findsOneWidget);
   });
 }

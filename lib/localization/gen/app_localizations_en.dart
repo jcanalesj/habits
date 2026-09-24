@@ -638,10 +638,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileNotificationsSubtitle => 'Customize your reminders';
 
   @override
-  String get profileAppearance => 'Appearance';
+  String get profileAppearance => 'Personalization';
 
   @override
-  String get profileAppearanceSubtitle => 'Theme, color and app icon';
+  String get profileAppearanceSubtitle => 'Messages, welcome and appearance';
+
+  @override
+  String get personalizationHeroTitle =>
+      'Make Constanza support you in your own way';
+
+  @override
+  String get personalizationMotivation => 'Motivational messages';
+
+  @override
+  String get personalizationDefaultPreview =>
+      'Today matters. Take it at your own pace ✨';
+
+  @override
+  String get personalizationShowMessages => 'Show messages';
+
+  @override
+  String get personalizationShowMessagesHint =>
+      'Include motivational phrases in your welcome';
+
+  @override
+  String get personalizationYourMessages => 'Your phrases';
+
+  @override
+  String get personalizationYourMessagesHint =>
+      'Add messages you would like to read again';
+
+  @override
+  String get personalizationNoMessages =>
+      'You haven\'t added any personal phrases yet.';
+
+  @override
+  String get personalizationAddMessage => 'Add message';
+
+  @override
+  String get personalizationEditMessage => 'Edit message';
+
+  @override
+  String get personalizationMessageHint => 'Write a phrase that motivates you';
+
+  @override
+  String get personalizationAppearance => 'Appearance';
+
+  @override
+  String get edit => 'Edit';
 
   @override
   String get appearanceHeroTitle => 'Make it a little more yours';

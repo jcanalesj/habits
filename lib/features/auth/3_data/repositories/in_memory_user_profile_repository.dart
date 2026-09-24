@@ -6,6 +6,7 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   final Map<String, NewUserProfile> profiles = {};
   final Map<String, String> avatarIds = {};
   final Map<String, bool> timezoneAutomatic = {};
+  final Map<String, bool> welcomeAnimationEnabled = {};
 
   @override
   Future<bool> exists(String userId) async => profiles.containsKey(userId);
@@ -26,6 +27,10 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   @override
   Stream<bool> watchTimezoneAutomatic(String userId) =>
       Stream.value(timezoneAutomatic[userId] ?? true);
+
+  @override
+  Stream<bool?> watchWelcomeAnimationEnabled(String userId) =>
+      Stream.value(welcomeAnimationEnabled[userId]);
 
   @override
   Future<void> updateDisplayName(String userId, String displayName) async {
@@ -56,5 +61,13 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   @override
   Future<void> updateAvatarId(String userId, String avatarId) async {
     avatarIds[userId] = avatarId;
+  }
+
+  @override
+  Future<void> updateWelcomeAnimationEnabled(
+    String userId,
+    bool enabled,
+  ) async {
+    welcomeAnimationEnabled[userId] = enabled;
   }
 }

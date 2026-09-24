@@ -168,6 +168,7 @@ service cloud.firestore {
       function validUser(d) {
         return d.keys().hasOnly([
             'email', 'displayName', 'avatarId', 'timezone', 'timezoneAutomatic',
+            'welcomeAnimationEnabled',
             'locale', 'subscription',
             'onboardingCompleted', 'createdAt', 'updatedAt', 'lastActiveAt'
           ])
@@ -180,6 +181,7 @@ service cloud.firestore {
           ])
           && isShortText(d.timezone, 64)
           && (!('timezoneAutomatic' in d) || d.timezoneAutomatic is bool)
+          && (!('welcomeAnimationEnabled' in d) || d.welcomeAnimationEnabled is bool)
           && d.locale in ['es', 'en']
           && d.subscription is map
           && (!('onboardingCompleted' in d) || d.onboardingCompleted is bool);

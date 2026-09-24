@@ -1259,14 +1259,92 @@ abstract class AppLocalizations {
   /// No description provided for @profileAppearance.
   ///
   /// In en, this message translates to:
-  /// **'Appearance'**
+  /// **'Personalization'**
   String get profileAppearance;
 
   /// No description provided for @profileAppearanceSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Theme, color and app icon'**
+  /// **'Messages, welcome and appearance'**
   String get profileAppearanceSubtitle;
+
+  /// No description provided for @personalizationHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Constanza support you in your own way'**
+  String get personalizationHeroTitle;
+
+  /// No description provided for @personalizationMotivation.
+  ///
+  /// In en, this message translates to:
+  /// **'Motivational messages'**
+  String get personalizationMotivation;
+
+  /// No description provided for @personalizationDefaultPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Today matters. Take it at your own pace ✨'**
+  String get personalizationDefaultPreview;
+
+  /// No description provided for @personalizationShowMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Show messages'**
+  String get personalizationShowMessages;
+
+  /// No description provided for @personalizationShowMessagesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Include motivational phrases in your welcome'**
+  String get personalizationShowMessagesHint;
+
+  /// No description provided for @personalizationYourMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phrases'**
+  String get personalizationYourMessages;
+
+  /// No description provided for @personalizationYourMessagesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add messages you would like to read again'**
+  String get personalizationYourMessagesHint;
+
+  /// No description provided for @personalizationNoMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t added any personal phrases yet.'**
+  String get personalizationNoMessages;
+
+  /// No description provided for @personalizationAddMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add message'**
+  String get personalizationAddMessage;
+
+  /// No description provided for @personalizationEditMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit message'**
+  String get personalizationEditMessage;
+
+  /// No description provided for @personalizationMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a phrase that motivates you'**
+  String get personalizationMessageHint;
+
+  /// No description provided for @personalizationAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get personalizationAppearance;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
 
   /// No description provided for @appearanceHeroTitle.
   ///

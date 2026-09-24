@@ -34,6 +34,7 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
       'avatarId': 'traveler',
       'timezone': profile.timezone,
       'timezoneAutomatic': true,
+      'welcomeAnimationEnabled': true,
       'locale': profile.locale,
       // Único valor que las reglas permiten fijar desde cliente.
       'subscription': {'status': 'free'},
@@ -75,6 +76,11 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
       );
 
   @override
+  Stream<bool?> watchWelcomeAnimationEnabled(String userId) => _userRef(userId)
+      .snapshots()
+      .map((snapshot) => snapshot.data()?['welcomeAnimationEnabled'] as bool?);
+
+  @override
   Future<void> updateDisplayName(String userId, String displayName) =>
       _userRef(userId).update({
         'displayName': displayName,
@@ -101,4 +107,11 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
   Future<void> updateAvatarId(String userId, String avatarId) => _userRef(
     userId,
   ).update({'avatarId': avatarId, 'updatedAt': FieldValue.serverTimestamp()});
+
+  @override
+  Future<void> updateWelcomeAnimationEnabled(String userId, bool enabled) =>
+      _userRef(userId).update({
+        'welcomeAnimationEnabled': enabled,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 }

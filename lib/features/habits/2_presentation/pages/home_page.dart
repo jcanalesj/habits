@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,21 +21,27 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(homeControllerProvider);
+    final welcomeEnabledAsync = ref.watch(
+      remoteWelcomeAnimationEnabledProvider,
+    );
     final userName = ref.watch(userNameProvider);
 
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: switch (summaryAsync) {
-          AsyncData(:final value) => _HomeContent(
-            summary: value,
-            greeting: WelcomeGreetingResolver.resolve(
-              context.l10n,
-              userName,
-              DateTime.now().hour,
+        child: switch ((summaryAsync, welcomeEnabledAsync)) {
+          (AsyncData(value: final value), AsyncData(value: final enabled)) =>
+            _HomeContent(
+              summary: value,
+              welcomeAnimationEnabled: enabled,
+              greeting: WelcomeGreetingResolver.resolve(
+                context.l10n,
+                userName,
+                DateTime.now().hour,
+              ),
             ),
-          ),
-          AsyncError(:final error) => Center(
+          (AsyncError(error: final error), _) ||
+          (_, AsyncError(error: final error)) => Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Text(context.l10n.somethingWentWrong('$error')),
@@ -49,10 +57,15 @@ class HomePage extends ConsumerWidget {
 enum _HabitFilter { all, daily, weekly, monthly, yearly }
 
 class _HomeContent extends ConsumerStatefulWidget {
-  const _HomeContent({required this.summary, required this.greeting});
+  const _HomeContent({
+    required this.summary,
+    required this.greeting,
+    required this.welcomeAnimationEnabled,
+  });
 
   final HomeSummary summary;
   final String greeting;
+  final bool welcomeAnimationEnabled;
 
   @override
   ConsumerState<_HomeContent> createState() => _HomeContentState();
@@ -65,14 +78,19 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
   int _dayCelebrationIndex = 0;
   late bool _showColdStartWelcome;
   late final int _welcomeMessageIndex;
+  late final String? _customWelcomeMessage;
 
   @override
   void initState() {
     super.initState();
     _showColdStartWelcome = ref
         .read(coldStartWelcomeSessionProvider)
-        .take(enabled: ref.read(welcomeAnimationEnabledProvider));
+        .take(enabled: widget.welcomeAnimationEnabled);
     _welcomeMessageIndex = WelcomeMessageSelector.randomIndex();
+    final customMessages = ref.read(customMotivationMessagesProvider);
+    _customWelcomeMessage = customMessages.isEmpty
+        ? null
+        : customMessages[math.Random().nextInt(customMessages.length)];
   }
 
   HomeSummary get summary => widget.summary;
@@ -352,7 +370,9 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     if (!_showColdStartWelcome) return home;
     return ColdStartWelcome(
       greeting: widget.greeting,
-      message: WelcomeMessageSelector.message(l10n, _welcomeMessageIndex),
+      message:
+          _customWelcomeMessage ??
+          WelcomeMessageSelector.message(l10n, _welcomeMessageIndex),
       onFinished: () {
         if (mounted) setState(() => _showColdStartWelcome = false);
       },
