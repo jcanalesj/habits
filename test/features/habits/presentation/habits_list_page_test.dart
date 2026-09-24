@@ -11,7 +11,7 @@ import '../../../helpers/auth_test_helpers.dart';
 void main() {
   setUpAll(initializeTimezones);
 
-  Widget appWith({bool seeded = true}) {
+  Widget appWith({bool seeded = true, bool standalone = false}) {
     return ProviderScope(
       overrides: AuthTestEnv(
         initialUser: verifiedUser,
@@ -21,7 +21,7 @@ void main() {
         locale: const Locale('es'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const HabitsListPage(),
+        home: HabitsListPage(standalone: standalone),
       ),
     );
   }
@@ -73,6 +73,16 @@ void main() {
 
     expect(find.byKey(const ValueKey('add-habit-inline')), findsOneWidget);
     expect(find.text('Añadir hábito'), findsOneWidget);
+  });
+
+  testWidgets('oculta calendarios al abrirse como página independiente', (
+    tester,
+  ) async {
+    await tester.pumpWidget(appWith(standalone: true));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('open-habit-calendars')), findsNothing);
+    expect(find.text('Calendarios'), findsNothing);
   });
 
   testWidgets('muestra Premium al intentar superar 5 hábitos', (tester) async {

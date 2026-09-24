@@ -101,6 +101,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/weight',
         builder: (context, state) => const WeightPage(),
       ),
+      GoRoute(
+        path: '/profile/habits',
+        builder: (context, state) => const HabitsListPage(standalone: true),
+      ),
+      GoRoute(
+        path: '/profile/stats',
+        builder: (context, state) => const StatisticsPage(standalone: true),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             AppShell(navigationShell: navigationShell),

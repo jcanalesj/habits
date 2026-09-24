@@ -17,7 +17,9 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 enum _StatsPeriod { week, month, year }
 
 class StatisticsPage extends ConsumerStatefulWidget {
-  const StatisticsPage({super.key});
+  const StatisticsPage({super.key, this.standalone = false});
+
+  final bool standalone;
 
   @override
   ConsumerState<StatisticsPage> createState() => _StatisticsPageState();
@@ -49,9 +51,17 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   Widget build(BuildContext context) {
     final summary = ref.watch(homeControllerProvider);
 
-    return Material(
-      color: AppColors.background,
-      child: SafeArea(
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: widget.standalone
+          ? AppBar(
+              key: const ValueKey('standalone-stats-app-bar'),
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+            )
+          : null,
+      body: SafeArea(
+        top: !widget.standalone,
         bottom: false,
         child: switch (summary) {
           AsyncData(:final value) => Builder(
@@ -73,6 +83,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
                     logs: snapshot.data!,
                     period: _period,
                     rangeStart: from,
+                    standalone: widget.standalone,
                     onPeriodChanged: (period) =>
                         setState(() => _period = period),
                   );
@@ -96,6 +107,7 @@ class _StatisticsContent extends StatelessWidget {
     required this.logs,
     required this.period,
     required this.rangeStart,
+    required this.standalone,
     required this.onPeriodChanged,
   });
 
@@ -103,6 +115,7 @@ class _StatisticsContent extends StatelessWidget {
   final List<HabitLog> logs;
   final _StatsPeriod period;
   final LogicalDate rangeStart;
+  final bool standalone;
   final ValueChanged<_StatsPeriod> onPeriodChanged;
 
   int get _elapsedDays => rangeStart.differenceInDays(summary.today) + 1;
@@ -140,9 +153,10 @@ class _StatisticsContent extends StatelessWidget {
         .toSet()
         .length;
 
-    final bottomClearance =
-        AppBottomNavBar.contentClearance +
-        MediaQuery.viewPaddingOf(context).bottom;
+    final bottomClearance = standalone
+        ? 32.0 + MediaQuery.viewPaddingOf(context).bottom
+        : AppBottomNavBar.contentClearance +
+              MediaQuery.viewPaddingOf(context).bottom;
 
     return ListView(
       padding: EdgeInsets.fromLTRB(20, 20, 20, bottomClearance),

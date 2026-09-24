@@ -282,6 +282,12 @@
     }
   },
   "notificationChooseTime": "Choose reminder time",
+  "reminderPickerTitle": "What time should we remind you?",
+  "reminderPickerSubtitle": "Choose the best time for your habit",
+  "reminderPickerMorning": "Morning",
+  "reminderPickerAfternoon": "Afternoon",
+  "reminderPickerNight": "Night",
+  "reminderPickerSave": "Save time",
   "notificationReminderSaved": "Reminder updated",
   "notificationTimezoneHint": "Reminders will follow the time zone configured in your profile.",
   "profileNoHabits": "You don't have any habits to configure yet.",

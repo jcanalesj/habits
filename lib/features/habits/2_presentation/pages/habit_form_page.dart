@@ -539,7 +539,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                       ),
                     IconButton.filledTonal(
                       onPressed: () async {
-                        final picked = await showTimePicker(
+                        final picked = await showReminderTimePicker(
                           context: context,
                           initialTime:
                               _reminder ?? const TimeOfDay(hour: 9, minute: 0),

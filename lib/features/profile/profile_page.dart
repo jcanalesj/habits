@@ -138,7 +138,7 @@ class ProfilePage extends ConsumerWidget {
                   color: AppColors.blue,
                   title: l10n.myHabits,
                   subtitle: l10n.profileMyHabitsSubtitle,
-                  onTap: () => context.go('/habits/manage'),
+                  onTap: () => context.push('/profile/habits'),
                 ),
                 _ProfileLink(
                   icon: PhosphorIconsBold.calendarDots,
@@ -152,7 +152,7 @@ class ProfilePage extends ConsumerWidget {
                   color: AppColors.green,
                   title: l10n.navStats,
                   subtitle: l10n.profileStatsSubtitle,
-                  onTap: () => context.go('/stats'),
+                  onTap: () => context.push('/profile/stats'),
                   showDivider: false,
                 ),
               ],

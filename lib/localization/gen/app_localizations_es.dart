@@ -741,6 +741,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get notificationChooseTime => 'Elige la hora del recordatorio';
 
   @override
+  String get reminderPickerTitle => '¿A qué hora te avisamos?';
+
+  @override
+  String get reminderPickerSubtitle => 'Elige el mejor momento para tu hábito';
+
+  @override
+  String get reminderPickerMorning => 'Mañana';
+
+  @override
+  String get reminderPickerAfternoon => 'Tarde';
+
+  @override
+  String get reminderPickerNight => 'Noche';
+
+  @override
+  String get reminderPickerSave => 'Guardar hora';
+
+  @override
   String get notificationReminderSaved => 'Recordatorio actualizado';
 
   @override

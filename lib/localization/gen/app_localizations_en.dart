@@ -739,6 +739,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationChooseTime => 'Choose reminder time';
 
   @override
+  String get reminderPickerTitle => 'What time should we remind you?';
+
+  @override
+  String get reminderPickerSubtitle => 'Choose the best time for your habit';
+
+  @override
+  String get reminderPickerMorning => 'Morning';
+
+  @override
+  String get reminderPickerAfternoon => 'Afternoon';
+
+  @override
+  String get reminderPickerNight => 'Night';
+
+  @override
+  String get reminderPickerSave => 'Save time';
+
+  @override
   String get notificationReminderSaved => 'Reminder updated';
 
   @override

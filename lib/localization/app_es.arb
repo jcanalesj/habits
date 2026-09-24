@@ -240,6 +240,12 @@
     }
   },
   "notificationChooseTime": "Elige la hora del recordatorio",
+  "reminderPickerTitle": "¿A qué hora te avisamos?",
+  "reminderPickerSubtitle": "Elige el mejor momento para tu hábito",
+  "reminderPickerMorning": "Mañana",
+  "reminderPickerAfternoon": "Tarde",
+  "reminderPickerNight": "Noche",
+  "reminderPickerSave": "Guardar hora",
   "notificationReminderSaved": "Recordatorio actualizado",
   "notificationTimezoneHint": "Los recordatorios seguirán la zona horaria configurada en tu perfil.",
   "profileNoHabits": "Aún no tienes hábitos que configurar.",

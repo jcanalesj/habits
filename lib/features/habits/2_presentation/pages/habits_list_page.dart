@@ -12,7 +12,9 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 /// Pestaña "Hábitos": todos los hábitos activos con su objetivo y la semana
 /// en curso. Tocar uno lleva a su edición.
 class HabitsListPage extends ConsumerWidget {
-  const HabitsListPage({super.key});
+  const HabitsListPage({super.key, this.standalone = false});
+
+  final bool standalone;
 
   static const freeHabitLimit = 5;
 
@@ -48,10 +50,21 @@ class HabitsListPage extends ConsumerWidget {
     final summaryAsync = ref.watch(homeControllerProvider);
 
     return Scaffold(
+      appBar: standalone
+          ? AppBar(
+              key: const ValueKey('standalone-habits-app-bar'),
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+            )
+          : null,
       body: SafeArea(
+        top: !standalone,
         bottom: false,
         child: switch (summaryAsync) {
-          AsyncData(:final value) => _Content(summary: value),
+          AsyncData(:final value) => _Content(
+            summary: value,
+            standalone: standalone,
+          ),
           AsyncError(:final error) => Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -251,9 +264,10 @@ class _PremiumBenefit extends StatelessWidget {
 }
 
 class _Content extends ConsumerWidget {
-  const _Content({required this.summary});
+  const _Content({required this.summary, required this.standalone});
 
   final HomeSummary summary;
+  final bool standalone;
 
   void _openEditor(BuildContext context, Habit habit) =>
       HabitsListPage.openEditHabit(context, habit);
@@ -272,7 +286,7 @@ class _Content extends ConsumerWidget {
     ];
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, standalone ? 32 : 120),
       children: [
         Row(
           children: [
@@ -291,20 +305,21 @@ class _Content extends ConsumerWidget {
                 ],
               ),
             ),
-            FilledButton.tonalIcon(
-              key: const ValueKey('open-habit-calendars'),
-              onPressed: () => context.go('/habits'),
-              style: FilledButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.10),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 11,
+            if (!standalone)
+              FilledButton.tonalIcon(
+                key: const ValueKey('open-habit-calendars'),
+                onPressed: () => context.go('/habits'),
+                style: FilledButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 11,
+                  ),
                 ),
+                icon: const Icon(PhosphorIconsBold.calendarDots, size: 19),
+                label: Text(l10n.habitCalendarsAction),
               ),
-              icon: const Icon(PhosphorIconsBold.calendarDots, size: 19),
-              label: Text(l10n.habitCalendarsAction),
-            ),
           ],
         ),
         const SizedBox(height: 20),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/components/app_notice.dart';
 import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/components/habit_icon_catalog.dart';
+import 'package:habits/components/reminder_time_picker.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
@@ -39,12 +40,9 @@ class _NotificationSettingsPageState
 
   Future<void> _chooseTime(Habit habit) async {
     if (_saving.contains(habit.id)) return;
-    final selected = await showTimePicker(
+    final selected = await showReminderTimePicker(
       context: context,
       initialTime: _timeOf(habit.reminderTime),
-      helpText: context.l10n.notificationChooseTime,
-      cancelText: context.l10n.cancel,
-      confirmText: context.l10n.profileSave,
     );
     if (selected == null) return;
     await _update(habit, _serialize(selected));

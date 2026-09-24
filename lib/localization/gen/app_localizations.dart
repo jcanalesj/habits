@@ -1424,6 +1424,42 @@ abstract class AppLocalizations {
   /// **'Choose reminder time'**
   String get notificationChooseTime;
 
+  /// No description provided for @reminderPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What time should we remind you?'**
+  String get reminderPickerTitle;
+
+  /// No description provided for @reminderPickerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the best time for your habit'**
+  String get reminderPickerSubtitle;
+
+  /// No description provided for @reminderPickerMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get reminderPickerMorning;
+
+  /// No description provided for @reminderPickerAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get reminderPickerAfternoon;
+
+  /// No description provided for @reminderPickerNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get reminderPickerNight;
+
+  /// No description provided for @reminderPickerSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save time'**
+  String get reminderPickerSave;
+
   /// No description provided for @notificationReminderSaved.
   ///
   /// In en, this message translates to:
