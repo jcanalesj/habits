@@ -60,6 +60,62 @@ void main() {
     expect(env.profiles.customMotivationMessages[verifiedUser.id], isEmpty);
   });
 
+  testWidgets('muestra Premium al superar una frase en la versión gratuita', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    env.profiles.customMotivationMessages[verifiedUser.id] = [
+      'Mi primera frase',
+    ];
+    await tester.pumpWidget(
+      localizedApp(const AppearancePage(), overrides: env.overrides),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('add-motivation-message')),
+    );
+    await tester.tap(find.byKey(const ValueKey('add-motivation-message')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('premium-message-limit-dialog')),
+      findsOneWidget,
+    );
+    expect(find.text('Desbloquea más frases con Premium'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('motivation-message-dialog')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Premium puede añadir más de una frase', (tester) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    env.profiles.customMotivationMessages[verifiedUser.id] = [
+      'Mi primera frase',
+    ];
+    env.profiles.premium[verifiedUser.id] = true;
+    await tester.pumpWidget(
+      localizedApp(const AppearancePage(), overrides: env.overrides),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('add-motivation-message')),
+    );
+    await tester.tap(find.byKey(const ValueKey('add-motivation-message')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('motivation-message-dialog')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('premium-message-limit-dialog')),
+      findsNothing,
+    );
+  });
+
   testWidgets('permite desactivar la animación de bienvenida', (tester) async {
     await tester.pumpWidget(localizedApp(const AppearancePage()));
     await tester.pumpAndSettle();

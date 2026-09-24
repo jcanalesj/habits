@@ -92,6 +92,15 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
       );
 
   @override
+  Stream<bool> watchIsPremium(String userId) =>
+      _userRef(userId).snapshots().map((snapshot) {
+        final subscription = snapshot.data()?['subscription'];
+        if (subscription is! Map) return false;
+        final status = subscription['status'];
+        return status == 'premium' || status == 'active';
+      });
+
+  @override
   Future<void> updateDisplayName(String userId, String displayName) =>
       _userRef(userId).update({
         'displayName': displayName,

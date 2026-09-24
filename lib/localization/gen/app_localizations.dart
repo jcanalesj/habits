@@ -1307,7 +1307,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalizationYourMessagesHint.
   ///
   /// In en, this message translates to:
-  /// **'Add messages you would like to read again'**
+  /// **'You know what motivates you. Write it your way.'**
   String get personalizationYourMessagesHint;
 
   /// No description provided for @personalizationNoMessages.
@@ -1333,6 +1333,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Write a phrase that motivates you'**
   String get personalizationMessageHint;
+
+  /// No description provided for @premiumMessageLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock more phrases with Premium'**
+  String get premiumMessageLimitTitle;
+
+  /// No description provided for @premiumMessageLimitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The free version includes one personalized phrase. With Premium, you can save as many as you like.'**
+  String get premiumMessageLimitBody;
 
   /// No description provided for @personalizationAppearance.
   ///

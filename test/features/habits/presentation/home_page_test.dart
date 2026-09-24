@@ -399,4 +399,37 @@ void main() {
     expect(find.byKey(const ValueKey('cold-start-welcome')), findsNothing);
     expect(find.text('Racha general'), findsOneWidget);
   });
+
+  testWidgets('rota las frases personalizadas bajo el saludo', (tester) async {
+    final env = AuthTestEnv(initialUser: verifiedUser, seededHabits: true);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ...env.overrides,
+          remoteWelcomeAnimationEnabledProvider.overrideWith(
+            (ref) => Stream.value(false),
+          ),
+          remoteCustomMotivationMessagesProvider.overrideWith(
+            (ref) => Stream.value(const ['Primera frase', 'Segunda frase']),
+          ),
+        ],
+        child: const MaterialApp(
+          locale: Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HomePage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Primera frase'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 12));
+    await tester.pump(const Duration(milliseconds: 450));
+    expect(find.text('Segunda frase'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 12));
+    await tester.pump(const Duration(milliseconds: 450));
+    expect(find.text('Un pequeño paso también cuenta.'), findsOneWidget);
+  });
 }

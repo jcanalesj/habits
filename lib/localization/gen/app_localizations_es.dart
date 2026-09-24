@@ -665,7 +665,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get personalizationYourMessagesHint =>
-      'Añade mensajes que quieras volver a leer';
+      'Tú sabes qué te motiva. Escríbelo a tu manera.';
 
   @override
   String get personalizationNoMessages =>
@@ -679,6 +679,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get personalizationMessageHint => 'Escribe una frase que te motive';
+
+  @override
+  String get premiumMessageLimitTitle => 'Desbloquea más frases con Premium';
+
+  @override
+  String get premiumMessageLimitBody =>
+      'La versión gratuita incluye una frase personalizada. Con Premium puedes guardar todas las que quieras.';
 
   @override
   String get personalizationAppearance => 'Aspecto';

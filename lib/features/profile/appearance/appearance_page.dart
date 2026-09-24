@@ -9,6 +9,8 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 class AppearancePage extends ConsumerWidget {
   const AppearancePage({super.key});
 
+  static const freeMessageLimit = 1;
+
   Future<void> _editMessage(
     BuildContext context,
     WidgetRef ref, {
@@ -28,10 +30,34 @@ class AppearancePage extends ConsumerWidget {
     index == null ? notifier.add(message) : notifier.update(index, message);
   }
 
+  Future<void> _addMessage(
+    BuildContext context,
+    WidgetRef ref, {
+    required int messageCount,
+    required bool isPremium,
+  }) async {
+    if (!isPremium && messageCount >= freeMessageLimit) {
+      await showDialog<void>(
+        context: context,
+        barrierColor: AppColors.textPrimary.withValues(alpha: .62),
+        builder: (_) => const _PremiumMessageLimitDialog(),
+      );
+      return;
+    }
+    if (context.mounted) await _editMessage(context, ref);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final messages = ref.watch(customMotivationMessagesProvider);
+    final isPremium = ref.watch(isPremiumProvider).value ?? false;
+    void addMessage() => _addMessage(
+      context,
+      ref,
+      messageCount: messages.length,
+      isPremium: isPremium,
+    );
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -58,7 +84,7 @@ class AppearancePage extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           if (messages.isEmpty)
-            _EmptyMessages(onAdd: () => _editMessage(context, ref))
+            _EmptyMessages(onAdd: addMessage)
           else ...[
             for (var index = 0; index < messages.length; index++) ...[
               _MessageTile(
@@ -76,7 +102,7 @@ class AppearancePage extends ConsumerWidget {
               if (index != messages.length - 1) const SizedBox(height: 9),
             ],
             const SizedBox(height: 12),
-            _AddButton(onPressed: () => _editMessage(context, ref)),
+            _AddButton(onPressed: addMessage),
           ],
           const SizedBox(height: 28),
           _SectionTitle(l10n.personalizationAppearance),
@@ -108,6 +134,94 @@ class AppearancePage extends ConsumerWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PremiumMessageLimitDialog extends StatelessWidget {
+  const _PremiumMessageLimitDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Dialog(
+      key: const ValueKey('premium-message-limit-dialog'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: const Color(0xFFFCFAFF),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 430),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/premium.png',
+                width: 190,
+                height: 150,
+                fit: BoxFit.contain,
+                semanticLabel: l10n.premiumCatImageLabel,
+              ),
+              Text(
+                l10n.premiumMessageLimitTitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                l10n.premiumMessageLimitBody,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 22),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(l10n.premiumNotNow),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.gradientStart,
+                            AppColors.gradientEnd,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(999)),
+                      ),
+                      child: FilledButton(
+                        key: const ValueKey('message-view-premium-plans'),
+                        onPressed: () => Navigator.pop(context),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          l10n.premiumViewPlans,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -253,6 +253,10 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       children: [
         HomeHeader(
           greeting: widget.greeting,
+          messages: [
+            ...widget.customMotivationMessages,
+            ...WelcomeMessageSelector.messages(l10n),
+          ],
           onAvatarTap: () => context.go('/profile'),
         ),
         const SizedBox(height: 16),

@@ -666,7 +666,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalizationYourMessagesHint =>
-      'Add messages you would like to read again';
+      'You know what motivates you. Write it your way.';
 
   @override
   String get personalizationNoMessages =>
@@ -680,6 +680,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalizationMessageHint => 'Write a phrase that motivates you';
+
+  @override
+  String get premiumMessageLimitTitle => 'Unlock more phrases with Premium';
+
+  @override
+  String get premiumMessageLimitBody =>
+      'The free version includes one personalized phrase. With Premium, you can save as many as you like.';
 
   @override
   String get personalizationAppearance => 'Appearance';

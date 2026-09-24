@@ -186,6 +186,16 @@ service cloud.firestore {
           && (!('customMotivationMessages' in d) || (
             d.customMotivationMessages is list
             && d.customMotivationMessages.size() <= 20
+            && (
+              d.subscription.status != 'free'
+              || d.customMotivationMessages.size() <= 1
+              || (
+                'customMotivationMessages' in existing()
+                && existing().customMotivationMessages is list
+                && d.customMotivationMessages.size()
+                    <= existing().customMotivationMessages.size()
+              )
+            )
           ))
           && d.locale in ['es', 'en']
           && d.subscription is map

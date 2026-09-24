@@ -99,6 +99,9 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
             ? 0.0
             : _interval(value, .35, .94, Curves.easeInOutCubic);
         final intro = _interval(value, 0, .20, Curves.easeOut);
+        final messageIn = _reduceMotion
+            ? 1.0
+            : _interval(value, .10, .34, Curves.easeOutBack);
         final messageOut = 1 - _interval(value, .48, .72, Curves.easeIn);
         final overlayOut = 1 - _interval(value, .72, 1, Curves.easeInOut);
 
@@ -192,17 +195,68 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
                       Align(
                         alignment: const Alignment(0, .34),
                         child: Opacity(
-                          opacity: intro * messageOut,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 36),
-                            child: Text(
-                              widget.message,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: AppColors.textSecondary,
-                                    height: 1.4,
+                          opacity: messageIn.clamp(0.0, 1.0) * messageOut,
+                          child: Transform.translate(
+                            offset: Offset(0, 18 * (1 - messageIn)),
+                            child: Transform.scale(
+                              scale: lerpDouble(.9, 1, messageIn)!,
+                              child: Container(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 420,
+                                ),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                padding: const EdgeInsets.fromLTRB(
+                                  26,
+                                  22,
+                                  26,
+                                  24,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: .9),
+                                  borderRadius: BorderRadius.circular(28),
+                                  border: Border.all(
+                                    color: AppColors.primary.withValues(
+                                      alpha: .14,
+                                    ),
                                   ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(
+                                        alpha: .10,
+                                      ),
+                                      blurRadius: 28,
+                                      offset: const Offset(0, 12),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.format_quote_rounded,
+                                      size: 34,
+                                      color: AppColors.primary.withValues(
+                                        alpha: .85,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      widget.message,
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
+                                            color: AppColors.textPrimary,
+                                            fontWeight: FontWeight.w800,
+                                            height: 1.25,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),

@@ -28,6 +28,9 @@ abstract class UserProfileRepository {
 
   Stream<List<String>> watchCustomMotivationMessages(String userId);
 
+  /// Indica si la suscripción del perfil concede funciones Premium.
+  Stream<bool> watchIsPremium(String userId);
+
   Future<void> updateDisplayName(String userId, String displayName);
 
   Future<void> updateTimezone(String userId, String timezone);

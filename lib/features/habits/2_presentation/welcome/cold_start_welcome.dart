@@ -71,6 +71,12 @@ final remoteCustomMotivationMessagesProvider = StreamProvider<List<String>>((
       .watchCustomMotivationMessages(userId);
 });
 
+final isPremiumProvider = StreamProvider<bool>((ref) {
+  final userId = ref.watch(authControllerProvider).value?.id;
+  if (userId == null) return Stream.value(false);
+  return ref.watch(userProfileRepositoryProvider).watchIsPremium(userId);
+});
+
 class CustomMotivationMessagesController extends Notifier<List<String>> {
   StreamSubscription<List<String>>? _remoteSubscription;
 
@@ -205,15 +211,17 @@ abstract final class WelcomeGreetingResolver {
 abstract final class WelcomeMessageSelector {
   static int randomIndex([Random? random]) => (random ?? Random()).nextInt(6);
 
+  static List<String> messages(AppLocalizations l10n) => [
+    l10n.welcomeMessage1,
+    l10n.welcomeMessage2,
+    l10n.welcomeMessage3,
+    l10n.welcomeMessage4,
+    l10n.welcomeMessage5,
+    l10n.welcomeMessage6,
+  ];
+
   static String message(AppLocalizations l10n, int index) {
-    final messages = [
-      l10n.welcomeMessage1,
-      l10n.welcomeMessage2,
-      l10n.welcomeMessage3,
-      l10n.welcomeMessage4,
-      l10n.welcomeMessage5,
-      l10n.welcomeMessage6,
-    ];
-    return messages[index % messages.length];
+    final availableMessages = messages(l10n);
+    return availableMessages[index % availableMessages.length];
   }
 }

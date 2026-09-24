@@ -8,6 +8,7 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   final Map<String, bool> timezoneAutomatic = {};
   final Map<String, bool> welcomeAnimationEnabled = {};
   final Map<String, List<String>> customMotivationMessages = {};
+  final Map<String, bool> premium = {};
 
   @override
   Future<bool> exists(String userId) async => profiles.containsKey(userId);
@@ -36,6 +37,10 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   @override
   Stream<List<String>> watchCustomMotivationMessages(String userId) =>
       Stream.value(customMotivationMessages[userId] ?? const []);
+
+  @override
+  Stream<bool> watchIsPremium(String userId) =>
+      Stream.value(premium[userId] ?? false);
 
   @override
   Future<void> updateDisplayName(String userId, String displayName) async {
