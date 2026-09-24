@@ -86,6 +86,13 @@ final premiumPreviewEnabledProvider =
       PremiumPreviewController.new,
     );
 
+/// Suscripción real (sin contar el acceso de prueba). Decide cuándo se
+/// muestran los pop-ups y las marcas Premium.
+final premiumSubscribedProvider = Provider<bool>(
+  (ref) => ref.watch(isPremiumProvider).value ?? false,
+);
+
+/// Acceso efectivo a las funciones Premium: suscripción o acceso de prueba.
 final premiumAccessProvider = Provider<bool>((ref) {
   final subscribed = ref.watch(isPremiumProvider).value ?? false;
   return subscribed || ref.watch(premiumPreviewEnabledProvider);

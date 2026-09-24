@@ -105,7 +105,7 @@ class AppearancePage extends ConsumerWidget {
     final l10n = context.l10n;
     final palette = context.palette;
     final messages = ref.watch(customMotivationMessagesProvider);
-    final isPremium = ref.watch(premiumAccessProvider);
+    final isPremium = ref.watch(premiumSubscribedProvider);
     final themeMode = ref.watch(themeModeProvider);
     void addMessage() =>
         _addMessage(context, ref, messageCount: messages.length);

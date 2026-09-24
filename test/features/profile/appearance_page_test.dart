@@ -440,13 +440,17 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
-      // Con el acceso de prueba ya activo, el otro icono no vuelve a preguntar.
+      // Sin suscripción real el pop-up vuelve a salir en cada icono Premium.
       await tester.tap(find.byKey(const ValueKey('app-icon-yarn')));
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('premium-app-icon-dialog')),
-        findsNothing,
+        findsOneWidget,
       );
+      await tester.ensureVisible(viewPlans);
+      await tester.pumpAndSettle();
+      await tester.tap(viewPlans);
+      await tester.pumpAndSettle();
       expect(service.changes, [AppIconOption.crown, AppIconOption.yarn]);
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
