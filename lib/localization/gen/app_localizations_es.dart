@@ -839,6 +839,27 @@ class AppLocalizationsEs extends AppLocalizations {
       'Los recordatorios seguirán la zona horaria configurada en tu perfil.';
 
   @override
+  String get notificationCustomMessage => 'Mensaje';
+
+  @override
+  String get notificationDefaultMessageHint => 'Usar mensaje predeterminado';
+
+  @override
+  String get notificationCustomMessageTitle => 'Personaliza tu recordatorio';
+
+  @override
+  String notificationCustomMessageBody(String habitName) {
+    return 'Escribe el mensaje que quieres recibir para $habitName.';
+  }
+
+  @override
+  String get premiumReminderMessageTitle => 'Tus recordatorios, a tu manera';
+
+  @override
+  String get premiumReminderMessageBody =>
+      'Con Premium puedes escribir un mensaje distinto para cada hábito y recibir justo el impulso que necesitas.';
+
+  @override
   String get profileNoHabits => 'Aún no tienes hábitos que configurar.';
 
   @override

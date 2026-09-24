@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
+import 'package:habits/features/profile/premium/premium_gate.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -30,16 +31,17 @@ class HabitsListPage extends ConsumerWidget {
   }
 
   static Future<void> openCreateHabit(
-    BuildContext context, {
+    BuildContext context,
+    WidgetRef ref, {
     required int activeHabitCount,
   }) async {
     if (activeHabitCount >= freeHabitLimit) {
-      final continueToCreate = await showDialog<bool>(
-        context: context,
-        barrierColor: context.palette.scrim,
-        builder: (_) => const _PremiumHabitLimitDialog(),
+      final allowed = await requestPremiumAccess(
+        context,
+        ref,
+        dialogBuilder: (_) => const _PremiumHabitLimitDialog(),
       );
-      if (continueToCreate != true || !context.mounted) return;
+      if (!allowed || !context.mounted) return;
     }
     context.push('/habit/new');
   }
@@ -338,6 +340,7 @@ class _Content extends ConsumerWidget {
                   key: const ValueKey('add-habit-inline'),
                   onPressed: () => HabitsListPage.openCreateHabit(
                     context,
+                    ref,
                     activeHabitCount: summary.habits.length,
                   ),
                   style: FilledButton.styleFrom(

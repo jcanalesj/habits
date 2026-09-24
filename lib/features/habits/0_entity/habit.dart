@@ -19,6 +19,7 @@ class Habit {
     this.displayGoal,
     this.progressIconId = 'check',
     this.reminderTime,
+    this.reminderMessage,
     this.order = 0,
     required this.createdAt,
     this.deletedAt,
@@ -28,7 +29,7 @@ class Habit {
   final List<PeriodicityEntry> periodicityTimeline;
   final int colorValue, targetCount, order;
   final HabitTrackingType trackingType;
-  final String? unit, displayGoal, reminderTime;
+  final String? unit, displayGoal, reminderTime, reminderMessage;
   final DateTime createdAt;
   final DateTime? deletedAt;
   bool get isDeleted => deletedAt != null;
@@ -58,6 +59,7 @@ class Habit {
     Object? displayGoal = _sentinel,
     String? progressIconId,
     Object? reminderTime = _sentinel,
+    Object? reminderMessage = _sentinel,
     int? order,
     DateTime? createdAt,
     Object? deletedAt = _sentinel,
@@ -79,6 +81,9 @@ class Habit {
     reminderTime: identical(reminderTime, _sentinel)
         ? this.reminderTime
         : reminderTime as String?,
+    reminderMessage: identical(reminderMessage, _sentinel)
+        ? this.reminderMessage
+        : reminderMessage as String?,
     order: order ?? this.order,
     createdAt: createdAt ?? this.createdAt,
     deletedAt: identical(deletedAt, _sentinel)
@@ -101,6 +106,7 @@ class Habit {
       displayGoal == other.displayGoal &&
       progressIconId == other.progressIconId &&
       reminderTime == other.reminderTime &&
+      reminderMessage == other.reminderMessage &&
       order == other.order &&
       createdAt == other.createdAt &&
       deletedAt == other.deletedAt;
@@ -119,6 +125,7 @@ class Habit {
     displayGoal,
     progressIconId,
     reminderTime,
+    reminderMessage,
     order,
     createdAt,
     deletedAt,

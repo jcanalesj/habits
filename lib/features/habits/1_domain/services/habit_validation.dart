@@ -9,6 +9,7 @@ enum HabitValidationError {
   emojiRequired,
   invalidTimesPerPeriod,
   invalidReminderTime,
+  reminderMessageTooLong,
 }
 
 enum AmbitoValidationError { nameRequired, nameTooLong, emojiRequired }
@@ -17,6 +18,7 @@ abstract final class HabitValidation {
   static const maxHabitNameLength = 60;
   static const maxAmbitoNameLength = 40;
   static const minTimesPerPeriod = 1;
+  static const maxReminderMessageLength = 120;
 
   /// Tope de veces por periodo. 366 cubre el caso más amplio (un objetivo
   /// anual en año bisiesto) y evita valores absurdos.
@@ -48,6 +50,7 @@ abstract final class HabitValidation {
     required String emoji,
     required Periodicity periodicity,
     required String? reminderTime,
+    String? reminderMessage,
   }) {
     final trimmedName = name.trim();
     return {
@@ -58,6 +61,9 @@ abstract final class HabitValidation {
       ...validatePeriodicity(periodicity),
       if (reminderTime != null && !_timeRegex.hasMatch(reminderTime))
         HabitValidationError.invalidReminderTime,
+      if (reminderMessage != null &&
+          reminderMessage.trim().length > maxReminderMessageLength)
+        HabitValidationError.reminderMessageTooLong,
     };
   }
 

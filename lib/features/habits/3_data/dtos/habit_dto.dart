@@ -19,6 +19,7 @@ class HabitDto {
     required this.periodicidad,
     required this.cambiosPeriodicidad,
     required this.recordatorioHora,
+    required this.recordatorioMensaje,
     required this.orden,
     required this.createdAt,
     required this.deletedAt,
@@ -42,6 +43,7 @@ class HabitDto {
   /// Lista de `{tipo, veces, desde}` con `desde` como día lógico.
   final List<Map<String, dynamic>> cambiosPeriodicidad;
   final String? recordatorioHora;
+  final String? recordatorioMensaje;
   final int orden;
 
   /// Null mientras el serverTimestamp está pendiente (escritura local aún
@@ -66,6 +68,7 @@ class HabitDto {
       periodicidad: normalizePeriodicidad(data[FirestoreFields.periodicidad]),
       cambiosPeriodicidad: _readTimeline(data),
       recordatorioHora: data[FirestoreFields.recordatorioHora] as String?,
+      recordatorioMensaje: data[FirestoreFields.recordatorioMensaje] as String?,
       orden: (data[FirestoreFields.orden] as num?)?.toInt() ?? 0,
       createdAt: (data[FirestoreFields.createdAt] as Timestamp?)?.toDate(),
       deletedAt: (data[FirestoreFields.deletedAt] as Timestamp?)?.toDate(),
@@ -131,6 +134,7 @@ class HabitDto {
     FirestoreFields.periodicidad: periodicidad,
     FirestoreFields.cambiosPeriodicidad: cambiosPeriodicidad,
     FirestoreFields.recordatorioHora: recordatorioHora,
+    FirestoreFields.recordatorioMensaje: recordatorioMensaje,
     FirestoreFields.orden: orden,
     FirestoreFields.trackingType: trackingType,
     FirestoreFields.targetCount: targetCount,

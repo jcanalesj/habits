@@ -40,6 +40,7 @@ abstract final class FirestoreFields {
   static const cambiosPeriodicidad = 'cambiosPeriodicidad';
   static const desde = 'desde';
   static const recordatorioHora = 'recordatorioHora';
+  static const recordatorioMensaje = 'recordatorioMensaje';
   static const trackingType = 'trackingType';
   static const targetCount = 'targetCount';
   static const completedCount = 'completedCount';

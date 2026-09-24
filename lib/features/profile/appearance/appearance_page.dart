@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
+import 'package:habits/features/profile/premium/premium_gate.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -16,15 +17,14 @@ class AppearancePage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref, {
     required ThemeMode mode,
-    required bool isPremium,
   }) async {
-    if (mode == ThemeMode.dark && !isPremium) {
-      await showDialog<void>(
-        context: context,
-        barrierColor: context.palette.scrim,
-        builder: (_) => const _PremiumDarkThemeDialog(),
+    if (mode == ThemeMode.dark) {
+      final allowed = await requestPremiumAccess(
+        context,
+        ref,
+        dialogBuilder: (_) => const _PremiumDarkThemeDialog(),
       );
-      return;
+      if (!allowed) return;
     }
     ref.read(themeModeProvider.notifier).setMode(mode);
   }
@@ -52,15 +52,14 @@ class AppearancePage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref, {
     required int messageCount,
-    required bool isPremium,
   }) async {
-    if (!isPremium && messageCount >= freeMessageLimit) {
-      await showDialog<void>(
-        context: context,
-        barrierColor: context.palette.scrim,
-        builder: (_) => const _PremiumMessageLimitDialog(),
+    if (messageCount >= freeMessageLimit) {
+      final allowed = await requestPremiumAccess(
+        context,
+        ref,
+        dialogBuilder: (_) => const _PremiumMessageLimitDialog(),
       );
-      return;
+      if (!allowed) return;
     }
     if (context.mounted) await _editMessage(context, ref);
   }
@@ -70,14 +69,10 @@ class AppearancePage extends ConsumerWidget {
     final l10n = context.l10n;
     final palette = context.palette;
     final messages = ref.watch(customMotivationMessagesProvider);
-    final isPremium = ref.watch(isPremiumProvider).value ?? false;
+    final isPremium = ref.watch(premiumAccessProvider);
     final themeMode = ref.watch(themeModeProvider);
-    void addMessage() => _addMessage(
-      context,
-      ref,
-      messageCount: messages.length,
-      isPremium: isPremium,
-    );
+    void addMessage() =>
+        _addMessage(context, ref, messageCount: messages.length);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -157,12 +152,7 @@ class AppearancePage extends ConsumerWidget {
                 child: _ThemeModeSelector(
                   value: themeMode,
                   isPremium: isPremium,
-                  onChanged: (mode) => _selectTheme(
-                    context,
-                    ref,
-                    mode: mode,
-                    isPremium: isPremium,
-                  ),
+                  onChanged: (mode) => _selectTheme(context, ref, mode: mode),
                 ),
               ),
             ],
@@ -239,7 +229,7 @@ class _PremiumMessageLimitDialog extends StatelessWidget {
                       ),
                       child: FilledButton(
                         key: const ValueKey('message-view-premium-plans'),
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(context, true),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           side: BorderSide.none,
@@ -869,7 +859,7 @@ class _PremiumDarkThemeDialog extends StatelessWidget {
                       ),
                       child: FilledButton(
                         key: const ValueKey('dark-theme-view-premium-plans'),
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(context, true),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           side: BorderSide.none,

@@ -11,6 +11,7 @@ class HabitReminder implements Comparable<HabitReminder> {
     required this.date,
     required this.hour,
     required this.minute,
+    this.customMessage,
   });
 
   final String habitId;
@@ -18,6 +19,7 @@ class HabitReminder implements Comparable<HabitReminder> {
   final LogicalDate date;
   final int hour;
   final int minute;
+  final String? customMessage;
 
   /// Id estable y único para el sistema de notificaciones.
   ///
@@ -47,10 +49,11 @@ class HabitReminder implements Comparable<HabitReminder> {
       other.habitId == habitId &&
       other.date == date &&
       other.hour == hour &&
-      other.minute == minute;
+      other.minute == minute &&
+      other.customMessage == customMessage;
 
   @override
-  int get hashCode => Object.hash(habitId, date, hour, minute);
+  int get hashCode => Object.hash(habitId, date, hour, minute, customMessage);
 
   @override
   String toString() => 'HabitReminder($habitId, ${date.key} $time)';

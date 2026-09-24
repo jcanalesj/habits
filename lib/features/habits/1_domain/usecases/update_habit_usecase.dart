@@ -49,6 +49,7 @@ class UpdateHabitUsecase {
           ? Periodicity.daily
           : original.periodicityTimeline.last.periodicity,
       reminderTime: updated.reminderTime,
+      reminderMessage: updated.reminderMessage,
     );
     if (updated.trackingType == HabitTrackingType.repetitions &&
         updated.targetCount < 2) {
@@ -63,6 +64,9 @@ class UpdateHabitUsecase {
       name: updated.name.trim(),
       emoji: updated.emoji.trim(),
       periodicityTimeline: original.periodicityTimeline,
+      reminderMessage: updated.reminderMessage?.trim().isEmpty ?? true
+          ? null
+          : updated.reminderMessage!.trim(),
     );
 
     try {

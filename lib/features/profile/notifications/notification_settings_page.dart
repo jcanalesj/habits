@@ -7,6 +7,8 @@ import 'package:habits/components/reminder_time_picker.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
+import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/profile/premium/premium_gate.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -45,7 +47,7 @@ class _NotificationSettingsPageState
       initialTime: _timeOf(habit.reminderTime),
     );
     if (selected == null) return;
-    await _update(habit, _serialize(selected));
+    await _save(habit, habit.copyWith(reminderTime: _serialize(selected)));
   }
 
   Future<void> _requestPermission() async {
@@ -66,14 +68,31 @@ class _NotificationSettingsPageState
     }
   }
 
-  Future<void> _update(Habit habit, String? reminder) async {
+  Future<void> _editMessage(Habit habit) async {
+    if (_saving.contains(habit.id)) return;
+    final allowed = await requestPremiumAccess(
+      context,
+      ref,
+      dialogBuilder: (_) => const _PremiumReminderMessageDialog(),
+    );
+    if (!allowed || !mounted) return;
+    final message = await showDialog<String>(
+      context: context,
+      barrierColor: context.palette.scrim,
+      builder: (_) => _ReminderMessageDialog(
+        habitName: habit.name,
+        initialValue: habit.reminderMessage ?? '',
+      ),
+    );
+    if (message == null) return;
+    await _save(habit, habit.copyWith(reminderMessage: message));
+  }
+
+  Future<void> _save(Habit habit, Habit updated) async {
     setState(() => _saving.add(habit.id));
     final result = await ref
         .read(updateHabitUsecaseProvider)
-        .execute(
-          original: habit,
-          updated: habit.copyWith(reminderTime: reminder),
-        );
+        .execute(original: habit, updated: updated);
     if (!mounted) return;
     setState(() => _saving.remove(habit.id));
     AppNotice.show(
@@ -110,6 +129,7 @@ class _NotificationSettingsPageState
   Widget _body(List<Habit> habits) {
     final l10n = context.l10n;
     final palette = context.palette;
+    final isPremium = ref.watch(premiumAccessProvider);
     final enabledCount = habits
         .where((habit) => habit.reminderTime != null)
         .length;
@@ -255,7 +275,12 @@ class _NotificationSettingsPageState
                     onTap: () => _chooseTime(habits[index]),
                     onEnabledChanged: (enabled) => enabled
                         ? _chooseTime(habits[index])
-                        : _update(habits[index], null),
+                        : _save(
+                            habits[index],
+                            habits[index].copyWith(reminderTime: null),
+                          ),
+                    onMessageTap: () => _editMessage(habits[index]),
+                    isPremium: isPremium,
                   ),
                   if (index != habits.length - 1)
                     const Divider(height: 1, indent: 76, endIndent: 16),
@@ -295,12 +320,16 @@ class _ReminderTile extends StatelessWidget {
     required this.saving,
     required this.onTap,
     required this.onEnabledChanged,
+    required this.onMessageTap,
+    required this.isPremium,
   });
 
   final Habit habit;
   final bool saving;
   final VoidCallback onTap;
   final ValueChanged<bool> onEnabledChanged;
+  final VoidCallback onMessageTap;
+  final bool isPremium;
 
   @override
   Widget build(BuildContext context) {
@@ -312,61 +341,329 @@ class _ReminderTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 13, 10, 13),
-        child: Row(
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: palette.tint(color),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: HabitIcon(
+                    iconId: habit.iconId,
+                    legacyEmoji: habit.emoji,
+                    size: 29,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        habit.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        enabled
+                            ? context.l10n.notificationEveryDayAt(
+                                habit.reminderTime!,
+                              )
+                            : context.l10n.habitReminderNone,
+                        style: TextStyle(
+                          color: enabled ? color : palette.textSecondary,
+                          fontWeight: enabled
+                              ? FontWeight.w700
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (saving)
+                  const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else
+                  Switch.adaptive(value: enabled, onChanged: onEnabledChanged),
+              ],
+            ),
+            if (enabled) ...[
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(left: 62),
+                child: Material(
+                  color: palette.surfaceMuted,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    key: ValueKey('reminder-message-${habit.id}'),
+                    onTap: saving ? null : onMessageTap,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 11,
+                        vertical: 9,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            PhosphorIconsBold.chatText,
+                            color: palette.primary,
+                            size: 19,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  context.l10n.notificationCustomMessage,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                Text(
+                                  habit.reminderMessage ??
+                                      context
+                                          .l10n
+                                          .notificationDefaultMessageHint,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: palette.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (!isPremium)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    AppColors.gradientStart,
+                                    AppColors.gradientEnd,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: const Icon(
+                                PhosphorIconsFill.crown,
+                                color: Colors.white,
+                                size: 13,
+                              ),
+                            )
+                          else
+                            Icon(
+                              PhosphorIconsBold.pencilSimple,
+                              color: palette.primary,
+                              size: 19,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReminderMessageDialog extends StatefulWidget {
+  const _ReminderMessageDialog({
+    required this.habitName,
+    required this.initialValue,
+  });
+  final String habitName;
+  final String initialValue;
+
+  @override
+  State<_ReminderMessageDialog> createState() => _ReminderMessageDialogState();
+}
+
+class _ReminderMessageDialogState extends State<_ReminderMessageDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final palette = context.palette;
+    return Dialog(
+      key: const ValueKey('reminder-message-dialog'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+      backgroundColor: palette.dialogSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 50,
-              height: 50,
-              alignment: Alignment.center,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
-                color: palette.tint(color),
-                borderRadius: BorderRadius.circular(16),
+                color: palette.primarySoft,
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: HabitIcon(
-                iconId: habit.iconId,
-                legacyEmoji: habit.emoji,
-                size: 29,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    habit.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    enabled
-                        ? context.l10n.notificationEveryDayAt(
-                            habit.reminderTime!,
-                          )
-                        : context.l10n.habitReminderNone,
-                    style: TextStyle(
-                      color: enabled ? color : palette.textSecondary,
-                      fontWeight: enabled ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
-                ],
+              child: Icon(
+                PhosphorIconsFill.chatTeardropText,
+                color: palette.primary,
+                size: 30,
               ),
             ),
-            if (saving)
-              const Padding(
-                padding: EdgeInsets.all(12),
-                child: SizedBox.square(
-                  dimension: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+            const SizedBox(height: 14),
+            Text(
+              l10n.notificationCustomMessageTitle,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l10n.notificationCustomMessageBody(widget.habitName),
+              textAlign: TextAlign.center,
+              style: TextStyle(color: palette.textSecondary, height: 1.35),
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              key: const ValueKey('reminder-message-field'),
+              controller: _controller,
+              autofocus: true,
+              maxLength: 120,
+              minLines: 3,
+              maxLines: 4,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                hintText: l10n.reminderNotificationBody,
+                filled: true,
+                fillColor: palette.inputFill,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
                 ),
-              )
-            else
-              Switch.adaptive(value: enabled, onChanged: onEnabledChanged),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(l10n.cancel),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.icon(
+                    key: const ValueKey('save-reminder-message'),
+                    onPressed: () =>
+                        Navigator.pop(context, _controller.text.trim()),
+                    icon: const Icon(PhosphorIconsBold.check, size: 18),
+                    label: Text(l10n.profileSave),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PremiumReminderMessageDialog extends StatelessWidget {
+  const _PremiumReminderMessageDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final palette = context.palette;
+    return Dialog(
+      key: const ValueKey('premium-reminder-message-dialog'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: palette.dialogSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/premium.png',
+              width: 190,
+              height: 150,
+              fit: BoxFit.contain,
+              semanticLabel: l10n.premiumCatImageLabel,
+            ),
+            Text(
+              l10n.premiumReminderMessageTitle,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              l10n.premiumReminderMessageBody,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: palette.textSecondary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(l10n.premiumNotNow),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    key: const ValueKey('reminder-message-view-premium-plans'),
+                    onPressed: () => Navigator.pop(context, true),
+                    child: Text(
+                      l10n.premiumViewPlans,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

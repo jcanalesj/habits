@@ -37,6 +37,7 @@ class CreateHabitUsecase {
       emoji: draft.emoji,
       periodicity: draft.periodicity,
       reminderTime: draft.reminderTime,
+      reminderMessage: draft.reminderMessage,
     );
     if (draft.trackingType == HabitTrackingType.repetitions &&
         draft.targetCount < 2) {

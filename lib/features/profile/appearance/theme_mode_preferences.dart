@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
+import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Nombres con los que el tema viaja a Firestore y a SharedPreferences.
@@ -101,7 +102,7 @@ class ThemeModeController extends Notifier<ThemeMode> {
         .watchIsPremium(userId)
         .listen((isPremium) {
           _isPremium = isPremium;
-          if (!isPremium && state == ThemeMode.dark) {
+          if (!_hasDarkAccess && state == ThemeMode.dark) {
             _applyMode(ThemeMode.light);
             unawaited(_persistRemote(userId, ThemeMode.light));
           }
@@ -115,7 +116,7 @@ class ThemeModeController extends Notifier<ThemeMode> {
             unawaited(_persistRemote(userId, state));
             return;
           }
-          final entitledMode = mode == ThemeMode.dark && _isPremium == false
+          final entitledMode = mode == ThemeMode.dark && !_hasDarkAccess
               ? ThemeMode.light
               : mode;
           if (entitledMode == state) return;
@@ -127,11 +128,15 @@ class ThemeModeController extends Notifier<ThemeMode> {
     final supportedMode = mode == ThemeMode.dark
         ? ThemeMode.dark
         : ThemeMode.light;
-    if (supportedMode == ThemeMode.dark && _isPremium == false) return;
+    if (supportedMode == ThemeMode.dark && !_hasDarkAccess) return;
     _applyMode(supportedMode);
     final userId = ref.read(authControllerProvider).value?.id;
     if (userId != null) unawaited(_persistRemote(userId, supportedMode));
   }
+
+  /// El acceso de prueba de la sesión también desbloquea el tema oscuro.
+  bool get _hasDarkAccess =>
+      _isPremium != false || ref.read(premiumPreviewEnabledProvider);
 
   void _applyMode(ThemeMode mode) {
     state = mode;

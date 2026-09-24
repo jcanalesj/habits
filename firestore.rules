@@ -180,7 +180,7 @@ service cloud.firestore {
           && (!('displayName' in d) || d.displayName == null || isShortText(d.displayName, 40))
           && (!('avatarId' in d) || d.avatarId in [
             'traveler', 'friendly', 'magic', 'gamer', 'zen', 'night',
-            'adventurer', 'legendary'
+            'adventurer', 'legendary', 'hazel', 'cookie'
           ])
           && isShortText(d.timezone, 64)
           && (!('timezoneAutomatic' in d) || d.timezoneAutomatic is bool)
@@ -334,7 +334,7 @@ service cloud.firestore {
       function validHabito(d) {
         return d.keys().hasOnly([
             'nombre', 'emoji', 'colorValue', 'ambitoId', 'periodicidad',
-            'cambiosPeriodicidad', 'recordatorioHora', 'orden', 'deletedAt',
+            'cambiosPeriodicidad', 'recordatorioHora', 'recordatorioMensaje', 'orden', 'deletedAt',
             'trackingType', 'targetCount', 'unit', 'displayGoal', 'iconId', 'progressIconId',
             'createdAt', 'updatedAt',
             // legacy, solo tolerados
@@ -354,6 +354,7 @@ service cloud.firestore {
           && d.cambiosPeriodicidad is list
           && d.cambiosPeriodicidad.size() <= 50
           && (!('recordatorioHora' in d) || d.recordatorioHora == null || isHora(d.recordatorioHora))
+          && (!('recordatorioMensaje' in d) || d.recordatorioMensaje == null || isShortText(d.recordatorioMensaje, 120))
           && (!('trackingType' in d) || d.trackingType in ['single', 'repetitions'])
           && (!('targetCount' in d) || (d.targetCount is int && d.targetCount >= 1 && d.targetCount <= 999))
           && (!('unit' in d) || d.unit == null || isShortText(d.unit, 24))

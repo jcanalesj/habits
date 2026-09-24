@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/components/cat_mascot.dart';
+import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/features/profile/avatar/avatar.dart';
 import 'package:habits/features/profile/avatar/avatar_providers.dart';
+import 'package:habits/features/profile/premium/premium_gate.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -35,9 +37,10 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
 
   Future<void> _tap(ProfileAvatar avatar) async {
     if (!avatar.isSelectable) {
-      await showDialog<void>(
-        context: context,
-        builder: (context) {
+      final allowed = await requestPremiumAccess(
+        context,
+        ref,
+        dialogBuilder: (context) {
           final palette = context.palette;
           return Dialog(
             key: const ValueKey('premium-avatar-dialog'),
@@ -136,7 +139,7 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
                       Expanded(
                         child: FilledButton(
                           key: const ValueKey('avatar-view-premium-plans'),
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () => Navigator.pop(context, true),
                           child: Text(
                             context.l10n.premiumViewPlans,
                             textAlign: TextAlign.center,
@@ -151,7 +154,7 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
           );
         },
       );
-      return;
+      if (!allowed || !mounted) return;
     }
     if (_saving || avatar.id == _selectedId) return;
     setState(() {
@@ -171,6 +174,7 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
     final storedId =
         ref.watch(selectedAvatarIdProvider).value ?? AvatarCatalog.defaultId;
     _selectedId ??= storedId;
+    final hasPremium = ref.watch(premiumAccessProvider);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -208,6 +212,7 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
                   avatar: avatar,
                   name: _name(avatar.nameKey),
                   selected: avatar.id == _selectedId,
+                  locked: !avatar.isSelectable && !hasPremium,
                   onTap: () => _tap(avatar),
                 );
               },
@@ -224,16 +229,17 @@ class _AvatarCard extends StatelessWidget {
     required this.avatar,
     required this.name,
     required this.selected,
+    required this.locked,
     required this.onTap,
   });
   final ProfileAvatar avatar;
   final String name;
   final bool selected;
+  final bool locked;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final locked = !avatar.isSelectable;
     final palette = context.palette;
     return Semantics(
       button: true,

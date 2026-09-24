@@ -840,6 +840,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reminders will follow the time zone configured in your profile.';
 
   @override
+  String get notificationCustomMessage => 'Message';
+
+  @override
+  String get notificationDefaultMessageHint => 'Use default message';
+
+  @override
+  String get notificationCustomMessageTitle => 'Personalize your reminder';
+
+  @override
+  String notificationCustomMessageBody(String habitName) {
+    return 'Write the message you want to receive for $habitName.';
+  }
+
+  @override
+  String get premiumReminderMessageTitle => 'Your reminders, your way';
+
+  @override
+  String get premiumReminderMessageBody =>
+      'With Premium, you can write a different message for each habit and receive exactly the encouragement you need.';
+
+  @override
   String get profileNoHabits => 'You don\'t have any habits to configure yet.';
 
   @override

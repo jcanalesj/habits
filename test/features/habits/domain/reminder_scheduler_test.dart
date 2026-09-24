@@ -10,6 +10,7 @@ Habit habit({
   String id = 'h1',
   String name = 'Leer',
   String? reminderTime = '21:00',
+  String? reminderMessage,
   DateTime? deletedAt,
   Periodicity periodicity = Periodicity.daily,
 }) => Habit(
@@ -22,6 +23,7 @@ Habit habit({
   colorValue: 0xFF000000,
   emoji: '📖',
   reminderTime: reminderTime,
+  reminderMessage: reminderMessage,
   createdAt: DateTime.utc(2026, 1, 1),
   deletedAt: deletedAt,
 );
@@ -62,6 +64,14 @@ void main() {
       expect(result.last.date, hoy.addDays(6));
       expect(result.first.time, '21:00');
       expect(result.first.habitName, 'Leer');
+    });
+
+    test('propaga el mensaje personalizado de cada hábito', () {
+      final result = schedule(
+        habits: [habit(reminderMessage: 'Un capítulo y a por todas 📖')],
+      );
+
+      expect(result.first.customMessage, 'Un capítulo y a por todas 📖');
     });
 
     test('los hábitos eliminados no avisan', () {

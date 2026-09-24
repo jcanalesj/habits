@@ -17,13 +17,14 @@ class HabitDraft {
     this.displayGoal,
     this.progressIconId = 'check',
     this.reminderTime,
+    this.reminderMessage,
   });
   final String name, ambitoId, emoji, progressIconId;
   final String? iconId;
   final Periodicity periodicity;
   final int colorValue, targetCount;
   final HabitTrackingType trackingType;
-  final String? unit, displayGoal, reminderTime;
+  final String? unit, displayGoal, reminderTime, reminderMessage;
   HabitDraft copyWith({String? name, String? emoji, String? iconId}) =>
       HabitDraft(
         name: name ?? this.name,
@@ -38,5 +39,6 @@ class HabitDraft {
         displayGoal: displayGoal,
         progressIconId: progressIconId,
         reminderTime: reminderTime,
+        reminderMessage: reminderMessage,
       );
 }

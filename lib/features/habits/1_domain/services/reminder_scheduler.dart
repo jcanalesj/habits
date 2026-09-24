@@ -68,6 +68,7 @@ abstract final class ReminderScheduler {
             date: day,
             hour: hour,
             minute: minute,
+            customMessage: habit.reminderMessage,
           ),
         );
       }

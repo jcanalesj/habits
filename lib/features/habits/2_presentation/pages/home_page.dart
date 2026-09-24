@@ -279,6 +279,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
               key: const ValueKey('home-new-habit'),
               onPressed: () => HabitsListPage.openCreateHabit(
                 context,
+                ref,
                 activeHabitCount: summary.habits.length,
               ),
               style: FilledButton.styleFrom(
@@ -324,6 +325,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
             _AllDoneCard(
               onCreate: () => HabitsListPage.openCreateHabit(
                 context,
+                ref,
                 activeHabitCount: summary.habits.length,
               ),
               onDismiss: () => setState(() => _hideAllDone = true),

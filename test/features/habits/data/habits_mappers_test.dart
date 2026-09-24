@@ -52,6 +52,7 @@ void main() {
           {'tipo': 'monthly', 'veces': 12, 'desde': '2026-10-01'},
         ],
         'recordatorioHora': '21:00',
+        'recordatorioMensaje': null,
         'orden': 3,
         'trackingType': 'single',
         'targetCount': 1,

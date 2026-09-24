@@ -1604,6 +1604,42 @@ abstract class AppLocalizations {
   /// **'Reminders will follow the time zone configured in your profile.'**
   String get notificationTimezoneHint;
 
+  /// No description provided for @notificationCustomMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get notificationCustomMessage;
+
+  /// No description provided for @notificationDefaultMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use default message'**
+  String get notificationDefaultMessageHint;
+
+  /// No description provided for @notificationCustomMessageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalize your reminder'**
+  String get notificationCustomMessageTitle;
+
+  /// No description provided for @notificationCustomMessageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the message you want to receive for {habitName}.'**
+  String notificationCustomMessageBody(String habitName);
+
+  /// No description provided for @premiumReminderMessageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reminders, your way'**
+  String get premiumReminderMessageTitle;
+
+  /// No description provided for @premiumReminderMessageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'With Premium, you can write a different message for each habit and receive exactly the encouragement you need.'**
+  String get premiumReminderMessageBody;
+
   /// No description provided for @profileNoHabits.
   ///
   /// In en, this message translates to:

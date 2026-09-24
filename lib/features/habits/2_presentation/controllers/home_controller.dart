@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
+import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 
 /// Estado de la Home, alimentado por snapshots del repositorio: cualquier
@@ -26,6 +27,7 @@ class HomeController extends StreamNotifier<HomeSummary> {
 
   @override
   Stream<HomeSummary> build() {
+    final isPremium = ref.watch(premiumAccessProvider);
     // Concesión mensual perezosa: al abrir la app se ponen al día los
     // comodines gratuitos pendientes. Es idempotente y no bloquea la Home.
     ref.listen(todayProvider, (previous, next) {
@@ -36,14 +38,17 @@ class HomeController extends StreamNotifier<HomeSummary> {
     return ref
         .watch(watchHomeSummaryUsecaseProvider)
         .execute()
-        .map(_syncCacheAndPass);
+        .map((summary) => _syncCacheAndPass(summary, isPremium: isPremium));
   }
 
   Future<void> _grantPendingWildcards(LogicalDate today) async {
     await ref.read(ensureMonthlyWildcardGrantUsecaseProvider).execute(today);
   }
 
-  HomeSummary _syncCacheAndPass(HomeSummary summary) {
+  HomeSummary _syncCacheAndPass(
+    HomeSummary summary, {
+    required bool isPremium,
+  }) {
     // Escribe la proyección en segundo plano. Si falla no pasa nada: la
     // racha que se muestra se ha calculado desde los registros, no de aquí.
     unawaited(
@@ -51,23 +56,27 @@ class HomeController extends StreamNotifier<HomeSummary> {
           .read(rebuildStreakUsecaseProvider)
           .syncCache(summary.streak, summary.today),
     );
-    unawaited(_syncReminders(summary));
+    unawaited(_syncReminders(summary, isPremium: isPremium));
     return summary;
   }
 
   /// Solo depende de lo que cambia el plan de avisos: el día, y por cada
   /// hábito su hora, su nombre, si ya está hecho hoy y si el objetivo del
   /// periodo está cumplido.
-  static String _fingerprintOf(HomeSummary summary) => [
+  static String _fingerprintOf(HomeSummary summary, bool isPremium) => [
     summary.today.key,
+    isPremium,
     for (final habit in summary.habits)
-      '${habit.id}|${habit.reminderTime}|${habit.name}'
+      '${habit.id}|${habit.reminderTime}|${habit.reminderMessage}|${habit.name}'
           '|${summary.isCompletedOn(habit.id, summary.today)}'
           '|${summary.progressOf(habit.id)?.isMet}',
   ].join('~');
 
-  Future<void> _syncReminders(HomeSummary summary) async {
-    final fingerprint = _fingerprintOf(summary);
+  Future<void> _syncReminders(
+    HomeSummary summary, {
+    required bool isPremium,
+  }) async {
+    final fingerprint = _fingerprintOf(summary, isPremium);
     if (fingerprint == _remindersFingerprint) return;
     _remindersFingerprint = fingerprint;
 
@@ -101,7 +110,9 @@ class HomeController extends StreamNotifier<HomeSummary> {
           },
           title: (reminder) =>
               l10n.reminderNotificationTitle(reminder.habitName),
-          body: (reminder) => l10n.reminderNotificationBody,
+          body: (reminder) => isPremium
+              ? reminder.customMessage ?? l10n.reminderNotificationBody
+              : l10n.reminderNotificationBody,
         );
   }
 

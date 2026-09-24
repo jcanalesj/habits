@@ -77,6 +77,25 @@ final isPremiumProvider = StreamProvider<bool>((ref) {
   return ref.watch(userProfileRepositoryProvider).watchIsPremium(userId);
 });
 
+/// Acceso de demostración activado desde los CTA Premium. Solo vive durante
+/// la sesión actual y nunca modifica la suscripción guardada en Firebase.
+final premiumPreviewEnabledProvider =
+    NotifierProvider<PremiumPreviewController, bool>(
+      PremiumPreviewController.new,
+    );
+
+final premiumAccessProvider = Provider<bool>((ref) {
+  final subscribed = ref.watch(isPremiumProvider).value ?? false;
+  return subscribed || ref.watch(premiumPreviewEnabledProvider);
+});
+
+class PremiumPreviewController extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void enable() => state = true;
+}
+
 class CustomMotivationMessagesController extends Notifier<List<String>> {
   StreamSubscription<List<String>>? _remoteSubscription;
 
@@ -113,7 +132,12 @@ class CustomMotivationMessagesController extends Notifier<List<String>> {
   void _set(List<String> messages) {
     state = messages;
     final userId = ref.read(authControllerProvider).value?.id;
-    if (userId != null) unawaited(_persist(userId, messages));
+    // Las reglas limitan los mensajes de las cuentas gratuitas, así que con el
+    // acceso de prueba los cambios se quedan en la sesión en vez de rebotar.
+    final previewOnly =
+        !(ref.read(isPremiumProvider).value ?? false) &&
+        ref.read(premiumPreviewEnabledProvider);
+    if (userId != null && !previewOnly) unawaited(_persist(userId, messages));
   }
 
   Future<void> _persist(String userId, List<String> messages) async {

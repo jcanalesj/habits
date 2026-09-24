@@ -132,6 +132,53 @@ void main() {
     expect(preferences.getString(SharedThemeModePreferences.key), isNull);
   });
 
+  testWidgets('"Ver planes" activa la prueba Premium y aplica el tema oscuro', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    await tester.pumpWidget(
+      localizedApp(
+        const AppearancePage(),
+        overrides: [
+          ...env.overrides,
+          themeModePreferencesProvider.overrideWithValue(
+            SharedThemeModePreferences(preferences),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(AppearancePage)),
+    );
+    final dark = find.byKey(const ValueKey('theme-mode-dark'));
+    await tester.scrollUntilVisible(
+      dark,
+      220,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(dark);
+    await tester.pumpAndSettle();
+    final viewPlans = find.byKey(
+      const ValueKey('dark-theme-view-premium-plans'),
+    );
+    await tester.ensureVisible(viewPlans);
+    await tester.pumpAndSettle();
+    await tester.tap(viewPlans);
+    await tester.pumpAndSettle();
+
+    expect(container.read(themeModeProvider), ThemeMode.dark);
+    expect(container.read(premiumAccessProvider), isTrue);
+    expect(
+      find.byKey(const ValueKey('premium-dark-theme-dialog')),
+      findsNothing,
+    );
+  });
+
   testWidgets('restaura el tema guardado y adopta el remoto', (tester) async {
     SharedPreferences.setMockInitialValues({
       SharedThemeModePreferences.key: 'dark',

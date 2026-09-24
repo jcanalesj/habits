@@ -291,6 +291,7 @@ class InMemoryHabitsRepository implements HabitsRepository {
       emoji: draft.emoji,
       iconId: draft.iconId,
       reminderTime: draft.reminderTime,
+      reminderMessage: draft.reminderMessage,
       trackingType: draft.trackingType,
       targetCount: draft.targetCount,
       unit: draft.unit,
