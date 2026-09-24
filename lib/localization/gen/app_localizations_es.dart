@@ -614,6 +614,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileEdit => 'Editar perfil';
 
   @override
+  String get profileEditPersonalTitle => 'Tu perfil, a tu manera';
+
+  @override
+  String get profileEditPersonalSubtitle => '¿Cómo quieres que te llamemos?';
+
+  @override
+  String get profileEditNameHint => 'Este nombre aparecerá en tus logros';
+
+  @override
+  String get clear => 'Borrar';
+
+  @override
   String get profileViewStats => 'Ver estadísticas';
 
   @override

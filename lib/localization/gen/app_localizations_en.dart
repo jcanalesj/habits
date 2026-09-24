@@ -612,6 +612,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileEdit => 'Edit profile';
 
   @override
+  String get profileEditPersonalTitle => 'Your profile, your way';
+
+  @override
+  String get profileEditPersonalSubtitle =>
+      'What would you like us to call you?';
+
+  @override
+  String get profileEditNameHint =>
+      'This name will appear in your achievements';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
   String get profileViewStats => 'View statistics';
 
   @override

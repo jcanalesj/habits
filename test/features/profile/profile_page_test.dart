@@ -50,9 +50,18 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('profile-edit-name')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'Alejandra');
-    await tester.tap(find.text('Guardar cambios'));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const ValueKey('save-profile-name')));
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('save-profile-name')))
+          .onPressed,
+      isNotNull,
+    );
+    await tester.tap(find.byKey(const ValueKey('save-profile-name')));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const ValueKey('edit-profile-dialog')), findsNothing);
     expect(find.text('Alejandra'), findsOneWidget);
     expect(env.auth.currentUser?.displayName, 'Alejandra');
   });

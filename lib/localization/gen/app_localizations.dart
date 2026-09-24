@@ -1208,6 +1208,30 @@ abstract class AppLocalizations {
   /// **'Edit profile'**
   String get profileEdit;
 
+  /// No description provided for @profileEditPersonalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile, your way'**
+  String get profileEditPersonalTitle;
+
+  /// No description provided for @profileEditPersonalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like us to call you?'**
+  String get profileEditPersonalSubtitle;
+
+  /// No description provided for @profileEditNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This name will appear in your achievements'**
+  String get profileEditNameHint;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
   /// No description provided for @profileViewStats.
   ///
   /// In en, this message translates to:

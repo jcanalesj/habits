@@ -20,33 +20,13 @@ class ProfilePage extends ConsumerWidget {
     WidgetRef ref,
     String currentName,
   ) async {
-    var editedName = currentName;
-    final saved = await showDialog<bool>(
+    final editedName = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.profileEdit),
-        content: TextFormField(
-          initialValue: currentName,
-          onChanged: (value) => editedName = value,
-          autofocus: true,
-          maxLength: 40,
-          textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(labelText: context.l10n.profileName),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(context.l10n.profileSave),
-          ),
-        ],
-      ),
+      barrierColor: AppColors.textPrimary.withValues(alpha: .58),
+      builder: (context) => _EditProfileDialog(initialName: currentName),
     );
-    final name = editedName.trim();
-    if (saved != true || name.isEmpty || name == currentName) return;
+    final name = editedName?.trim();
+    if (name == null || name.isEmpty || name == currentName) return;
     await ref.read(authControllerProvider.notifier).updateDisplayName(name);
     if (context.mounted) _showSaved(context);
   }
@@ -210,6 +190,222 @@ class ProfilePage extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EditProfileDialog extends StatefulWidget {
+  const _EditProfileDialog({required this.initialName});
+
+  final String initialName;
+
+  @override
+  State<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends State<_EditProfileDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialName,
+  );
+  late final FocusNode _focusNode = FocusNode();
+  late String _name = widget.initialName;
+
+  bool get _canSave {
+    final name = _name.trim();
+    return name.isNotEmpty && name != widget.initialName;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_canSave) Navigator.pop(context, _name);
+  }
+
+  void _clear() {
+    _controller.clear();
+    setState(() => _name = '');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Dialog(
+      key: const ValueKey('edit-profile-dialog'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440),
+        child: SingleChildScrollView(
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 54),
+                padding: const EdgeInsets.fromLTRB(24, 76, 24, 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFCFAFF),
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x24705AC8),
+                      blurRadius: 30,
+                      offset: Offset(0, 14),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n.profileEditPersonalTitle,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.profileEditPersonalSubtitle,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    TextField(
+                      key: const ValueKey('profile-name-field'),
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      autofocus: true,
+                      maxLength: 40,
+                      textCapitalization: TextCapitalization.words,
+                      textInputAction: TextInputAction.done,
+                      onChanged: (value) => setState(() => _name = value),
+                      onSubmitted: (_) => _save(),
+                      decoration: InputDecoration(
+                        labelText: l10n.profileName,
+                        counterText: '${_name.characters.length}/40',
+                        prefixIcon: const Icon(PhosphorIconsBold.user),
+                        suffixIcon: _name.isEmpty
+                            ? null
+                            : IconButton(
+                                key: const ValueKey('clear-profile-name'),
+                                onPressed: _clear,
+                                tooltip: l10n.clear,
+                                icon: const Icon(PhosphorIconsBold.xCircle),
+                              ),
+                        filled: true,
+                        fillColor: AppColors.primary.withValues(alpha: .055),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(
+                            color: AppColors.primary.withValues(alpha: .18),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          PhosphorIconsFill.sparkle,
+                          color: AppColors.green,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 7),
+                        Flexible(
+                          child: Text(
+                            l10n.profileEditNameHint,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(l10n.cancel),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: _canSave
+                                  ? const LinearGradient(
+                                      colors: [
+                                        AppColors.gradientStart,
+                                        AppColors.gradientEnd,
+                                      ],
+                                    )
+                                  : null,
+                              color: _canSave
+                                  ? null
+                                  : AppColors.textSecondary.withValues(
+                                      alpha: .18,
+                                    ),
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(999),
+                              ),
+                            ),
+                            child: FilledButton.icon(
+                              key: const ValueKey('save-profile-name'),
+                              onPressed: _canSave ? _save : null,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                disabledBackgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
+                              ),
+                              icon: const Icon(
+                                PhosphorIconsBold.check,
+                                size: 19,
+                              ),
+                              label: Text(l10n.profileSave),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFCFAFF),
+                  shape: BoxShape.circle,
+                ),
+                child: const UserAvatar(size: 104),
+              ),
+            ],
+          ),
         ),
       ),
     );
