@@ -43,6 +43,7 @@ void main() {
           'timezone',
           'timezoneAutomatic',
           'welcomeAnimationEnabled',
+          'customMotivationMessages',
           'locale',
           'subscription',
           'onboardingCompleted',
@@ -56,6 +57,7 @@ void main() {
         expect(data['timezone'], 'Europe/Madrid');
         expect(data['timezoneAutomatic'], isTrue);
         expect(data['welcomeAnimationEnabled'], isTrue);
+        expect(data['customMotivationMessages'], isEmpty);
         expect(data['locale'], 'es');
         expect(data['subscription'], {'status': 'free'});
         expect(data['onboardingCompleted'], isFalse);
@@ -71,6 +73,18 @@ void main() {
       expect(
         await repository.watchWelcomeAnimationEnabled('uid-1').first,
         isFalse,
+      );
+    });
+
+    test('guarda y emite los mensajes motivacionales', () async {
+      await repository.create(profile());
+      const messages = ['Paso a paso', 'Hoy también cuenta'];
+
+      await repository.updateCustomMotivationMessages('uid-1', messages);
+
+      expect(
+        await repository.watchCustomMotivationMessages('uid-1').first,
+        messages,
       );
     });
 

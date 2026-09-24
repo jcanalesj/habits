@@ -7,6 +7,7 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   final Map<String, String> avatarIds = {};
   final Map<String, bool> timezoneAutomatic = {};
   final Map<String, bool> welcomeAnimationEnabled = {};
+  final Map<String, List<String>> customMotivationMessages = {};
 
   @override
   Future<bool> exists(String userId) async => profiles.containsKey(userId);
@@ -31,6 +32,10 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   @override
   Stream<bool?> watchWelcomeAnimationEnabled(String userId) =>
       Stream.value(welcomeAnimationEnabled[userId]);
+
+  @override
+  Stream<List<String>> watchCustomMotivationMessages(String userId) =>
+      Stream.value(customMotivationMessages[userId] ?? const []);
 
   @override
   Future<void> updateDisplayName(String userId, String displayName) async {
@@ -69,5 +74,13 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
     bool enabled,
   ) async {
     welcomeAnimationEnabled[userId] = enabled;
+  }
+
+  @override
+  Future<void> updateCustomMotivationMessages(
+    String userId,
+    List<String> messages,
+  ) async {
+    customMotivationMessages[userId] = List.unmodifiable(messages);
   }
 }

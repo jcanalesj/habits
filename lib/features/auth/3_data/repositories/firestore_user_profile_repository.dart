@@ -35,6 +35,7 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
       'timezone': profile.timezone,
       'timezoneAutomatic': true,
       'welcomeAnimationEnabled': true,
+      'customMotivationMessages': <String>[],
       'locale': profile.locale,
       // Único valor que las reglas permiten fijar desde cliente.
       'subscription': {'status': 'free'},
@@ -81,6 +82,16 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
       .map((snapshot) => snapshot.data()?['welcomeAnimationEnabled'] as bool?);
 
   @override
+  Stream<List<String>> watchCustomMotivationMessages(String userId) =>
+      _userRef(userId).snapshots().map(
+        (snapshot) =>
+            (snapshot.data()?['customMotivationMessages'] as List<dynamic>?)
+                ?.whereType<String>()
+                .toList(growable: false) ??
+            const [],
+      );
+
+  @override
   Future<void> updateDisplayName(String userId, String displayName) =>
       _userRef(userId).update({
         'displayName': displayName,
@@ -114,4 +125,13 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
         'welcomeAnimationEnabled': enabled,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+  @override
+  Future<void> updateCustomMotivationMessages(
+    String userId,
+    List<String> messages,
+  ) => _userRef(userId).update({
+    'customMotivationMessages': messages,
+    'updatedAt': FieldValue.serverTimestamp(),
+  });
 }

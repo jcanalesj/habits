@@ -24,24 +24,37 @@ class HomePage extends ConsumerWidget {
     final welcomeEnabledAsync = ref.watch(
       remoteWelcomeAnimationEnabledProvider,
     );
+    final customMessagesAsync = ref.watch(
+      remoteCustomMotivationMessagesProvider,
+    );
     final userName = ref.watch(userNameProvider);
 
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: switch ((summaryAsync, welcomeEnabledAsync)) {
-          (AsyncData(value: final value), AsyncData(value: final enabled)) =>
+        child: switch ((
+          summaryAsync,
+          welcomeEnabledAsync,
+          customMessagesAsync,
+        )) {
+          (
+            AsyncData(value: final value),
+            AsyncData(value: final enabled),
+            AsyncData(value: final customMessages),
+          ) =>
             _HomeContent(
               summary: value,
               welcomeAnimationEnabled: enabled,
+              customMotivationMessages: customMessages,
               greeting: WelcomeGreetingResolver.resolve(
                 context.l10n,
                 userName,
                 DateTime.now().hour,
               ),
             ),
-          (AsyncError(error: final error), _) ||
-          (_, AsyncError(error: final error)) => Center(
+          (AsyncError(error: final error), _, _) ||
+          (_, AsyncError(error: final error), _) ||
+          (_, _, AsyncError(error: final error)) => Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Text(context.l10n.somethingWentWrong('$error')),
@@ -61,11 +74,13 @@ class _HomeContent extends ConsumerStatefulWidget {
     required this.summary,
     required this.greeting,
     required this.welcomeAnimationEnabled,
+    required this.customMotivationMessages,
   });
 
   final HomeSummary summary;
   final String greeting;
   final bool welcomeAnimationEnabled;
+  final List<String> customMotivationMessages;
 
   @override
   ConsumerState<_HomeContent> createState() => _HomeContentState();
@@ -87,7 +102,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         .read(coldStartWelcomeSessionProvider)
         .take(enabled: widget.welcomeAnimationEnabled);
     _welcomeMessageIndex = WelcomeMessageSelector.randomIndex();
-    final customMessages = ref.read(customMotivationMessagesProvider);
+    final customMessages = widget.customMotivationMessages;
     _customWelcomeMessage = customMessages.isEmpty
         ? null
         : customMessages[math.Random().nextInt(customMessages.length)];

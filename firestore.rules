@@ -169,6 +169,7 @@ service cloud.firestore {
         return d.keys().hasOnly([
             'email', 'displayName', 'avatarId', 'timezone', 'timezoneAutomatic',
             'welcomeAnimationEnabled',
+            'customMotivationMessages',
             'locale', 'subscription',
             'onboardingCompleted', 'createdAt', 'updatedAt', 'lastActiveAt'
           ])
@@ -182,6 +183,10 @@ service cloud.firestore {
           && isShortText(d.timezone, 64)
           && (!('timezoneAutomatic' in d) || d.timezoneAutomatic is bool)
           && (!('welcomeAnimationEnabled' in d) || d.welcomeAnimationEnabled is bool)
+          && (!('customMotivationMessages' in d) || (
+            d.customMotivationMessages is list
+            && d.customMotivationMessages.size() <= 20
+          ))
           && d.locale in ['es', 'en']
           && d.subscription is map
           && (!('onboardingCompleted' in d) || d.onboardingCompleted is bool);

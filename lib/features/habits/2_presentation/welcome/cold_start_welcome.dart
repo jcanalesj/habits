@@ -61,20 +61,65 @@ final customMotivationMessagesProvider =
       CustomMotivationMessagesController.new,
     );
 
+final remoteCustomMotivationMessagesProvider = StreamProvider<List<String>>((
+  ref,
+) {
+  final userId = ref.watch(authControllerProvider).value?.id;
+  if (userId == null) return Stream.value(const []);
+  return ref
+      .watch(userProfileRepositoryProvider)
+      .watchCustomMotivationMessages(userId);
+});
+
 class CustomMotivationMessagesController extends Notifier<List<String>> {
+  StreamSubscription<List<String>>? _remoteSubscription;
+
   @override
-  List<String> build() => const [];
+  List<String> build() {
+    ref.onDispose(() => _remoteSubscription?.cancel());
+    ref.listen(authControllerProvider, (_, auth) {
+      _watchRemote(auth.value?.id);
+    }, fireImmediately: true);
+    return const [];
+  }
 
-  void add(String message) => state = [...state, message];
+  void _watchRemote(String? userId) {
+    unawaited(_remoteSubscription?.cancel());
+    _remoteSubscription = null;
+    if (userId == null) return;
+    _remoteSubscription = ref
+        .read(userProfileRepositoryProvider)
+        .watchCustomMotivationMessages(userId)
+        .listen((messages) => state = messages);
+  }
 
-  void update(int index, String message) => state = [
+  void add(String message) => _set([...state, message]);
+
+  void update(int index, String message) => _set([
     for (var i = 0; i < state.length; i++) i == index ? message : state[i],
-  ];
+  ]);
 
-  void remove(int index) => state = [
+  void remove(int index) => _set([
     for (var i = 0; i < state.length; i++)
       if (i != index) state[i],
-  ];
+  ]);
+
+  void _set(List<String> messages) {
+    state = messages;
+    final userId = ref.read(authControllerProvider).value?.id;
+    if (userId != null) unawaited(_persist(userId, messages));
+  }
+
+  Future<void> _persist(String userId, List<String> messages) async {
+    try {
+      await ref
+          .read(userProfileRepositoryProvider)
+          .updateCustomMotivationMessages(userId, messages);
+    } catch (error, stackTrace) {
+      debugPrint('No se pudieron sincronizar los mensajes: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
 }
 
 class WelcomeAnimationController extends Notifier<bool> {

@@ -29,7 +29,10 @@ void main() {
   });
 
   testWidgets('permite añadir y eliminar una frase propia', (tester) async {
-    await tester.pumpWidget(localizedApp(const AppearancePage()));
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    await tester.pumpWidget(
+      localizedApp(const AppearancePage(), overrides: env.overrides),
+    );
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(
@@ -47,10 +50,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Paso a paso también es avanzar'), findsWidgets);
+    expect(env.profiles.customMotivationMessages[verifiedUser.id], [
+      'Paso a paso también es avanzar',
+    ]);
     await tester.ensureVisible(find.byIcon(PhosphorIconsBold.trash));
     await tester.tap(find.byIcon(PhosphorIconsBold.trash));
     await tester.pumpAndSettle();
     expect(find.text('Paso a paso también es avanzar'), findsNothing);
+    expect(env.profiles.customMotivationMessages[verifiedUser.id], isEmpty);
   });
 
   testWidgets('permite desactivar la animación de bienvenida', (tester) async {
