@@ -20,6 +20,8 @@ class UserAvatar extends ConsumerWidget {
 
 /// Recorte reutilizable del gato de la identidad visual de la app.
 class CatMascot extends StatelessWidget {
+  static const _assetFillScale = 1.08;
+
   const CatMascot({
     super.key,
     required this.size,
@@ -50,10 +52,10 @@ class CatMascot extends StatelessWidget {
     final avatar = AvatarCatalog.byId(avatarId);
     if (avatar.assetPath case final assetPath?) {
       // Cada exportación deja un margen diferente. La escala definida en el
-      // catálogo hace que el medallón llene el hueco sin aplicar un zoom
-      // excesivo a los avatares que ya llegan hasta el borde.
+      // catálogo corrige las diferencias entre avatares y este factor común
+      // elimina el margen transparente de los PNG para llenar el recorte.
       return Transform.scale(
-        scale: avatar.displayScale,
+        scale: avatar.displayScale * _assetFillScale,
         child: Center(
           child: Image.asset(
             assetPath,
