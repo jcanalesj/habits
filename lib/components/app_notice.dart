@@ -90,23 +90,32 @@ class _AppNoticeOverlayState extends State<_AppNoticeOverlay>
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final scheme = switch (widget.type) {
       AppNoticeType.success => const _NoticeScheme(
         icon: Icons.check_rounded,
         accent: Color(0xFF24B985),
-        surface: Color(0xFFF1FCF7),
+        lightSurface: Color(0xFFF1FCF7),
       ),
       AppNoticeType.error => const _NoticeScheme(
         icon: Icons.error_outline_rounded,
         accent: Color(0xFFE95E70),
-        surface: Color(0xFFFFF3F5),
+        lightSurface: Color(0xFFFFF3F5),
       ),
-      AppNoticeType.info => const _NoticeScheme(
+      AppNoticeType.info => _NoticeScheme(
         icon: Icons.auto_awesome_rounded,
-        accent: AppColors.primary,
-        surface: Color(0xFFF7F3FF),
+        accent: palette.primary,
+        lightSurface: const Color(0xFFF7F3FF),
       ),
     };
+    // En claro se conserva el pastel por tipo; en oscuro el acento tiñe la
+    // superficie flotante (opaca, porque va sobre el contenido).
+    final surface = palette.isDark
+        ? Color.alphaBlend(
+            palette.tint(scheme.accent, .14),
+            palette.surfaceElevated,
+          )
+        : scheme.lightSurface;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final animation = CurvedAnimation(
       parent: _controller,
@@ -144,16 +153,14 @@ class _AppNoticeOverlayState extends State<_AppNoticeOverlay>
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(12, 11, 10, 11),
                         decoration: BoxDecoration(
-                          color: scheme.surface,
+                          color: surface,
                           borderRadius: BorderRadius.circular(22),
                           border: Border.all(
                             color: scheme.accent.withValues(alpha: .16),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.textPrimary.withValues(
-                                alpha: .12,
-                              ),
+                              color: palette.shadow,
                               blurRadius: 24,
                               offset: const Offset(0, 8),
                             ),
@@ -165,7 +172,7 @@ class _AppNoticeOverlayState extends State<_AppNoticeOverlay>
                               width: 42,
                               height: 42,
                               decoration: BoxDecoration(
-                                color: scheme.accent.withValues(alpha: .13),
+                                color: palette.tint(scheme.accent, .13),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Icon(
@@ -182,7 +189,7 @@ class _AppNoticeOverlayState extends State<_AppNoticeOverlay>
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
-                                      color: AppColors.textPrimary,
+                                      color: palette.textPrimary,
                                       fontWeight: FontWeight.w700,
                                       height: 1.25,
                                     ),
@@ -194,9 +201,9 @@ class _AppNoticeOverlayState extends State<_AppNoticeOverlay>
                               ).closeButtonTooltip,
                               onPressed: _dismiss,
                               visualDensity: VisualDensity.compact,
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close_rounded,
-                                color: AppColors.textSecondary,
+                                color: palette.textSecondary,
                                 size: 19,
                               ),
                             ),
@@ -219,10 +226,12 @@ class _NoticeScheme {
   const _NoticeScheme({
     required this.icon,
     required this.accent,
-    required this.surface,
+    required this.lightSurface,
   });
 
   final IconData icon;
   final Color accent;
-  final Color surface;
+
+  /// Fondo pastel del aviso en el tema claro.
+  final Color lightSurface;
 }

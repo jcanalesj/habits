@@ -87,6 +87,7 @@ class HabitListTile extends StatelessWidget {
   Widget _buildCompact(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
+    final palette = context.palette;
     final color = Color(habit.colorValue);
     final completedToday = _isCompletedToday();
     final repetitions = habit.hasRepetitions;
@@ -125,7 +126,9 @@ class HabitListTile extends StatelessWidget {
                     height: 68,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.58),
+                      color: palette.surface.withValues(
+                        alpha: palette.isDark ? 1 : 0.58,
+                      ),
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: HabitIcon(
@@ -146,7 +149,7 @@ class HabitListTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: textTheme.titleMedium?.copyWith(
                             fontSize: AppDimensions.cardTitleFontSize,
-                            color: AppColors.textPrimary,
+                            color: palette.textPrimary,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -157,7 +160,7 @@ class HabitListTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: textTheme.bodySmall?.copyWith(
                             fontSize: 13,
-                            color: AppColors.textSecondary,
+                            color: palette.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -178,7 +181,7 @@ class HabitListTile extends StatelessWidget {
                           : '${goal.completed} / ${goal.goal}',
                       style: textTheme.titleMedium?.copyWith(
                         fontSize: AppDimensions.cardTitleFontSize,
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -207,15 +210,30 @@ class HabitListTile extends StatelessWidget {
 
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
+    final palette = context.palette;
     final color = Color(habit.colorValue);
-    // Variante oscura del color asignado para conservar contraste incluso
-    // cuando el usuario elige tonos pastel como amarillo, rosa o celeste.
-    final actionColor = Color.lerp(color, AppColors.textPrimary, 0.42)!;
+    // Variante del color asignado acercada al color de texto (oscura en
+    // claro, luminosa en oscuro) para conservar contraste incluso cuando el
+    // usuario elige tonos pastel como amarillo, rosa o celeste.
+    final actionColor = Color.lerp(color, palette.textPrimary, 0.42)!;
+    // Texto sobre [actionColor]: blanco en claro; en oscuro actionColor es
+    // luminoso, así que el texto va en el color del fondo de pantalla.
+    final onActionColor = palette.isDark ? palette.background : Colors.white;
     final goal = progress;
     final completedToday = _isCompletedToday();
     final repetitions = _isTracking && habit.hasRepetitions;
     final action = _isTracking ? (repetitions ? null : onToggleToday) : onTap;
-    const iconSurface = Color(0xFFF4F1FC);
+    final vividManage = palette.isDark && mode == HabitTileMode.manage;
+    final iconSurface = vividManage
+        ? Color.alphaBlend(color.withValues(alpha: .24), palette.surfaceMuted)
+        : palette.surfaceMuted;
+    final tintEnd = color.withValues(
+      alpha: vividManage
+          ? 0.40
+          : palette.isDark
+          ? (completedToday ? 0.32 : 0.22)
+          : (completedToday ? 0.18 : 0.09),
+    );
 
     // Diseño en dos líneas para que quepa en pantallas de móvil:
     // arriba nombre + progreso, debajo la semana a ancho completo.
@@ -239,19 +257,31 @@ class HabitListTile extends StatelessWidget {
                     color.withValues(alpha: 0.13),
                     color.withValues(alpha: completedToday ? 0.24 : 0.19),
                   ]
-                : completedToday
-                ? [Colors.white, color.withValues(alpha: 0.18)]
-                : [Colors.white, color.withValues(alpha: 0.09)],
+                : [
+                    vividManage
+                        ? Color.alphaBlend(
+                            color.withValues(alpha: .14),
+                            palette.surface,
+                          )
+                        : palette.surface,
+                    palette.isDark
+                        ? Color.alphaBlend(tintEnd, palette.surface)
+                        : tintEnd,
+                  ],
           ),
           borderRadius: BorderRadius.circular(_isCompact ? 20 : 28),
-          border: _isCompact || habit.hasRepetitions
+          border: _isCompact
               ? null
-              : Border.all(color: Colors.white.withValues(alpha: 0.9)),
+              : Border.all(
+                  color: vividManage
+                      ? color.withValues(alpha: .72)
+                      : palette.border,
+                ),
           boxShadow: _isCompact
               ? null
               : [
                   BoxShadow(
-                    color: AppColors.textPrimary.withValues(alpha: 0.06),
+                    color: palette.shadow,
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),
@@ -318,7 +348,7 @@ class HabitListTile extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
+                                color: palette.textSecondary,
                               ),
                             ),
                             if (!_isCompact) ...[
@@ -330,7 +360,7 @@ class HabitListTile extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: palette.textSecondary,
                                 ),
                               ),
                             ],
@@ -360,8 +390,8 @@ class HabitListTile extends StatelessWidget {
                                 ),
                                 TextSpan(
                                   text: ' / ${_targetCountToday()}',
-                                  style: const TextStyle(
-                                    color: AppColors.textSecondary,
+                                  style: TextStyle(
+                                    color: palette.textSecondary,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -383,14 +413,14 @@ class HabitListTile extends StatelessWidget {
                               style: textTheme.titleMedium?.copyWith(
                                 color: goal.isMet
                                     ? (_isCompact ? color : actionColor)
-                                    : AppColors.textSecondary,
+                                    : palette.textSecondary,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                             Text(
                               PeriodicityLabel.periodOf(l10n, goal.period.type),
                               style: textTheme.labelSmall?.copyWith(
-                                color: AppColors.textSecondary,
+                                color: palette.textSecondary,
                               ),
                             ),
                           ],
@@ -431,11 +461,11 @@ class HabitListTile extends StatelessWidget {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.72),
+                        color: palette.isDark
+                            ? palette.surfaceMuted
+                            : palette.surface.withValues(alpha: 0.72),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
+                        border: Border.all(color: palette.border),
                       ),
                       child: _WeekDots(
                         habitId: habit.id,
@@ -454,11 +484,13 @@ class HabitListTile extends StatelessWidget {
                         onPressed: onTap,
                         style: FilledButton.styleFrom(
                           backgroundColor: actionColor,
-                          foregroundColor: Colors.white,
+                          foregroundColor: onActionColor,
                           disabledBackgroundColor: actionColor.withValues(
                             alpha: 0.45,
                           ),
-                          disabledForegroundColor: Colors.white70,
+                          disabledForegroundColor: onActionColor.withValues(
+                            alpha: 0.7,
+                          ),
                           elevation: 2,
                           shadowColor: actionColor.withValues(alpha: 0.35),
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -581,7 +613,7 @@ class _RepetitionProgress extends StatelessWidget {
               width: compact ? 42 : 52,
               height: compact ? 42 : 52,
               decoration: BoxDecoration(
-                color: const Color(0xFFF4F1FC),
+                color: context.palette.surfaceMuted,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: HabitProgressIcon(
@@ -622,7 +654,7 @@ class _CompactRepetitionAction extends StatelessWidget {
           '$safeCount / $target',
           style: textTheme.titleMedium?.copyWith(
             fontSize: AppDimensions.cardTitleFontSize,
-            color: AppColors.textSecondary,
+            color: context.palette.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -709,6 +741,7 @@ class _DayDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -718,7 +751,7 @@ class _DayDot extends StatelessWidget {
           style: textTheme.labelSmall?.copyWith(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: isFuture ? AppColors.textSecondary : color,
+            color: isFuture ? palette.textSecondary : color,
           ),
         ),
         const SizedBox(height: 6),
@@ -735,7 +768,7 @@ class _DayDot extends StatelessWidget {
                   : Border.all(
                       color: isToday
                           ? color
-                          : AppColors.textSecondary.withValues(alpha: 0.35),
+                          : palette.textSecondary.withValues(alpha: 0.35),
                       width: isToday ? 2.4 : 1.5,
                     ),
             ),

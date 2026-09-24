@@ -21,11 +21,12 @@ class NextReminderCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
     final color = Color(habit.colorValue);
+    final palette = context.palette;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: palette.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -46,7 +47,7 @@ class NextReminderCard extends StatelessWidget {
                 height: 34,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: palette.tint(color, .1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(PhosphorIconsRegular.bell, size: 18, color: color),
@@ -61,7 +62,7 @@ class NextReminderCard extends StatelessWidget {
                 height: 46,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
+                  color: palette.tint(color, .15),
                   shape: BoxShape.circle,
                 ),
                 child: HabitIcon(
@@ -84,7 +85,7 @@ class NextReminderCard extends StatelessWidget {
                     Text(
                       l10n.todayAt(habit.reminderTime ?? ''),
                       style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                       ),
                     ),
                   ],
@@ -94,7 +95,7 @@ class NextReminderCard extends StatelessWidget {
               FilledButton.tonal(
                 onPressed: onMarkNow,
                 style: FilledButton.styleFrom(
-                  backgroundColor: color.withValues(alpha: 0.12),
+                  backgroundColor: palette.tint(color, .12),
                   foregroundColor: color,
                   textStyle: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w700,

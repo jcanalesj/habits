@@ -239,6 +239,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     final controller = ref.read(homeControllerProvider.notifier);
     final nextReminder = _nextReminderHabit;
     final pending = _pending.where(_matchesFilter).toList();
@@ -281,8 +282,15 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
                 activeHabitCount: summary.habits.length,
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: palette.isDark
+                    ? palette.primarySoft
+                    : palette.primary,
+                foregroundColor: palette.isDark
+                    ? palette.primaryDeep
+                    : palette.onPrimary,
+                side: palette.isDark
+                    ? BorderSide(color: palette.primary.withValues(alpha: .52))
+                    : null,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 10,
@@ -420,6 +428,7 @@ class _HabitFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     final labels = {
       _HabitFilter.all: l10n.habitFilterAll,
       _HabitFilter.daily: l10n.habitFilterDaily,
@@ -439,12 +448,12 @@ class _HabitFilters extends StatelessWidget {
               onSelected: (_) => onSelected(filter),
               showCheckmark: false,
               side: BorderSide.none,
-              selectedColor: AppColors.primary.withValues(alpha: 0.16),
-              backgroundColor: AppColors.primary.withValues(alpha: 0.045),
+              selectedColor: palette.tint(palette.primary, .16),
+              backgroundColor: palette.tint(palette.primary, .045),
               labelStyle: TextStyle(
                 color: selected == filter
-                    ? AppColors.primary
-                    : AppColors.textSecondary,
+                    ? palette.primary
+                    : palette.textSecondary,
                 fontWeight: selected == filter
                     ? FontWeight.w800
                     : FontWeight.w500,
@@ -474,7 +483,7 @@ class _SubSection extends StatelessWidget {
             label,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontSize: AppDimensions.sectionTitleFontSize,
-              color: AppColors.textPrimary,
+              color: context.palette.textPrimary,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -501,12 +510,13 @@ class _AllDoneCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
+    final palette = context.palette;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: palette.surface,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Stack(
@@ -520,7 +530,7 @@ class _AllDoneCard extends StatelessWidget {
                   height: 40,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.10),
+                    color: palette.tint(palette.primary, .10),
                     shape: BoxShape.circle,
                   ),
                   child: const Text('🌱', style: TextStyle(fontSize: 21)),
@@ -538,15 +548,15 @@ class _AllDoneCard extends StatelessWidget {
                   l10n.allHabitsDoneBody,
                   textAlign: TextAlign.center,
                   style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: palette.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 9),
                 FilledButton.tonal(
                   onPressed: onCreate,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.10),
-                    foregroundColor: AppColors.primary,
+                    backgroundColor: palette.tint(palette.primary, .10),
+                    foregroundColor: palette.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 9,
@@ -566,8 +576,8 @@ class _AllDoneCard extends StatelessWidget {
               onPressed: onDismiss,
               tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
               style: IconButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.06),
+                foregroundColor: palette.textSecondary,
+                backgroundColor: palette.tint(palette.primary, .06),
                 minimumSize: const Size(36, 36),
               ),
               icon: const Icon(PhosphorIconsRegular.x, size: 19),

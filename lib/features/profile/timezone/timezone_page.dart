@@ -106,7 +106,7 @@ class _TimezonePageState extends ConsumerState<TimezonePage> {
   Future<bool> _confirmChange({required bool automatic}) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      barrierColor: AppColors.textPrimary.withValues(alpha: .48),
+      barrierColor: context.palette.scrim,
       builder: (context) => _TimezoneChangeDialog(automatic: automatic),
     );
     return confirmed ?? false;
@@ -210,6 +210,7 @@ class _TimezoneChangeDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     final textTheme = Theme.of(context).textTheme;
     final body = automatic
         ? l10n.timezoneAutomaticConfirmBody
@@ -221,7 +222,7 @@ class _TimezoneChangeDialog extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Material(
-          color: const Color(0xFFFFFCFD),
+          color: palette.dialogSurface,
           elevation: 0,
           borderRadius: BorderRadius.circular(32),
           clipBehavior: Clip.antiAlias,
@@ -237,14 +238,14 @@ class _TimezoneChangeDialog extends StatelessWidget {
                       height: 82,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0EAFF),
+                        color: palette.primarySoft,
                         borderRadius: BorderRadius.circular(26),
                       ),
                       child: Icon(
                         automatic
                             ? PhosphorIconsBold.globe
                             : PhosphorIconsBold.mapPin,
-                        color: AppColors.primary,
+                        color: palette.primary,
                         size: 40,
                       ),
                     ),
@@ -253,7 +254,7 @@ class _TimezoneChangeDialog extends StatelessWidget {
                       l10n.timezoneChangeConfirmTitle,
                       textAlign: TextAlign.center,
                       style: textTheme.headlineSmall?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: palette.textPrimary,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -262,15 +263,15 @@ class _TimezoneChangeDialog extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF7F4FD),
+                        color: palette.surfaceMuted,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
+                          Icon(
                             PhosphorIconsBold.info,
-                            color: AppColors.primary,
+                            color: palette.primary,
                             size: 23,
                           ),
                           const SizedBox(width: 12),
@@ -278,7 +279,7 @@ class _TimezoneChangeDialog extends StatelessWidget {
                             child: Text(
                               body,
                               style: textTheme.bodyMedium?.copyWith(
-                                color: AppColors.textSecondary,
+                                color: palette.textSecondary,
                                 height: 1.38,
                               ),
                             ),
@@ -293,9 +294,9 @@ class _TimezoneChangeDialog extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context, false),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
+                              foregroundColor: palette.primary,
                               side: BorderSide(
-                                color: AppColors.primary.withValues(alpha: .35),
+                                color: palette.primary.withValues(alpha: .35),
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
@@ -315,8 +316,19 @@ class _TimezoneChangeDialog extends StatelessWidget {
                           child: FilledButton.icon(
                             onPressed: () => Navigator.pop(context, true),
                             style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
+                              backgroundColor: palette.isDark
+                                  ? palette.primarySoft
+                                  : palette.primary,
+                              foregroundColor: palette.isDark
+                                  ? palette.primaryDeep
+                                  : palette.onPrimary,
+                              side: palette.isDark
+                                  ? BorderSide(
+                                      color: palette.primary.withValues(
+                                        alpha: .52,
+                                      ),
+                                    )
+                                  : null,
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18),
@@ -343,7 +355,7 @@ class _TimezoneChangeDialog extends StatelessWidget {
                   tooltip: l10n.cancel,
                   onPressed: () => Navigator.pop(context, false),
                   style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFF4F1F8),
+                    backgroundColor: palette.surfaceMuted,
                   ),
                   icon: const Icon(Icons.close_rounded),
                 ),
@@ -380,8 +392,8 @@ class _Hero extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 context.l10n.timezoneHeroBody,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.palette.textSecondary,
                   height: 1.35,
                 ),
               ),
@@ -416,43 +428,43 @@ class _AutomaticCard extends StatelessWidget {
   final ValueChanged<bool> onChanged;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: _cardDecoration(const Color(0xFFF0EAFF)),
-    child: Row(
-      children: [
-        _IconBox(icon: PhosphorIconsBold.globe, color: AppColors.primary),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.timezoneAutomatic,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration(palette, palette.primarySoft),
+      child: Row(
+        children: [
+          _IconBox(icon: PhosphorIconsBold.globe, color: palette.primary),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.timezoneAutomatic,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              Text(
-                context.l10n.timezoneAutomaticSubtitle,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                context.l10n.timezoneRecommended,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 11,
+                Text(
+                  context.l10n.timezoneAutomaticSubtitle,
+                  style: TextStyle(color: palette.textSecondary),
                 ),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  context.l10n.timezoneRecommended,
+                  style: TextStyle(color: palette.textSecondary, fontSize: 11),
+                ),
+              ],
+            ),
           ),
-        ),
-        Switch.adaptive(value: value, onChanged: saving ? null : onChanged),
-      ],
-    ),
-  );
+          Switch.adaptive(value: value, onChanged: saving ? null : onChanged),
+        ],
+      ),
+    );
+  }
 }
 
 class _CurrentZoneCard extends StatelessWidget {
@@ -466,58 +478,67 @@ class _CurrentZoneCard extends StatelessWidget {
   final String time;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: _cardDecoration(Colors.white.withValues(alpha: .80)),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.l10n.timezoneCurrent,
-          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            _FlagBox(option.flag),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    option.id,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration(
+        palette,
+        palette.surface.withValues(alpha: palette.isDark ? 1 : .80),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.timezoneCurrent,
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _FlagBox(option.flag),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      option.id,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '$offset  ·  ${context.l10n.timezoneCurrentTime(time)}',
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-              decoration: BoxDecoration(
-                color: AppColors.green.withValues(alpha: .12),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Text(
-                context.l10n.timezoneActive,
-                style: const TextStyle(
-                  color: AppColors.green,
-                  fontWeight: FontWeight.w800,
+                    Text(
+                      '$offset  ·  ${context.l10n.timezoneCurrentTime(time)}',
+                      style: TextStyle(color: palette.textSecondary),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: palette.tint(AppColors.green),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  context.l10n.timezoneActive,
+                  style: const TextStyle(
+                    color: AppColors.green,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ManualCard extends StatelessWidget {
@@ -541,95 +562,101 @@ class _ManualCard extends StatelessWidget {
   final ValueChanged<String> onSelected;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-    decoration: _cardDecoration(Colors.white.withValues(alpha: .80)),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      decoration: _cardDecoration(
+        palette,
+        palette.surface.withValues(alpha: palette.isDark ? 1 : .80),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.timezoneManual,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 17,
+                      ),
+                    ),
+                    Text(
+                      context.l10n.timezoneManualSubtitle,
+                      style: TextStyle(color: palette.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(value: enabled, onChanged: onToggle),
+            ],
+          ),
+          const SizedBox(height: 10),
+          IgnorePointer(
+            ignoring: !enabled,
+            child: AnimatedOpacity(
+              opacity: enabled ? 1 : .45,
+              duration: const Duration(milliseconds: 180),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    context.l10n.timezoneManual,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 17,
+                  TextField(
+                    onChanged: onQueryChanged,
+                    decoration: InputDecoration(
+                      hintText: context.l10n.timezoneSearch,
+                      prefixIcon: const Icon(
+                        PhosphorIconsRegular.magnifyingGlass,
+                      ),
+                      filled: true,
+                      fillColor: palette.inputFill,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 16),
                   Text(
-                    context.l10n.timezoneManualSubtitle,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    context.l10n.timezoneRecent,
+                    style: TextStyle(
+                      color: palette.textSecondary,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
+                  const SizedBox(height: 7),
+                  for (final zone in zones)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: _FlagBox(zone.flag, small: true),
+                      title: Text(
+                        zone.city,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      subtitle: Text('${zone.id}  ·  ${offsetFor(zone.id)}'),
+                      trailing: zone.id == current
+                          ? Icon(
+                              PhosphorIconsFill.checkCircle,
+                              color: palette.primary,
+                            )
+                          : Icon(
+                              PhosphorIconsRegular.circle,
+                              color: palette.textHint,
+                            ),
+                      onTap: () => onSelected(zone.id),
+                    ),
                 ],
               ),
             ),
-            Switch.adaptive(value: enabled, onChanged: onToggle),
-          ],
-        ),
-        const SizedBox(height: 10),
-        IgnorePointer(
-          ignoring: !enabled,
-          child: AnimatedOpacity(
-            opacity: enabled ? 1 : .45,
-            duration: const Duration(milliseconds: 180),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  onChanged: onQueryChanged,
-                  decoration: InputDecoration(
-                    hintText: context.l10n.timezoneSearch,
-                    prefixIcon: const Icon(
-                      PhosphorIconsRegular.magnifyingGlass,
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xFFF5F2FC),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  context.l10n.timezoneRecent,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                for (final zone in zones)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: _FlagBox(zone.flag, small: true),
-                    title: Text(
-                      zone.city,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                    subtitle: Text('${zone.id}  ·  ${offsetFor(zone.id)}'),
-                    trailing: zone.id == current
-                        ? const Icon(
-                            PhosphorIconsFill.checkCircle,
-                            color: AppColors.primary,
-                          )
-                        : const Icon(
-                            PhosphorIconsRegular.circle,
-                            color: Color(0xFFB9B4C9),
-                          ),
-                    onTap: () => onSelected(zone.id),
-                  ),
-              ],
-            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _IconBox extends StatelessWidget {
@@ -638,15 +665,18 @@ class _IconBox extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: 48,
-    height: 48,
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: .12),
-      borderRadius: BorderRadius.circular(15),
-    ),
-    child: Icon(icon, color: color, size: 27),
-  );
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: palette.tint(color),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Icon(icon, color: color, size: 27),
+    );
+  }
 }
 
 class _FlagBox extends StatelessWidget {
@@ -655,20 +685,23 @@ class _FlagBox extends StatelessWidget {
   final bool small;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: small ? 44 : 54,
-    height: small ? 44 : 54,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      color: const Color(0xFFF0EAFF),
-      borderRadius: BorderRadius.circular(15),
-    ),
-    child: Text(flag, style: TextStyle(fontSize: small ? 23 : 27)),
-  );
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      width: small ? 44 : 54,
+      height: small ? 44 : 54,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: palette.primarySoft,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Text(flag, style: TextStyle(fontSize: small ? 23 : 27)),
+    );
+  }
 }
 
-BoxDecoration _cardDecoration(Color color) => BoxDecoration(
+BoxDecoration _cardDecoration(AppPalette palette, Color color) => BoxDecoration(
   color: color,
   borderRadius: BorderRadius.circular(24),
-  border: Border.all(color: Colors.white.withValues(alpha: .85)),
+  border: Border.all(color: palette.border),
 );

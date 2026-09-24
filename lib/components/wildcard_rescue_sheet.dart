@@ -27,6 +27,7 @@ class WildcardRescueSheet extends StatelessWidget {
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       showDragHandle: true,
+      backgroundColor: context.palette.surfaceElevated,
       builder: (context) =>
           WildcardRescueSheet(rescue: rescue, available: available),
     );
@@ -37,6 +38,7 @@ class WildcardRescueSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
+    final palette = context.palette;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
@@ -58,16 +60,12 @@ class WildcardRescueSheet extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             l10n.wildcardProtectsNotAdds,
-            style: textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: textTheme.bodySmall?.copyWith(color: palette.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             l10n.wildcardsAvailable(available),
-            style: textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: textTheme.bodySmall?.copyWith(color: palette.textSecondary),
           ),
           const SizedBox(height: 20),
           FilledButton(

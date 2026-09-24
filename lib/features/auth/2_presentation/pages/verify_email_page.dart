@@ -102,6 +102,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     final state = ref.watch(verifyEmailControllerProvider);
     final email = ref.watch(authControllerProvider).value?.email ?? '';
     // La cuenta ya existía (login o sesión restaurada): se explica que solo
@@ -115,9 +116,8 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/backgrounds/registro_background.png',
-            fit: BoxFit.cover,
+          const AuthBackground(
+            asset: 'assets/backgrounds/registro_background.png',
           ),
           SafeArea(
             child: LayoutBuilder(
@@ -153,7 +153,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                               l10n.verifyAccountTitle,
                               textAlign: TextAlign.center,
                               style: textTheme.headlineLarge?.copyWith(
-                                color: AppColors.authHeading,
+                                color: palette.authHeading,
                                 fontSize: AppDimensions.authTitleFontSize,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: -0.7,
@@ -166,7 +166,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                               l10n.verifyLinkSent,
                               textAlign: TextAlign.center,
                               style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.authSecondary,
+                                color: palette.authSecondary,
                                 fontSize: AppDimensions.authSubtitleFontSize,
                               ),
                             ),
@@ -175,7 +175,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                               email,
                               textAlign: TextAlign.center,
                               style: textTheme.titleMedium?.copyWith(
-                                color: AppColors.primaryDeep,
+                                color: context.palette.primaryDeep,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -184,7 +184,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                               l10n.verifyLinkInstructions,
                               textAlign: TextAlign.center,
                               style: textTheme.bodyMedium?.copyWith(
-                                color: AppColors.authSecondary,
+                                color: palette.authSecondary,
                               ),
                             ),
                             if (pendingAccount) ...[
@@ -213,17 +213,17 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage> {
                                 child: Text(
                                   l10n.useAnotherAccount,
                                   style: textTheme.bodySmall?.copyWith(
-                                    color: AppColors.authPromptText,
+                                    color: palette.authPromptText,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 56),
-                            const Icon(
+                            Icon(
                               Icons.spa_outlined,
                               size: 34,
-                              color: AppColors.primary,
+                              color: palette.primary,
                             ),
                           ],
                         ),
@@ -248,20 +248,21 @@ class _PendingVerificationNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: palette.tint(palette.primary, 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline_rounded,
             size: 20,
-            color: AppColors.primaryDeep,
+            color: context.palette.primaryDeep,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -271,7 +272,7 @@ class _PendingVerificationNotice extends StatelessWidget {
                 Text(
                   l10n.pendingVerificationTitle,
                   style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.authHeading,
+                    color: palette.authHeading,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -279,7 +280,7 @@ class _PendingVerificationNotice extends StatelessWidget {
                 Text(
                   l10n.pendingVerificationBody,
                   style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.authSecondary,
+                    color: palette.authSecondary,
                     height: 1.35,
                   ),
                 ),
@@ -337,26 +338,27 @@ class _MailIllustration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Center(
       child: Container(
         width: 96,
         height: 96,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.82),
+          color: palette.surface.withValues(alpha: palette.isDark ? 1 : 0.82),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.18),
+              color: palette.shadow,
               blurRadius: 24,
               offset: const Offset(0, 10),
             ),
           ],
         ),
-        child: const Icon(
+        child: Icon(
           Icons.mark_email_unread_outlined,
           size: 46,
-          color: AppColors.primaryDeep,
+          color: context.palette.primaryDeep,
         ),
       ),
     );
@@ -370,15 +372,16 @@ class _VerificationBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Material(
-      color: Colors.white.withValues(alpha: 0.82),
+      color: palette.surface.withValues(alpha: palette.isDark ? 1 : 0.82),
       shape: const CircleBorder(),
       elevation: 3,
-      shadowColor: AppColors.primary.withValues(alpha: 0.16),
+      shadowColor: palette.shadow,
       child: IconButton(
         onPressed: onPressed,
         icon: const Icon(Icons.arrow_back_rounded),
-        color: AppColors.primaryDeep,
+        color: context.palette.primaryDeep,
         iconSize: 28,
         padding: const EdgeInsets.all(14),
       ),
@@ -429,7 +432,7 @@ class _ResendPrompt extends StatelessWidget {
               Text(
                 l10n.emailNotReceived,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.authPromptText,
+                  color: context.palette.authPromptText,
                 ),
               ),
               TextButton(

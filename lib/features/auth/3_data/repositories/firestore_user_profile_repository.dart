@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/repositories/user_profile_repository.dart';
+import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
 
 /// Perfil de usuario en Firestore. Escribe exactamente los campos que
 /// aceptan las Security Rules (`users/{uid}` y `users/{uid}/ambitos/{id}`);
@@ -36,6 +38,7 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
       'timezoneAutomatic': true,
       'welcomeAnimationEnabled': true,
       'customMotivationMessages': <String>[],
+      'themeMode': ThemeModeCodec.light,
       'locale': profile.locale,
       // Único valor que las reglas permiten fijar desde cliente.
       'subscription': {'status': 'free'},
@@ -92,6 +95,13 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
       );
 
   @override
+  Stream<ThemeMode?> watchThemeMode(String userId) =>
+      _userRef(userId).snapshots().map(
+        (snapshot) =>
+            ThemeModeCodec.decode(snapshot.data()?['themeMode'] as String?),
+      );
+
+  @override
   Stream<bool> watchIsPremium(String userId) =>
       _userRef(userId).snapshots().map((snapshot) {
         final subscription = snapshot.data()?['subscription'];
@@ -132,6 +142,13 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
   Future<void> updateWelcomeAnimationEnabled(String userId, bool enabled) =>
       _userRef(userId).update({
         'welcomeAnimationEnabled': enabled,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+  @override
+  Future<void> updateThemeMode(String userId, ThemeMode mode) =>
+      _userRef(userId).update({
+        'themeMode': ThemeModeCodec.encode(mode),
         'updatedAt': FieldValue.serverTimestamp(),
       });
 

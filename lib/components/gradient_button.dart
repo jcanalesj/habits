@@ -20,7 +20,9 @@ class GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     final enabled = onPressed != null && !isLoading;
+    final disabledForeground = palette.textSecondary.withValues(alpha: .72);
 
     return Semantics(
       button: true,
@@ -38,13 +40,17 @@ class GradientButton extends StatelessWidget {
               end: Alignment.centerRight,
               colors: enabled || isLoading
                   ? const [AppColors.gradientStart, AppColors.gradientEnd]
+                  : palette.isDark
+                  ? [palette.surfaceMuted, palette.divider]
                   : const [Color(0xFFE9E6F0), Color(0xFFDEDAE8)],
             ),
             borderRadius: BorderRadius.circular(AppDimensions.buttonRadius),
             boxShadow: enabled || isLoading
                 ? [
                     BoxShadow(
-                      color: AppColors.gradientEnd.withValues(alpha: 0.35),
+                      color: palette.isDark
+                          ? palette.shadow
+                          : AppColors.gradientEnd.withValues(alpha: 0.35),
                       blurRadius: 16,
                       offset: const Offset(0, 8),
                     ),
@@ -73,11 +79,7 @@ class GradientButton extends StatelessWidget {
                           label,
                           maxLines: 1,
                           style: textTheme.titleMedium?.copyWith(
-                            color: enabled
-                                ? Colors.white
-                                : AppColors.textSecondary.withValues(
-                                    alpha: .72,
-                                  ),
+                            color: enabled ? Colors.white : disabledForeground,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -85,11 +87,7 @@ class GradientButton extends StatelessWidget {
                           const SizedBox(width: 8),
                           Icon(
                             Icons.arrow_forward_rounded,
-                            color: enabled
-                                ? Colors.white
-                                : AppColors.textSecondary.withValues(
-                                    alpha: .72,
-                                  ),
+                            color: enabled ? Colors.white : disabledForeground,
                             size: 20,
                           ),
                         ],

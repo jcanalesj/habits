@@ -71,15 +71,21 @@ class _SplashPageState extends ConsumerState<SplashPage>
   Widget build(BuildContext context) {
     final phrases = _phrases(context.l10n);
     final phrase = phrases[_phraseIndex % phrases.length];
+    final palette = context.palette;
 
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/backgrounds/splash_background.png',
-            fit: BoxFit.cover,
-          ),
+          // El PNG es lila claro y está pensado para el tema claro; en
+          // oscuro se pintan las ondas con la paleta del tema.
+          if (palette.isDark)
+            const SplashWavesBackground()
+          else
+            Image.asset(
+              'assets/backgrounds/splash_background.png',
+              fit: BoxFit.cover,
+            ),
           SafeArea(
             child: Column(
               children: [
@@ -94,7 +100,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                     phrase,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                       height: 1.4,
                     ),
                   ),

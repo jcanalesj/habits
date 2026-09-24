@@ -27,7 +27,7 @@ class PlaceholderContent extends StatelessWidget {
           Text(
             context.l10n.comingSoon,
             style: textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
+              color: context.palette.textSecondary,
             ),
           ),
         ],

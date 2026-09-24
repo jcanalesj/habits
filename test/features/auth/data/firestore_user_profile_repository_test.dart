@@ -44,6 +44,7 @@ void main() {
           'timezoneAutomatic',
           'welcomeAnimationEnabled',
           'customMotivationMessages',
+          'themeMode',
           'locale',
           'subscription',
           'onboardingCompleted',
@@ -58,6 +59,7 @@ void main() {
         expect(data['timezoneAutomatic'], isTrue);
         expect(data['welcomeAnimationEnabled'], isTrue);
         expect(data['customMotivationMessages'], isEmpty);
+        expect(data['themeMode'], 'light');
         expect(data['locale'], 'es');
         expect(data['subscription'], {'status': 'free'});
         expect(data['onboardingCompleted'], isFalse);

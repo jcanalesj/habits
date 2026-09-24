@@ -9,6 +9,7 @@ import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/habits/3_data/data.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
+import 'package:habits/theme/app_theme.dart';
 
 /// Usuario verificado de ejemplo.
 const verifiedUser = AppUser(
@@ -68,11 +69,18 @@ class AuthTestEnv {
 }
 
 /// MaterialApp localizada en español con una página bajo prueba.
-Widget localizedApp(Widget home, {List<Override> overrides = const []}) {
+Widget localizedApp(
+  Widget home, {
+  List<Override> overrides = const [],
+  ThemeMode themeMode = ThemeMode.light,
+}) {
   return ProviderScope(
     overrides: overrides,
     child: MaterialApp(
       locale: const Locale('es'),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: home,

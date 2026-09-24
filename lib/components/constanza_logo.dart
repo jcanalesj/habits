@@ -33,7 +33,7 @@ class ConstanzaWordmark extends StatelessWidget {
       style: GoogleFonts.playfairDisplay(
         fontSize: fontSize,
         fontWeight: FontWeight.w700,
-        color: AppColors.authBrand,
+        color: context.palette.authBrand,
         letterSpacing: 0.5,
       ),
     );

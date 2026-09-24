@@ -109,6 +109,7 @@ class _NotificationSettingsPageState
 
   Widget _body(List<Habit> habits) {
     final l10n = context.l10n;
+    final palette = context.palette;
     final enabledCount = habits
         .where((habit) => habit.reminderTime != null)
         .length;
@@ -118,11 +119,13 @@ class _NotificationSettingsPageState
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFF0E9FF), Color(0xFFFFF2FA)],
+            gradient: LinearGradient(
+              colors: palette.isDark
+                  ? [palette.primarySoft, palette.tint(AppColors.pink, .14)]
+                  : const [Color(0xFFF0E9FF), Color(0xFFFFF2FA)],
             ),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white),
+            border: Border.all(color: palette.border),
           ),
           child: Row(
             children: [
@@ -163,8 +166,8 @@ class _NotificationSettingsPageState
                     const SizedBox(height: 6),
                     Text(
                       l10n.notificationHeroBody,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: palette.textSecondary,
                         height: 1.35,
                       ),
                     ),
@@ -185,7 +188,7 @@ class _NotificationSettingsPageState
         ],
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: _surfaceDecoration(),
+          decoration: _surfaceDecoration(palette),
           child: Row(
             children: [
               const _BellBox(),
@@ -200,7 +203,7 @@ class _NotificationSettingsPageState
                     ),
                     Text(
                       l10n.notificationActiveSummaryHint,
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: palette.textSecondary),
                     ),
                   ],
                 ),
@@ -218,13 +221,13 @@ class _NotificationSettingsPageState
         const SizedBox(height: 5),
         Text(
           l10n.notificationHabitListHint,
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: palette.textSecondary),
         ),
         const SizedBox(height: 12),
         if (habits.isEmpty)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-            decoration: _surfaceDecoration(),
+            decoration: _surfaceDecoration(palette),
             child: Column(
               children: [
                 const UserAvatar(size: 86),
@@ -232,8 +235,8 @@ class _NotificationSettingsPageState
                 Text(
                   l10n.profileNoHabits,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: palette.textSecondary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -242,7 +245,7 @@ class _NotificationSettingsPageState
           )
         else
           Container(
-            decoration: _surfaceDecoration(),
+            decoration: _surfaceDecoration(palette),
             child: Column(
               children: [
                 for (var index = 0; index < habits.length; index++) ...[
@@ -264,21 +267,18 @@ class _NotificationSettingsPageState
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF0EAFF),
+            color: palette.primarySoft,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(PhosphorIconsBold.clock, color: AppColors.primary),
+              Icon(PhosphorIconsBold.clock, color: palette.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   l10n.notificationTimezoneHint,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    height: 1.35,
-                  ),
+                  style: TextStyle(color: palette.textSecondary, height: 1.35),
                 ),
               ),
             ],
@@ -304,6 +304,7 @@ class _ReminderTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final enabled = habit.reminderTime != null;
     final color = Color(habit.colorValue);
     return InkWell(
@@ -318,7 +319,7 @@ class _ReminderTile extends StatelessWidget {
               height: 50,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: .12),
+                color: palette.tint(color),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: HabitIcon(
@@ -349,7 +350,7 @@ class _ReminderTile extends StatelessWidget {
                           )
                         : context.l10n.habitReminderNone,
                     style: TextStyle(
-                      color: enabled ? color : AppColors.textSecondary,
+                      color: enabled ? color : palette.textSecondary,
                       fontWeight: enabled ? FontWeight.w700 : FontWeight.w400,
                     ),
                   ),
@@ -377,25 +378,28 @@ class _BellBox extends StatelessWidget {
   const _BellBox();
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: 48,
-    height: 48,
-    decoration: BoxDecoration(
-      color: AppColors.pink.withValues(alpha: .12),
-      borderRadius: BorderRadius.circular(15),
-    ),
-    child: const Icon(
-      PhosphorIconsFill.bellRinging,
-      color: AppColors.pink,
-      size: 27,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: palette.tint(AppColors.pink),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: const Icon(
+        PhosphorIconsFill.bellRinging,
+        color: AppColors.pink,
+        size: 27,
+      ),
+    );
+  }
 }
 
-BoxDecoration _surfaceDecoration() => BoxDecoration(
-  color: Colors.white.withValues(alpha: .84),
+BoxDecoration _surfaceDecoration(AppPalette palette) => BoxDecoration(
+  color: palette.surface.withValues(alpha: palette.isDark ? 1 : .84),
   borderRadius: BorderRadius.circular(24),
-  border: Border.all(color: Colors.white),
+  border: Border.all(color: palette.border),
 );
 
 /// Aviso de que el sistema tiene las notificaciones bloqueadas.
@@ -407,19 +411,17 @@ class _PermissionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: _surfaceDecoration(),
+      decoration: _surfaceDecoration(palette),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                PhosphorIconsBold.bellSlash,
-                color: AppColors.textSecondary,
-              ),
+              Icon(PhosphorIconsBold.bellSlash, color: palette.textSecondary),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -432,7 +434,7 @@ class _PermissionCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             l10n.notificationsDisabledBody,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: palette.textSecondary),
           ),
           const SizedBox(height: 12),
           FilledButton(

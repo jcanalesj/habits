@@ -11,11 +11,12 @@ class SignOutButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final palette = context.palette;
     return OutlinedButton.icon(
       onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primaryDeep,
-        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+        foregroundColor: palette.primaryDeep,
+        side: BorderSide(color: palette.primary.withValues(alpha: 0.4)),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),

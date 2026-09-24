@@ -21,6 +21,7 @@ class AuthHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
+    final palette = context.palette;
 
     return Column(
       children: [
@@ -31,19 +32,19 @@ class AuthHeader extends StatelessWidget {
           width: 32,
           height: 3,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.6),
+            color: palette.primary.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
         SizedBox(height: spacing),
         Text(
           l10n.taglineLine1,
-          style: textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+          style: textTheme.bodyLarge?.copyWith(color: palette.textSecondary),
         ),
         Text(
           l10n.taglineLine2,
           style: textTheme.bodyLarge?.copyWith(
-            color: AppColors.primary,
+            color: palette.primary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -58,16 +59,17 @@ class BrandFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.spa_outlined, size: 26, color: AppColors.primary),
+        Icon(Icons.spa_outlined, size: 26, color: palette.primary),
         const SizedBox(height: 6),
         Text(
           context.l10n.brandFooter,
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ).textTheme.bodySmall?.copyWith(color: palette.textSecondary),
         ),
       ],
     );

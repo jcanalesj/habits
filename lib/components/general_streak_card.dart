@@ -125,6 +125,7 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final l10n = context.l10n;
+    final palette = context.palette;
     final scene = _StreakCardScene.forHour(
       widget.deviceHour ?? DateTime.now().hour,
     );
@@ -170,6 +171,12 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                 ),
               ),
             ),
+            if (palette.isDark)
+              Positioned.fill(
+                child: ColoredBox(
+                  color: palette.background.withValues(alpha: .20),
+                ),
+              ),
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
@@ -178,9 +185,7 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                     end: Alignment.centerRight,
                     stops: const [0, .38, .68],
                     colors: [
-                      Colors.black.withValues(
-                        alpha: scene.overlayStartOpacity,
-                      ),
+                      Colors.black.withValues(alpha: scene.overlayStartOpacity),
                       Colors.black.withValues(
                         alpha: scene.overlayMiddleOpacity,
                       ),
@@ -289,8 +294,17 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                     if (widget.wildcards.available > 0) ...[
                       const SizedBox(height: 12),
                       Material(
-                        color: Colors.white.withValues(alpha: 0.76),
-                        borderRadius: BorderRadius.circular(18),
+                        color: palette.isDark
+                            ? palette.surfaceElevated.withValues(alpha: .90)
+                            : Colors.white.withValues(alpha: 0.76),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          side: BorderSide(
+                            color: palette.isDark
+                                ? palette.primary.withValues(alpha: .48)
+                                : Colors.white.withValues(alpha: .32),
+                          ),
+                        ),
                         child: InkWell(
                           onTap: _atRisk ? widget.onUseWildcard : null,
                           borderRadius: BorderRadius.circular(18),
@@ -314,7 +328,9 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                                       widget.wildcards.available,
                                     ),
                                     style: textTheme.bodyMedium?.copyWith(
-                                      color: AppColors.primaryDeep,
+                                      color: palette.isDark
+                                          ? palette.primaryDeep
+                                          : AppColors.primaryDeep,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),

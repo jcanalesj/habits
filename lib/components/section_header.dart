@@ -18,6 +18,7 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     return Row(
       children: [
@@ -36,14 +37,14 @@ class SectionHeader extends StatelessWidget {
             icon: Text(
               actionLabel!,
               style: textTheme.labelLarge?.copyWith(
-                color: AppColors.primary,
+                color: palette.primary,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            label: const Icon(
+            label: Icon(
               Icons.chevron_right_rounded,
               size: 18,
-              color: AppColors.primary,
+              color: palette.primary,
             ),
           ),
       ],

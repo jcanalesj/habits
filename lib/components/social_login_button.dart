@@ -19,6 +19,7 @@ class SocialLoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(16),
@@ -27,16 +28,16 @@ class SocialLoginButton extends StatelessWidget {
         height: 52,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: palette.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
+          border: Border.all(color: palette.divider),
         ),
         child: switch (provider) {
           SocialProvider.google => const _GoogleGlyph(size: 24),
-          SocialProvider.apple => const Icon(
+          SocialProvider.apple => Icon(
             Icons.apple,
             size: 28,
-            color: Colors.black,
+            color: palette.textPrimary,
           ),
         },
       ),

@@ -732,10 +732,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get appearanceDarkTheme => 'Oscuro';
 
   @override
-  String get appearanceComingSoon => 'Una experiencia más cómoda por la noche';
+  String get appearanceThemeHint => 'Elige entre el tema claro y el oscuro.';
 
   @override
-  String get appearanceSoon => 'Próximamente';
+  String get appearanceDarkThemeHint => 'Más cómodo para los ojos de noche';
 
   @override
   String get appearanceAppIcon => 'Icono de la app';

@@ -39,6 +39,7 @@ class HabitsListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     return Column(
       children: [
@@ -47,11 +48,11 @@ class HabitsListCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 22),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: palette.surface,
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.05),
+                  color: palette.shadow,
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
@@ -73,7 +74,7 @@ class HabitsListCard extends StatelessWidget {
                   context.l10n.emptyHabitsTitle,
                   textAlign: TextAlign.center,
                   style: textTheme.titleMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: palette.textPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -82,7 +83,7 @@ class HabitsListCard extends StatelessWidget {
                   emptyMessage ?? context.l10n.homeEmptyHabitsBody,
                   textAlign: TextAlign.center,
                   style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: palette.textSecondary,
                     height: 1.35,
                   ),
                 ),
@@ -119,16 +120,16 @@ class HabitsListCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.labelLarge?.copyWith(
-                      color: AppColors.primary,
+                      color: palette.primary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(
+                Icon(
                   Icons.keyboard_arrow_down_rounded,
                   size: 20,
-                  color: AppColors.primary,
+                  color: palette.primary,
                 ),
               ],
             ),

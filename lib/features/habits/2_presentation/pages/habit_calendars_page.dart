@@ -49,7 +49,7 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
                 context.l10n.habitCalendarsTitle,
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
-              backgroundColor: AppColors.background,
+              backgroundColor: context.palette.background,
               surfaceTintColor: Colors.transparent,
             ),
       body: SafeArea(
@@ -71,6 +71,7 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
     final from = month;
     final to = LogicalDate(month.year, month.month, lastDay);
     final logs = ref.watch(habitsRepositoryProvider).watchLogsBetween(from, to);
+    final palette = context.palette;
 
     return StreamBuilder<List<HabitLog>>(
       stream: logs,
@@ -94,10 +95,8 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
                     key: const ValueKey('edit-habits-action'),
                     onPressed: () => context.go('/habits/manage'),
                     style: FilledButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      backgroundColor: AppColors.primary.withValues(
-                        alpha: 0.10,
-                      ),
+                      foregroundColor: palette.primary,
+                      backgroundColor: palette.tint(palette.primary, .10),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 11,
@@ -161,7 +160,7 @@ class _MonthSelector extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -199,12 +198,17 @@ class _CalendarLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _LegendItem(color: AppColors.primary, label: completed),
+        _LegendItem(color: palette.primary, label: completed),
         const SizedBox(width: 20),
-        _LegendItem(color: Colors.white, label: notCompleted, outlined: true),
+        _LegendItem(
+          color: palette.surfaceMuted,
+          label: notCompleted,
+          outlined: true,
+        ),
       ],
     );
   }
@@ -233,7 +237,7 @@ class _LegendItem extends StatelessWidget {
             shape: BoxShape.circle,
             border: outlined
                 ? Border.all(
-                    color: AppColors.textSecondary.withValues(alpha: .35),
+                    color: context.palette.textSecondary.withValues(alpha: .35),
                   )
                 : null,
           ),
@@ -258,6 +262,7 @@ class _HabitMonthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final color = Color(habit.colorValue);
     final completedDays = logs.map((log) => log.date.day).toSet();
     final dayCount = DateTime.utc(month.year, month.month + 1, 0).day;
@@ -275,9 +280,14 @@ class _HabitMonthCard extends StatelessWidget {
       key: ValueKey('habit-calendar-${habit.id}'),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
+        color: Color.alphaBlend(
+          color.withValues(alpha: palette.isDark ? .22 : .10),
+          palette.surface,
+        ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: color.withValues(alpha: 0.20)),
+        border: Border.all(
+          color: color.withValues(alpha: palette.isDark ? 0.62 : 0.28),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,7 +299,7 @@ class _HabitMonthCard extends StatelessWidget {
                 height: 44,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.16),
+                  color: color.withValues(alpha: palette.isDark ? .28 : .16),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: HabitIcon(
@@ -332,7 +342,7 @@ class _HabitMonthCard extends StatelessWidget {
                   child: Text(
                     weekday,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -367,17 +377,16 @@ class _CalendarDay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       key: ValueKey('calendar-day-$day-${completed ? 'done' : 'empty'}'),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: completed ? color : Colors.white,
+        color: completed ? color : palette.surfaceMuted,
         shape: BoxShape.circle,
         border: completed
             ? null
-            : Border.all(
-                color: AppColors.textSecondary.withValues(alpha: 0.20),
-              ),
+            : Border.all(color: palette.textSecondary.withValues(alpha: 0.20)),
         boxShadow: completed
             ? [
                 BoxShadow(
@@ -393,7 +402,7 @@ class _CalendarDay extends StatelessWidget {
           : Text(
               '$day',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: AppColors.textSecondary,
+                color: palette.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),

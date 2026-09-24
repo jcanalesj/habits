@@ -9,7 +9,7 @@ Future<TimeOfDay?> showReminderTimePicker({
   required TimeOfDay initialTime,
 }) => showDialog<TimeOfDay>(
   context: context,
-  barrierColor: AppColors.textPrimary.withValues(alpha: .58),
+  barrierColor: context.palette.scrim,
   builder: (context) => _ReminderTimeDialog(initialTime: initialTime),
 );
 
@@ -59,10 +59,14 @@ class _ReminderTimeDialogState extends State<_ReminderTimeDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
+    // En claro se conserva el violeta profundo de marca; en oscuro no tiene
+    // contraste sobre la superficie, así que se usa el acento de la paleta.
+    final accent = palette.primaryDeep;
     return Dialog(
       key: const ValueKey('reminder-time-dialog'),
       insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
-      backgroundColor: const Color(0xFFFCFAFF),
+      backgroundColor: palette.dialogSurface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440, maxHeight: 760),
@@ -77,7 +81,7 @@ class _ReminderTimeDialogState extends State<_ReminderTimeDialog> {
                 l10n.reminderPickerTitle,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: palette.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -85,9 +89,9 @@ class _ReminderTimeDialogState extends State<_ReminderTimeDialog> {
               Text(
                 l10n.reminderPickerSubtitle,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: palette.textSecondary),
               ),
               const SizedBox(height: 18),
               Container(
@@ -106,8 +110,8 @@ class _ReminderTimeDialogState extends State<_ReminderTimeDialog> {
                   '${_twoDigits(_hour)}:${_twoDigits(_minute)}',
                   key: const ValueKey('reminder-selected-time'),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.primaryDeep,
+                  style: TextStyle(
+                    color: accent,
                     fontSize: 46,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1,
@@ -126,12 +130,12 @@ class _ReminderTimeDialogState extends State<_ReminderTimeDialog> {
                       count: 24,
                       onChanged: (value) => setState(() => _hour = value),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Text(
                         ':',
                         style: TextStyle(
-                          color: AppColors.primaryDeep,
+                          color: accent,
                           fontSize: 34,
                           fontWeight: FontWeight.w900,
                         ),
@@ -207,6 +211,7 @@ class _ReminderTimeDialogState extends State<_ReminderTimeDialog> {
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.transparent,
+                          side: BorderSide.none,
                           shadowColor: Colors.transparent,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                         ),
@@ -238,34 +243,42 @@ class _NumberWheel extends StatelessWidget {
   final ValueChanged<int> onChanged;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: 104,
-    decoration: BoxDecoration(
-      color: AppColors.primary.withValues(alpha: .055),
-      borderRadius: BorderRadius.circular(24),
-    ),
-    child: ListWheelScrollView.useDelegate(
-      controller: controller,
-      itemExtent: 54,
-      physics: const FixedExtentScrollPhysics(),
-      diameterRatio: 1.8,
-      perspective: .004,
-      onSelectedItemChanged: onChanged,
-      childDelegate: ListWheelChildBuilderDelegate(
-        childCount: count,
-        builder: (context, index) => Center(
-          child: Text(
-            index.toString().padLeft(2, '0'),
-            style: const TextStyle(
-              color: AppColors.primaryDeep,
-              fontSize: 25,
-              fontWeight: FontWeight.w800,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    // En claro, el relleno de campo es exactamente el tinte original
+    // (primary al 5,5 %); en oscuro la rueda se apoya sobre `surface` para
+    // que los números queden legibles.
+    final fill = palette.isDark ? palette.surface : palette.inputFill;
+    final accent = palette.primaryDeep;
+    return Container(
+      width: 104,
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: ListWheelScrollView.useDelegate(
+        controller: controller,
+        itemExtent: 54,
+        physics: const FixedExtentScrollPhysics(),
+        diameterRatio: 1.8,
+        perspective: .004,
+        onSelectedItemChanged: onChanged,
+        childDelegate: ListWheelChildBuilderDelegate(
+          childCount: count,
+          builder: (context, index) => Center(
+            child: Text(
+              index.toString().padLeft(2, '0'),
+              style: TextStyle(
+                color: accent,
+                fontSize: 25,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _PresetButton extends StatelessWidget {
@@ -284,31 +297,34 @@ class _PresetButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(18),
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: selected ? .18 : .09),
-        borderRadius: BorderRadius.circular(18),
-        border: selected
-            ? Border.all(color: color.withValues(alpha: .45))
-            : null,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+        decoration: BoxDecoration(
+          color: palette.tint(color, selected ? .18 : .09),
+          borderRadius: BorderRadius.circular(18),
+          border: selected
+              ? Border.all(color: color.withValues(alpha: .45))
+              : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 21),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              maxLines: 1,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 21),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            maxLines: 1,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-          ),
-        ],
-      ),
-    ),
-  );
+    );
+  }
 }

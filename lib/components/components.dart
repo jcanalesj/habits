@@ -4,6 +4,7 @@ library;
 
 export 'app_bottom_nav_bar.dart';
 export 'app_notice.dart';
+export 'auth_background.dart';
 export 'auth_header.dart';
 export 'auth_text_field.dart';
 export 'constanza_logo.dart';

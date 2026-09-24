@@ -147,9 +147,7 @@ void main() {
     });
 
     test('al recortar se conservan los avisos más próximos', () {
-      final habits = [
-        for (var i = 0; i < 20; i++) habit(id: 'h$i'),
-      ];
+      final habits = [for (var i = 0; i < 20; i++) habit(id: 'h$i')];
 
       final result = schedule(habits: habits);
 
@@ -177,7 +175,10 @@ void main() {
 
     test('hábitos distintos el mismo día tienen ids distintos', () {
       final result = schedule(
-        habits: [habit(id: 'a'), habit(id: 'b')],
+        habits: [
+          habit(id: 'a'),
+          habit(id: 'b'),
+        ],
       );
       final delDia = result.where((r) => r.date == hoy).toList();
 

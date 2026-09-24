@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/profile/avatar/avatar.dart';
 import 'package:habits/features/profile/avatar/avatar_providers.dart';
+import 'package:habits/theme/app_theme.dart';
 
 class UserAvatar extends ConsumerWidget {
   const UserAvatar({super.key, required this.size, this.circular = true});
@@ -40,7 +41,7 @@ class CatMascot extends StatelessWidget {
       height: size,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: const Color(0xFFE9E1FF),
+        color: context.palette.primarySoft,
         shape: circular ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: circular ? null : BorderRadius.circular(size * .25),
       ),

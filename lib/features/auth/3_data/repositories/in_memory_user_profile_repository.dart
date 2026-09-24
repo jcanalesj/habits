@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/repositories/user_profile_repository.dart';
 
@@ -8,6 +9,7 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   final Map<String, bool> timezoneAutomatic = {};
   final Map<String, bool> welcomeAnimationEnabled = {};
   final Map<String, List<String>> customMotivationMessages = {};
+  final Map<String, ThemeMode> themeModes = {};
   final Map<String, bool> premium = {};
 
   @override
@@ -37,6 +39,10 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
   @override
   Stream<List<String>> watchCustomMotivationMessages(String userId) =>
       Stream.value(customMotivationMessages[userId] ?? const []);
+
+  @override
+  Stream<ThemeMode?> watchThemeMode(String userId) =>
+      Stream.value(themeModes[userId]);
 
   @override
   Stream<bool> watchIsPremium(String userId) =>
@@ -79,6 +85,11 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
     bool enabled,
   ) async {
     welcomeAnimationEnabled[userId] = enabled;
+  }
+
+  @override
+  Future<void> updateThemeMode(String userId, ThemeMode mode) async {
+    themeModes[userId] = mode;
   }
 
   @override

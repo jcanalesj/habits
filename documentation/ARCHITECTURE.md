@@ -115,7 +115,7 @@ lib/
   navigation.dart        # go_router configuration
   logger.dart            # Centralized logging
   setup.dart             # Global dependency initialization
-  theme/                 # Shared theme and styles
+  theme/                 # Shared theme and styles (AppColors, AppPalette, AppTheme light/dark)
   localization/          # Internationalization (.arb)
   main.dart              # Real entry point
   main.mocked.dart       # Entry point with mocked providers / test scenario
@@ -171,6 +171,29 @@ class InscripcionesApi {
 ```
 
 ---
+
+### 3.2. Theming: light and dark mode
+
+The app ships two themes (`AppTheme.light` / `AppTheme.dark` in `lib/theme/app_theme.dart`) and the
+user picks one from Profile → Personalización → Tema (system / light / dark).
+
+- **`AppColors`** holds only brand colors that are identical in both themes: the brand primary used
+  for gradients, `gradientStart/End`, `flame` and the assignable ámbito palette (`lilac`, `pink`,
+  `green`, `orange`, `blue`, persisted in Firestore as ints).
+- **`AppPalette`** is a `ThemeExtension` with every theme-dependent color (`background`, `surface`,
+  `surfaceMuted`, `surfaceElevated`, `dialogSurface`, `border`, `divider`, `shadow`, `scrim`,
+  `textPrimary/Secondary/Hint`, `primary`, `primarySoft`, `onPrimary`, `inputFill`, `auth*`). Read it
+  with `context.palette`. Never hardcode `Colors.white`, greys or hex tints for surfaces or text in
+  widgets; white is only acceptable on top of a brand gradient or a saturated ámbito color.
+- **Preference** (`lib/features/profile/appearance/theme_mode_preferences.dart`): `themeModeProvider`
+  (Riverpod `Notifier<ThemeMode>`) reads the local copy from `SharedPreferences` before the first
+  frame (no flash on launch) and syncs it with the `themeMode` field of `users/{uid}`
+  (`'light' | 'dark'`, validated by the Security Rules). El antiguo valor
+  `'system'` solo se admite para migrar perfiles existentes y se interpreta
+  como claro. Remote wins when it exists;
+  a profile without the field receives the local value.
+- `MaterialApp.router` receives `theme`, `darkTheme` and `themeMode`; the system bars follow the
+  resolved brightness through `AppTheme.systemOverlayStyle`.
 
 ## 4. Feature Contract
 

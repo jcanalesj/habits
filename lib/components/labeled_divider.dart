@@ -9,8 +9,9 @@ class LabeledDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final line = Expanded(
-      child: Divider(color: AppColors.primary.withValues(alpha: 0.15)),
+      child: Divider(color: palette.primary.withValues(alpha: 0.15)),
     );
 
     return Row(
@@ -22,7 +23,7 @@ class LabeledDivider extends StatelessWidget {
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: palette.textSecondary),
           ),
         ),
         line,

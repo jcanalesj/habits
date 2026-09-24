@@ -22,7 +22,7 @@ class ProfilePage extends ConsumerWidget {
   ) async {
     final editedName = await showDialog<String>(
       context: context,
-      barrierColor: AppColors.textPrimary.withValues(alpha: .58),
+      barrierColor: context.palette.scrim,
       builder: (context) => _EditProfileDialog(initialName: currentName),
     );
     final name = editedName?.trim();
@@ -46,6 +46,7 @@ class ProfilePage extends ConsumerWidget {
     final timezone = ref.watch(profileTimezoneProvider).value ?? 'UTC';
     final name = ref.watch(userNameProvider);
     final l10n = context.l10n;
+    final palette = context.palette;
     final bottomClearance =
         AppBottomNavBar.contentClearance +
         MediaQuery.viewPaddingOf(context).bottom;
@@ -171,7 +172,7 @@ class ProfilePage extends ConsumerWidget {
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: _surfaceDecoration(22),
+              decoration: _surfaceDecoration(context, 22),
               child: Column(
                 children: [
                   const SizedBox(
@@ -183,7 +184,7 @@ class ProfilePage extends ConsumerWidget {
                     l10n.profileSignOutHint,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                     ),
                   ),
                 ],
@@ -236,6 +237,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     return Dialog(
       key: const ValueKey('edit-profile-dialog'),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -250,13 +252,13 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 margin: const EdgeInsets.only(top: 54),
                 padding: const EdgeInsets.fromLTRB(24, 76, 24, 24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFCFAFF),
+                  color: palette.dialogSurface,
                   borderRadius: BorderRadius.circular(32),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
-                      color: Color(0x24705AC8),
+                      color: palette.shadow,
                       blurRadius: 30,
-                      offset: Offset(0, 14),
+                      offset: const Offset(0, 14),
                     ),
                   ],
                 ),
@@ -268,7 +270,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
-                            color: AppColors.textPrimary,
+                            color: palette.textPrimary,
                             fontWeight: FontWeight.w900,
                           ),
                     ),
@@ -277,7 +279,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                       l10n.profileEditPersonalSubtitle,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 22),
@@ -304,7 +306,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                                 icon: const Icon(PhosphorIconsBold.xCircle),
                               ),
                         filled: true,
-                        fillColor: AppColors.primary.withValues(alpha: .055),
+                        fillColor: palette.inputFill,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                           borderSide: BorderSide.none,
@@ -312,13 +314,13 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                           borderSide: BorderSide(
-                            color: AppColors.primary.withValues(alpha: .18),
+                            color: palette.primary.withValues(alpha: .18),
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
+                          borderSide: BorderSide(
+                            color: palette.primary,
                             width: 2,
                           ),
                         ),
@@ -339,7 +341,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                             l10n.profileEditNameHint,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
+                                ?.copyWith(color: palette.textSecondary),
                           ),
                         ),
                       ],
@@ -365,7 +367,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                                   : null,
                               color: _canSave
                                   ? null
-                                  : AppColors.textSecondary.withValues(
+                                  : palette.textSecondary.withValues(
                                       alpha: .18,
                                     ),
                               borderRadius: const BorderRadius.all(
@@ -377,6 +379,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                               onPressed: _canSave ? _save : null,
                               style: FilledButton.styleFrom(
                                 backgroundColor: Colors.transparent,
+                                side: BorderSide.none,
                                 disabledBackgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,
                                 padding: const EdgeInsets.symmetric(
@@ -398,8 +401,8 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
               ),
               Container(
                 padding: const EdgeInsets.all(5),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFCFAFF),
+                decoration: BoxDecoration(
+                  color: palette.dialogSurface,
                   shape: BoxShape.circle,
                 ),
                 child: const UserAvatar(size: 104),
@@ -428,6 +431,7 @@ class _ProfileHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     return Column(
       children: [
         Text(
@@ -448,8 +452,8 @@ class _ProfileHero extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(5),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: palette.surface,
                     shape: BoxShape.circle,
                   ),
                   child: const UserAvatar(size: 132),
@@ -461,20 +465,20 @@ class _ProfileHero extends StatelessWidget {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: palette.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: const [
+                      border: Border.all(color: palette.surface, width: 4),
+                      boxShadow: [
                         BoxShadow(
-                          color: Color(0x337C5CE0),
+                          color: palette.shadow,
                           blurRadius: 12,
-                          offset: Offset(0, 4),
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       PhosphorIconsBold.camera,
-                      color: Colors.white,
+                      color: palette.onPrimary,
                       size: 22,
                     ),
                   ),
@@ -510,8 +514,10 @@ class _ProfileHero extends StatelessWidget {
               onPressed: onEdit,
               tooltip: l10n.profileEdit,
               style: IconButton.styleFrom(
-                backgroundColor: Colors.white.withValues(alpha: .75),
-                foregroundColor: AppColors.primary,
+                backgroundColor: palette.surface.withValues(
+                  alpha: palette.isDark ? 1 : .75,
+                ),
+                foregroundColor: palette.primary,
               ),
               icon: const Icon(PhosphorIconsBold.pencilSimple, size: 20),
             ),
@@ -521,8 +527,8 @@ class _ProfileHero extends StatelessWidget {
           email,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: palette.textSecondary,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
@@ -559,80 +565,85 @@ class _ProfileMetric extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 96,
-    padding: const EdgeInsets.all(11),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.white.withValues(alpha: .90),
-          color.withValues(alpha: .10),
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      height: 96,
+      padding: const EdgeInsets.all(11),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette.surface.withValues(alpha: palette.isDark ? 1 : .90),
+            palette.isDark
+                ? Color.alphaBlend(palette.tint(color, .10), palette.surface)
+                : color.withValues(alpha: .10),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: .16)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: .07),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: color.withValues(alpha: .16)),
-      boxShadow: [
-        BoxShadow(
-          color: color.withValues(alpha: .07),
-          blurRadius: 14,
-          offset: const Offset(0, 6),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: .16),
-                borderRadius: BorderRadius.circular(11),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: palette.tint(color, .16),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(icon, color: color, size: 22),
               ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: FittedBox(
-                alignment: Alignment.centerLeft,
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  value,
-                  maxLines: 1,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
+              const SizedBox(width: 8),
+              Expanded(
+                child: FittedBox(
+                  alignment: Alignment.centerLeft,
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 9),
-        SizedBox(
-          width: double.infinity,
-          child: FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              maxLines: 1,
-              softWrap: false,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
+            ],
+          ),
+          const SizedBox(height: 9),
+          SizedBox(
+            width: double.infinity,
+            child: FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  color: palette.textSecondary,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _SettingsGroup extends StatelessWidget {
@@ -641,7 +652,7 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    decoration: _surfaceDecoration(24),
+    decoration: _surfaceDecoration(context, 24),
     child: Column(children: children),
   );
 }
@@ -663,40 +674,52 @@ class _ProfileLink extends StatelessWidget {
   final bool showDivider;
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-        leading: Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: .11),
-            borderRadius: BorderRadius.circular(14),
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Column(
+      children: [
+        ListTile(
+          onTap: onTap,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 5,
           ),
-          child: Icon(icon, color: color, size: 24),
+          leading: Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: palette.tint(color, .11),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
+          subtitle: Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: palette.textSecondary),
+          ),
+          trailing: Icon(
+            PhosphorIconsBold.caretRight,
+            color: palette.textSecondary,
+            size: 18,
+          ),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: Text(
-          subtitle,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        trailing: const Icon(
-          PhosphorIconsBold.caretRight,
-          color: AppColors.textSecondary,
-          size: 18,
-        ),
-      ),
-      if (showDivider) const Divider(height: 1, indent: 70, endIndent: 16),
-    ],
-  );
+        if (showDivider) const Divider(height: 1, indent: 70, endIndent: 16),
+      ],
+    );
+  }
 }
 
-BoxDecoration _surfaceDecoration(double radius) => BoxDecoration(
-  color: Colors.white.withValues(alpha: .80),
-  borderRadius: BorderRadius.circular(radius),
-  border: Border.all(color: Colors.white.withValues(alpha: .88)),
-);
+BoxDecoration _surfaceDecoration(BuildContext context, double radius) {
+  final palette = context.palette;
+  return BoxDecoration(
+    color: palette.surface.withValues(alpha: palette.isDark ? 1 : .80),
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(color: palette.border),
+  );
+}

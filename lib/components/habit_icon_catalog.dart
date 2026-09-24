@@ -150,7 +150,7 @@ class HabitIcon extends StatelessWidget {
         placeholderBuilder: (_) => Icon(
           Icons.check_circle_outline_rounded,
           size: size,
-          color: AppColors.primary,
+          color: context.palette.primary,
         ),
       ),
     );
@@ -167,38 +167,41 @@ class HabitIconPicker extends StatelessWidget {
   final ValueChanged<String> onSelected;
 
   @override
-  Widget build(BuildContext context) => GridView.count(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    crossAxisCount: 6,
-    mainAxisSpacing: 8,
-    crossAxisSpacing: 8,
-    children: [
-      for (final icon in HabitIconCatalog.availableIcons)
-        Semantics(
-          button: true,
-          selected: selectedId == icon.id,
-          label: icon.label,
-          child: InkWell(
-            key: ValueKey('habit-icon-${icon.id}'),
-            onTap: () => onSelected(icon.id),
-            borderRadius: BorderRadius.circular(14),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: selectedId == icon.id
-                    ? AppColors.primary.withValues(alpha: .14)
-                    : Colors.black.withValues(alpha: .035),
-                borderRadius: BorderRadius.circular(14),
-                border: selectedId == icon.id
-                    ? Border.all(color: AppColors.primary, width: 2)
-                    : null,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 6,
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      children: [
+        for (final icon in HabitIconCatalog.availableIcons)
+          Semantics(
+            button: true,
+            selected: selectedId == icon.id,
+            label: icon.label,
+            child: InkWell(
+              key: ValueKey('habit-icon-${icon.id}'),
+              onTap: () => onSelected(icon.id),
+              borderRadius: BorderRadius.circular(14),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: selectedId == icon.id
+                      ? palette.primarySoft
+                      : palette.surfaceMuted,
+                  borderRadius: BorderRadius.circular(14),
+                  border: selectedId == icon.id
+                      ? Border.all(color: palette.primary, width: 2)
+                      : null,
+                ),
+                child: HabitIcon(iconId: icon.id),
               ),
-              child: HabitIcon(iconId: icon.id),
             ),
           ),
-        ),
-    ],
-  );
+      ],
+    );
+  }
 }

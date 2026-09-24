@@ -20,14 +20,15 @@ class AppBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: palette.surfaceElevated,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.08),
+            color: palette.shadow,
             blurRadius: 24,
             offset: const Offset(0, -6),
           ),
@@ -104,7 +105,8 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final color = selected ? AppColors.primary : AppColors.textSecondary;
+    final palette = context.palette;
+    final color = selected ? palette.primary : palette.textSecondary;
 
     // Align con heightFactor: el item ocupa el ancho que le da el Row
     // (Expanded) pero solo la altura de su contenido, con el "pill"
@@ -118,7 +120,7 @@ class _NavItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: selected
               ? BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: palette.primarySoft,
                   borderRadius: BorderRadius.circular(16),
                 )
               : null,

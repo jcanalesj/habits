@@ -82,6 +82,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     final state = ref.watch(loginControllerProvider);
     final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
 
@@ -90,9 +91,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/backgrounds/login_background.png',
-            fit: BoxFit.cover,
+          const AuthBackground(
+            asset: 'assets/backgrounds/login_background.png',
           ),
           SafeArea(
             child: LayoutBuilder(
@@ -154,7 +154,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     style: textTheme.bodyMedium?.copyWith(
                                       fontSize:
                                           AppDimensions.authSubtitleFontSize,
-                                      color: AppColors.textSecondary,
+                                      color: palette.textSecondary,
                                     ),
                                   ),
                                   const SizedBox(height: 14),
@@ -196,7 +196,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       child: Text(
                                         l10n.forgotPassword,
                                         style: textTheme.bodySmall?.copyWith(
-                                          color: AppColors.primary,
+                                          color: palette.primary,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -246,7 +246,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       Text(
                                         l10n.noAccountQuestion,
                                         style: textTheme.bodySmall?.copyWith(
-                                          color: AppColors.textSecondary,
+                                          color: palette.textSecondary,
                                         ),
                                       ),
                                       TextButton(
@@ -261,7 +261,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         child: Text(
                                           l10n.registerAction,
                                           style: textTheme.bodySmall?.copyWith(
-                                            color: AppColors.primary,
+                                            color: palette.primary,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),

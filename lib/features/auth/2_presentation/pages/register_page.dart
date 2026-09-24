@@ -80,6 +80,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     final state = ref.watch(registerControllerProvider);
     final errors = state.validationErrors;
     final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
@@ -97,9 +98,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/backgrounds/registro_background.png',
-            fit: BoxFit.cover,
+          const AuthBackground(
+            asset: 'assets/backgrounds/registro_background.png',
           ),
           SafeArea(
             child: LayoutBuilder(
@@ -139,7 +139,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 l10n.registerTitle,
                                 textAlign: TextAlign.center,
                                 style: textTheme.headlineLarge?.copyWith(
-                                  color: AppColors.authHeading,
+                                  color: palette.authHeading,
                                   fontSize: AppDimensions.authTitleFontSize,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.8,
@@ -150,7 +150,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 l10n.registerSubtitle,
                                 textAlign: TextAlign.center,
                                 style: textTheme.titleMedium?.copyWith(
-                                  color: AppColors.authSecondary,
+                                  color: palette.authSecondary,
                                   fontSize: AppDimensions.authSubtitleFontSize,
                                 ),
                               ),
@@ -261,9 +261,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                             context.go(_withEmail('/login')),
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor:
-                                              AppColors.primaryDeep,
+                                              context.palette.primaryDeep,
                                           side: BorderSide(
-                                            color: AppColors.primary.withValues(
+                                            color: palette.primary.withValues(
                                               alpha: 0.4,
                                             ),
                                           ),
@@ -299,10 +299,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 onPressed: () => context.go('/login'),
                               ),
                               const SizedBox(height: 20),
-                              const Icon(
+                              Icon(
                                 Icons.spa_outlined,
                                 size: 34,
-                                color: AppColors.primary,
+                                color: palette.primary,
                               ),
                             ],
                           ),
@@ -327,13 +327,14 @@ class _BackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Material(
-      color: AppColors.primary.withValues(alpha: 0.08),
+      color: palette.tint(palette.primary, 0.08),
       shape: const CircleBorder(),
       child: IconButton(
         onPressed: onPressed,
         icon: const Icon(Icons.arrow_back_rounded),
-        color: AppColors.primaryDeep,
+        color: context.palette.primaryDeep,
         iconSize: 28,
         padding: const EdgeInsets.all(14),
       ),
@@ -392,8 +393,9 @@ class _RegisterFieldState extends State<_RegisterField> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     final borderColor = widget.errorText == null
-        ? AppColors.primary.withValues(alpha: 0.2)
+        ? palette.primary.withValues(alpha: 0.2)
         : Colors.redAccent.withValues(alpha: 0.65);
 
     return Column(
@@ -405,7 +407,7 @@ class _RegisterFieldState extends State<_RegisterField> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.76),
+            color: palette.surface.withValues(alpha: palette.isDark ? 1 : 0.76),
             borderRadius: BorderRadius.circular(AppDimensions.authFieldRadius),
             border: Border.all(color: borderColor),
           ),
@@ -416,10 +418,10 @@ class _RegisterFieldState extends State<_RegisterField> {
                 height: AppDimensions.authFieldIconSize,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: palette.tint(palette.primary, 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(widget.icon, color: AppColors.primary, size: 24),
+                child: Icon(widget.icon, color: palette.primary, size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -437,12 +439,12 @@ class _RegisterFieldState extends State<_RegisterField> {
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelStyle: textTheme.bodyMedium?.copyWith(
                       color: widget.errorText == null
-                          ? AppColors.authFieldLabel
+                          ? palette.authFieldLabel
                           : Colors.redAccent,
                       fontWeight: FontWeight.w600,
                     ),
                     hintStyle: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.authFieldHint,
+                      color: palette.authFieldHint,
                     ),
                     border: InputBorder.none,
                     isDense: true,
@@ -457,7 +459,7 @@ class _RegisterFieldState extends State<_RegisterField> {
                     _obscured
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
-                    color: AppColors.primary,
+                    color: palette.primary,
                   ),
                 ),
             ],
@@ -483,10 +485,10 @@ class _TermsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final baseStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
-      color: AppColors.authLegalText,
+      color: context.palette.authLegalText,
       height: 1.45,
     );
-    final linkStyle = baseStyle?.copyWith(color: AppColors.primaryDeep);
+    final linkStyle = baseStyle?.copyWith(color: context.palette.primaryDeep);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -494,8 +496,8 @@ class _TermsRow extends StatelessWidget {
         Checkbox(
           value: value,
           onChanged: (next) => onChanged(next ?? false),
-          activeColor: AppColors.primaryDeep,
-          side: const BorderSide(color: AppColors.primaryDeep, width: 1.8),
+          activeColor: context.palette.primaryDeep,
+          side: BorderSide(color: context.palette.primaryDeep, width: 1.8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         const SizedBox(width: 4),
@@ -539,8 +541,9 @@ class _LoginPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     final line = Expanded(
-      child: Divider(color: AppColors.primary.withValues(alpha: 0.18)),
+      child: Divider(color: palette.primary.withValues(alpha: 0.18)),
     );
 
     return Row(
@@ -558,7 +561,7 @@ class _LoginPrompt extends StatelessWidget {
                   Text(
                     context.l10n.alreadyHaveAccount,
                     style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.authPromptText,
+                      color: palette.authPromptText,
                     ),
                   ),
                   TextButton(

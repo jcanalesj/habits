@@ -135,15 +135,18 @@ class _WeightOnboardingDialogState extends State<WeightOnboardingDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     return Dialog.fullscreen(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.background,
       child: SafeArea(
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .72),
+                color: palette.surfaceElevated.withValues(
+                  alpha: palette.isDark ? 1 : .72,
+                ),
                 borderRadius: const BorderRadius.vertical(
                   bottom: Radius.circular(26),
                 ),
@@ -164,8 +167,8 @@ class _WeightOnboardingDialogState extends State<WeightOnboardingDialog> {
                         const SizedBox(height: 2),
                         Text(
                           l10n.weightOnboardingStep(_step + 1, _lastStep + 1),
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: palette.textSecondary,
                             fontWeight: FontWeight.w700,
                             fontSize: 12,
                           ),
@@ -184,10 +187,8 @@ class _WeightOnboardingDialogState extends State<WeightOnboardingDialog> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: index <= _step
-                                      ? AppColors.primary
-                                      : AppColors.primary.withValues(
-                                          alpha: .14,
-                                        ),
+                                      ? palette.primary
+                                      : palette.primary.withValues(alpha: .14),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
@@ -396,38 +397,41 @@ class _QuestionStep extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    padding: const EdgeInsets.fromLTRB(24, 26, 24, 16),
-    child: Column(
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: const Color(0xFFEDE5FF),
-            borderRadius: BorderRadius.circular(26),
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 26, 24, 16),
+      child: Column(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: palette.primarySoft,
+              borderRadius: BorderRadius.circular(26),
+            ),
+            child: Icon(icon, color: palette.primary, size: 34),
           ),
-          child: Icon(icon, color: AppColors.primary, size: 34),
-        ),
-        const SizedBox(height: 18),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
-        ),
-        const SizedBox(height: 9),
-        Text(
-          body,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.textSecondary, height: 1.4),
-        ),
-        const SizedBox(height: 22),
-        child,
-      ],
-    ),
-  );
+          const SizedBox(height: 18),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 9),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: palette.textSecondary, height: 1.4),
+          ),
+          const SizedBox(height: 22),
+          child,
+        ],
+      ),
+    );
+  }
 }
 
 class _NumberField extends StatelessWidget {
@@ -448,66 +452,69 @@ class _NumberField extends StatelessWidget {
   final bool error;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.only(left: 4, bottom: 7),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      TextField(
-        controller: controller,
-        textAlign: TextAlign.center,
-        keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(
-            RegExp(decimal ? r'[0-9,.]' : r'[0-9]'),
-          ),
-        ],
-        onChanged: (_) => onChanged(),
-        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 28),
-        decoration: InputDecoration(
-          hintText: hint,
-          suffixText: suffix,
-          filled: true,
-          fillColor: Colors.white,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide(
-              color: error
-                  ? Colors.redAccent
-                  : AppColors.primary.withValues(alpha: .12),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide(
-              color: error ? Colors.redAccent : AppColors.primary,
-              width: 2,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 7),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: palette.textSecondary,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
-      ),
-      const SizedBox(height: 7),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Text(
-          helper,
-          style: TextStyle(
-            color: error ? Colors.redAccent : AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: error ? FontWeight.w700 : FontWeight.w400,
+        TextField(
+          controller: controller,
+          textAlign: TextAlign.center,
+          keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(
+              RegExp(decimal ? r'[0-9,.]' : r'[0-9]'),
+            ),
+          ],
+          onChanged: (_) => onChanged(),
+          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 28),
+          decoration: InputDecoration(
+            hintText: hint,
+            suffixText: suffix,
+            filled: true,
+            fillColor: palette.surface,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(
+                color: error
+                    ? Colors.redAccent
+                    : palette.primary.withValues(alpha: .12),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(
+                color: error ? Colors.redAccent : palette.primary,
+                width: 2,
+              ),
+            ),
           ),
         ),
-      ),
-    ],
-  );
+        const SizedBox(height: 7),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            helper,
+            style: TextStyle(
+              color: error ? Colors.redAccent : palette.textSecondary,
+              fontSize: 12,
+              fontWeight: error ? FontWeight.w700 : FontWeight.w400,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _OptionList<T> extends StatelessWidget {
@@ -525,81 +532,86 @@ class _OptionList<T> extends StatelessWidget {
   final bool compact;
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      for (final option in options)
-        Padding(
-          padding: EdgeInsets.only(bottom: compact ? 7 : 10),
-          child: InkWell(
-            onTap: () => onChanged(option.$1),
-            borderRadius: BorderRadius.circular(18),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: compact ? 11 : 15,
-              ),
-              decoration: BoxDecoration(
-                color: value == option.$1
-                    ? AppColors.primary.withValues(alpha: .12)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: value == option.$1 ? AppColors.primary : Colors.white,
-                  width: 1.5,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Column(
+      children: [
+        for (final option in options)
+          Padding(
+            padding: EdgeInsets.only(bottom: compact ? 7 : 10),
+            child: InkWell(
+              onTap: () => onChanged(option.$1),
+              borderRadius: BorderRadius.circular(18),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: compact ? 11 : 15,
                 ),
-                boxShadow: value == option.$1
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: .10),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  Text(option.$3, style: const TextStyle(fontSize: 24)),
-                  const SizedBox(width: 13),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          option.$2,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
-                        ),
-                        if (descriptions[option.$1]
-                            case final description?) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            description,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                              height: 1.25,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    value == option.$1
-                        ? PhosphorIconsFill.checkCircle
-                        : PhosphorIconsRegular.circle,
+                decoration: BoxDecoration(
+                  color: value == option.$1
+                      ? palette.tint(palette.primary)
+                      : palette.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
                     color: value == option.$1
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                        ? palette.primary
+                        : palette.border,
+                    width: 1.5,
                   ),
-                ],
+                  boxShadow: value == option.$1
+                      ? [
+                          BoxShadow(
+                            color: palette.primary.withValues(alpha: .10),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  children: [
+                    Text(option.$3, style: const TextStyle(fontSize: 24)),
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            option.$2,
+                            style: const TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          if (descriptions[option.$1]
+                              case final description?) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              description,
+                              style: TextStyle(
+                                color: palette.textSecondary,
+                                fontSize: 12,
+                                height: 1.25,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      value == option.$1
+                          ? PhosphorIconsFill.checkCircle
+                          : PhosphorIconsRegular.circle,
+                      color: value == option.$1
+                          ? palette.primary
+                          : palette.textSecondary,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 class _ResultStep extends StatelessWidget {
@@ -613,102 +625,105 @@ class _ResultStep extends StatelessWidget {
   final double goal;
 
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
-    child: Column(
-      children: [
-        const Text('✨', style: TextStyle(fontSize: 68)),
-        const SizedBox(height: 14),
-        Text(
-          context.l10n.weightResultTitle,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: _ResultMetric(
-                label: context.l10n.weightCurrent,
-                value: '${current.toStringAsFixed(1)} kg',
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(
-                PhosphorIconsBold.arrowRight,
-                color: AppColors.primary,
-              ),
-            ),
-            Expanded(
-              child: _ResultMetric(
-                label: context.l10n.weightGoal,
-                value: '${goal.toStringAsFixed(1)} kg',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.gradientStart, AppColors.gradientEnd],
-            ),
-            borderRadius: BorderRadius.circular(26),
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+      child: Column(
+        children: [
+          const Text('✨', style: TextStyle(fontSize: 68)),
+          const SizedBox(height: 14),
+          Text(
+            context.l10n.weightResultTitle,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
           ),
-          child: Column(
+          const SizedBox(height: 14),
+          Row(
             children: [
-              Text(
-                context.l10n.weightEstimatedCalories,
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '$calories kcal',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 38,
+              Expanded(
+                child: _ResultMetric(
+                  label: context.l10n.weightCurrent,
+                  value: '${current.toStringAsFixed(1)} kg',
                 ),
               ),
-              Text(
-                context.l10n.weightPerDay,
-                style: const TextStyle(color: Colors.white),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(
+                  PhosphorIconsBold.arrowRight,
+                  color: palette.primary,
+                ),
+              ),
+              Expanded(
+                child: _ResultMetric(
+                  label: context.l10n.weightGoal,
+                  value: '${goal.toStringAsFixed(1)} kg',
+                ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 18),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0EAFF),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(PhosphorIconsBold.info, color: AppColors.primary),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Text(
-                  context.l10n.weightMedicalDisclaimer,
+          const SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppColors.gradientStart, AppColors.gradientEnd],
+              ),
+              borderRadius: BorderRadius.circular(26),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  context.l10n.weightEstimatedCalories,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$calories kcal',
                   style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    height: 1.35,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 38,
                   ),
                 ),
-              ),
-            ],
+                Text(
+                  context.l10n.weightPerDay,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: palette.primarySoft,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(PhosphorIconsBold.info, color: palette.primary),
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Text(
+                    context.l10n.weightMedicalDisclaimer,
+                    style: TextStyle(
+                      color: palette.textSecondary,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ResultMetric extends StatelessWidget {
@@ -717,21 +732,24 @@ class _ResultMetric extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-        ),
-        const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w900)),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(color: palette.textSecondary, fontSize: 12),
+          ),
+          const SizedBox(height: 2),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w900)),
+        ],
+      ),
+    );
+  }
 }

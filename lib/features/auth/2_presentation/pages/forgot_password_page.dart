@@ -64,6 +64,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     final state = ref.watch(forgotPasswordControllerProvider);
     final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
 
@@ -72,9 +73,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/backgrounds/login_background.png',
-            fit: BoxFit.cover,
+          const AuthBackground(
+            asset: 'assets/backgrounds/login_background.png',
           ),
           SafeArea(
             child: LayoutBuilder(
@@ -105,14 +105,12 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Material(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.08,
-                                ),
+                                color: palette.tint(palette.primary, 0.08),
                                 shape: const CircleBorder(),
                                 child: IconButton(
                                   onPressed: _back,
                                   icon: const Icon(Icons.arrow_back_rounded),
-                                  color: AppColors.primaryDeep,
+                                  color: context.palette.primaryDeep,
                                   iconSize: 28,
                                   padding: const EdgeInsets.all(14),
                                 ),
@@ -143,7 +141,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                                           AppDimensions.authSubtitleFontSize,
                                       color: state.sent
                                           ? AppColors.green
-                                          : AppColors.textSecondary,
+                                          : palette.textSecondary,
                                     ),
                                   ),
                                   const SizedBox(height: 14),

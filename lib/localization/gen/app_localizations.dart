@@ -1430,17 +1430,17 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get appearanceDarkTheme;
 
-  /// No description provided for @appearanceComingSoon.
+  /// No description provided for @appearanceThemeHint.
   ///
   /// In en, this message translates to:
-  /// **'A more comfortable experience at night'**
-  String get appearanceComingSoon;
+  /// **'Choose between the light and dark themes.'**
+  String get appearanceThemeHint;
 
-  /// No description provided for @appearanceSoon.
+  /// No description provided for @appearanceDarkThemeHint.
   ///
   /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get appearanceSoon;
+  /// **'Easier on the eyes at night'**
+  String get appearanceDarkThemeHint;
 
   /// No description provided for @appearanceAppIcon.
   ///

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:habits/features/auth/0_entity/entity.dart';
 
 /// Perfil del usuario en el backend (`users/{uid}` y sus ámbitos
@@ -28,6 +29,10 @@ abstract class UserProfileRepository {
 
   Stream<List<String>> watchCustomMotivationMessages(String userId);
 
+  /// Tema elegido (sistema, claro u oscuro). Emite null mientras el perfil no
+  /// tiene la preferencia guardada.
+  Stream<ThemeMode?> watchThemeMode(String userId);
+
   /// Indica si la suscripción del perfil concede funciones Premium.
   Stream<bool> watchIsPremium(String userId);
 
@@ -44,6 +49,8 @@ abstract class UserProfileRepository {
   Future<void> updateAvatarId(String userId, String avatarId);
 
   Future<void> updateWelcomeAnimationEnabled(String userId, bool enabled);
+
+  Future<void> updateThemeMode(String userId, ThemeMode mode);
 
   Future<void> updateCustomMotivationMessages(
     String userId,

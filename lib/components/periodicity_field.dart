@@ -36,6 +36,7 @@ class PeriodicityField extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     final maxTimes = _maxTimesFor(value.type);
 
     return Column(
@@ -70,7 +71,7 @@ class PeriodicityField extends StatelessWidget {
                 child: Text(
                   l10n.habitTimesLabel,
                   style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: palette.textSecondary,
                   ),
                 ),
               ),
@@ -111,7 +112,7 @@ class PeriodicityField extends StatelessWidget {
         Text(
           PeriodicityLabel.of(l10n, value),
           style: textTheme.bodyMedium?.copyWith(
-            color: AppColors.primary,
+            color: palette.primary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -120,7 +121,7 @@ class PeriodicityField extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.flame.withValues(alpha: 0.12),
+              color: palette.tint(AppColors.flame, .12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -136,7 +137,7 @@ class PeriodicityField extends StatelessWidget {
                   child: Text(
                     deferredNotice!,
                     style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: palette.textPrimary,
                     ),
                   ),
                 ),

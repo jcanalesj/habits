@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -19,7 +20,7 @@ class AppearancePage extends ConsumerWidget {
   }) async {
     final message = await showDialog<String>(
       context: context,
-      barrierColor: AppColors.textPrimary.withValues(alpha: .58),
+      barrierColor: context.palette.scrim,
       builder: (context) => _MotivationMessageDialog(
         initialValue: initialValue,
         editing: index != null,
@@ -39,7 +40,7 @@ class AppearancePage extends ConsumerWidget {
     if (!isPremium && messageCount >= freeMessageLimit) {
       await showDialog<void>(
         context: context,
-        barrierColor: AppColors.textPrimary.withValues(alpha: .62),
+        barrierColor: context.palette.scrim,
         builder: (_) => const _PremiumMessageLimitDialog(),
       );
       return;
@@ -50,8 +51,10 @@ class AppearancePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final palette = context.palette;
     final messages = ref.watch(customMotivationMessagesProvider);
     final isPremium = ref.watch(isPremiumProvider).value ?? false;
+    final themeMode = ref.watch(themeModeProvider);
     void addMessage() => _addMessage(
       context,
       ref,
@@ -80,7 +83,7 @@ class AppearancePage extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             l10n.personalizationYourMessagesHint,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: palette.textSecondary),
           ),
           const SizedBox(height: 12),
           if (messages.isEmpty)
@@ -111,7 +114,7 @@ class AppearancePage extends ConsumerWidget {
             children: [
               _SettingRow(
                 icon: PhosphorIconsBold.sparkle,
-                color: AppColors.primary,
+                color: palette.primary,
                 title: l10n.profileWelcomeAnimation,
                 subtitle: l10n.profileWelcomeAnimationHint,
                 trailing: Switch.adaptive(
@@ -124,12 +127,20 @@ class AppearancePage extends ConsumerWidget {
               ),
               const Divider(height: 1, indent: 72),
               _SettingRow(
-                icon: PhosphorIconsBold.moon,
+                icon: themeMode == ThemeMode.dark
+                    ? PhosphorIconsBold.moon
+                    : PhosphorIconsBold.sun,
                 color: AppColors.lilac,
-                title: l10n.appearanceDarkTheme,
-                subtitle: l10n.appearanceComingSoon,
-                muted: true,
-                trailing: _SoonPill(label: l10n.appearanceSoon),
+                title: l10n.appearanceTheme,
+                subtitle: l10n.appearanceThemeHint,
+                trailing: const SizedBox.shrink(),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                child: _ThemeModeSelector(
+                  value: themeMode,
+                  onChanged: ref.read(themeModeProvider.notifier).setMode,
+                ),
               ),
             ],
           ),
@@ -145,10 +156,11 @@ class _PremiumMessageLimitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     return Dialog(
       key: const ValueKey('premium-message-limit-dialog'),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      backgroundColor: const Color(0xFFFCFAFF),
+      backgroundColor: palette.dialogSurface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 430),
@@ -168,7 +180,7 @@ class _PremiumMessageLimitDialog extends StatelessWidget {
                 l10n.premiumMessageLimitTitle,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: palette.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -177,7 +189,7 @@ class _PremiumMessageLimitDialog extends StatelessWidget {
                 l10n.premiumMessageLimitBody,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: palette.textSecondary,
                   height: 1.4,
                 ),
               ),
@@ -207,6 +219,7 @@ class _PremiumMessageLimitDialog extends StatelessWidget {
                         onPressed: () => Navigator.pop(context),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.transparent,
+                          side: BorderSide.none,
                           shadowColor: Colors.transparent,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
@@ -258,10 +271,11 @@ class _MotivationMessageDialogState extends State<_MotivationMessageDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     return Dialog(
       key: const ValueKey('motivation-message-dialog'),
       insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
-      backgroundColor: const Color(0xFFFCFAFF),
+      backgroundColor: palette.dialogSurface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 430),
@@ -274,14 +288,16 @@ class _MotivationMessageDialogState extends State<_MotivationMessageDialog> {
                 width: 62,
                 height: 62,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFE7DCFF), Color(0xFFFFE9F5)],
+                  gradient: LinearGradient(
+                    colors: palette.isDark
+                        ? [palette.primarySoft, palette.tint(AppColors.pink)]
+                        : const [Color(0xFFE7DCFF), Color(0xFFFFE9F5)],
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(
+                child: Icon(
                   PhosphorIconsFill.quotes,
-                  color: AppColors.primary,
+                  color: palette.primary,
                   size: 31,
                 ),
               ),
@@ -292,7 +308,7 @@ class _MotivationMessageDialogState extends State<_MotivationMessageDialog> {
                     : l10n.personalizationAddMessage,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: palette.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -300,7 +316,7 @@ class _MotivationMessageDialogState extends State<_MotivationMessageDialog> {
               Text(
                 l10n.personalizationMessageHint,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: palette.textSecondary),
               ),
               const SizedBox(height: 20),
               TextField(
@@ -316,7 +332,7 @@ class _MotivationMessageDialogState extends State<_MotivationMessageDialog> {
                   hintText: l10n.personalizationDefaultPreview,
                   counterText: '${_message.characters.length}/100',
                   filled: true,
-                  fillColor: AppColors.primary.withValues(alpha: .055),
+                  fillColor: palette.inputFill,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide.none,
@@ -324,15 +340,12 @@ class _MotivationMessageDialogState extends State<_MotivationMessageDialog> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide(
-                      color: AppColors.primary.withValues(alpha: .16),
+                      color: palette.primary.withValues(alpha: .16),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 2,
-                    ),
+                    borderSide: BorderSide(color: palette.primary, width: 2),
                   ),
                 ),
               ),
@@ -357,7 +370,7 @@ class _MotivationMessageDialogState extends State<_MotivationMessageDialog> {
                             : null,
                         color: _canSave
                             ? null
-                            : AppColors.textSecondary.withValues(alpha: .18),
+                            : palette.textSecondary.withValues(alpha: .18),
                         borderRadius: const BorderRadius.all(
                           Radius.circular(999),
                         ),
@@ -369,6 +382,7 @@ class _MotivationMessageDialogState extends State<_MotivationMessageDialog> {
                             : null,
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.transparent,
+                          side: BorderSide.none,
                           disabledBackgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
                           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -394,42 +408,47 @@ class _MotivationPreview extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 138,
-    clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        colors: [Color(0xFFE7DCFF), Color(0xFFDFF7F1)],
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      height: 138,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: palette.isDark
+              ? [palette.primarySoft, palette.tint(AppColors.green, .14)]
+              : const [Color(0xFFE7DCFF), Color(0xFFDFF7F1)],
+        ),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: palette.border, width: 2),
       ),
-      borderRadius: BorderRadius.circular(26),
-      border: Border.all(color: Colors.white, width: 2),
-    ),
-    child: Row(
-      children: [
-        const Expanded(child: UserAvatar(size: 122)),
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.only(right: 14),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .88),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              message,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w800,
-                height: 1.3,
+      child: Row(
+        children: [
+          const Expanded(child: UserAvatar(size: 122)),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(right: 14),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: palette.surface.withValues(alpha: .88),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                message,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: palette.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  height: 1.3,
+                ),
               ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _EmptyMessages extends StatelessWidget {
@@ -438,7 +457,7 @@ class _EmptyMessages extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(20),
-    decoration: _cardDecoration(),
+    decoration: _cardDecoration(context),
     child: Column(
       children: [
         const Icon(PhosphorIconsFill.quotes, color: AppColors.lilac, size: 34),
@@ -446,7 +465,7 @@ class _EmptyMessages extends StatelessWidget {
         Text(
           context.l10n.personalizationNoMessages,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: context.palette.textSecondary),
         ),
         const SizedBox(height: 12),
         _AddButton(onPressed: onAdd),
@@ -468,7 +487,7 @@ class _AddButton extends StatelessWidget {
       label: Text(context.l10n.personalizationAddMessage),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
-        side: const BorderSide(color: AppColors.primary, width: 1.5),
+        side: BorderSide(color: context.palette.primary, width: 1.5),
       ),
     ),
   );
@@ -486,7 +505,7 @@ class _MessageTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
-    decoration: _cardDecoration(),
+    decoration: _cardDecoration(context),
     child: Row(
       children: [
         const Icon(PhosphorIconsFill.quotes, color: AppColors.lilac),
@@ -500,9 +519,9 @@ class _MessageTile extends StatelessWidget {
         IconButton(
           onPressed: onEdit,
           tooltip: context.l10n.edit,
-          icon: const Icon(
+          icon: Icon(
             PhosphorIconsBold.pencilSimple,
-            color: AppColors.primary,
+            color: context.palette.primary,
           ),
         ),
         IconButton(
@@ -520,16 +539,19 @@ class _Card extends StatelessWidget {
   final List<Widget> children;
   @override
   Widget build(BuildContext context) => Container(
-    decoration: _cardDecoration(),
+    decoration: _cardDecoration(context),
     child: Column(children: children),
   );
 }
 
-BoxDecoration _cardDecoration() => BoxDecoration(
-  color: Colors.white.withValues(alpha: .84),
-  borderRadius: BorderRadius.circular(24),
-  border: Border.all(color: Colors.white),
-);
+BoxDecoration _cardDecoration(BuildContext context) {
+  final palette = context.palette;
+  return BoxDecoration(
+    color: palette.surface.withValues(alpha: palette.isDark ? 1 : .84),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(color: palette.border),
+  );
+}
 
 class _SettingRow extends StatelessWidget {
   const _SettingRow({
@@ -538,73 +560,285 @@ class _SettingRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.trailing,
-    this.muted = false,
   });
   final IconData icon;
   final Color color;
   final String title;
   final String subtitle;
   final Widget trailing;
-  final bool muted;
   @override
-  Widget build(BuildContext context) => Opacity(
-    opacity: muted ? .62 : 1,
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: .12),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Icon(icon, color: color, size: 25),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+    child: Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: context.palette.tint(color),
+            borderRadius: BorderRadius.circular(15),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
+          child: Icon(icon, color: color, size: 25),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
                 ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: AppColors.textSecondary),
-                ),
-              ],
-            ),
+              ),
+              Text(
+                subtitle,
+                style: TextStyle(color: context.palette.textSecondary),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          trailing,
-        ],
-      ),
+        ),
+        const SizedBox(width: 8),
+        trailing,
+      ],
     ),
   );
 }
 
-class _SoonPill extends StatelessWidget {
-  const _SoonPill({required this.label});
-  final String label;
+/// Selector de tema: claro y oscuro en tarjetas
+/// iguales, con una miniatura que anticipa el resultado. La opción activa se
+/// resalta con el acento y una marca; el resto se atenúa sin desaparecer.
+class _ThemeModeSelector extends StatelessWidget {
+  const _ThemeModeSelector({required this.value, required this.onChanged});
+
+  final ThemeMode value;
+  final ValueChanged<ThemeMode> onChanged;
+
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF0EAFF),
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: Text(
-      label,
-      style: const TextStyle(
-        color: AppColors.primary,
-        fontWeight: FontWeight.w800,
-        fontSize: 11,
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Row(
+      children: [
+        Expanded(
+          child: _ThemeModeOption(
+            key: const ValueKey('theme-mode-light'),
+            mode: ThemeMode.light,
+            icon: PhosphorIconsBold.sun,
+            label: l10n.appearanceLightTheme,
+            selected: value == ThemeMode.light,
+            onTap: () => onChanged(ThemeMode.light),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _ThemeModeOption(
+            key: const ValueKey('theme-mode-dark'),
+            mode: ThemeMode.dark,
+            icon: PhosphorIconsBold.moon,
+            label: l10n.appearanceDarkTheme,
+            selected: value == ThemeMode.dark,
+            onTap: () => onChanged(ThemeMode.dark),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ThemeModeOption extends StatelessWidget {
+  const _ThemeModeOption({
+    super.key,
+    required this.mode,
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ThemeMode mode;
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final foreground = selected ? palette.primary : palette.textSecondary;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
+            decoration: BoxDecoration(
+              color: selected ? palette.primarySoft : palette.surfaceMuted,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: selected ? palette.primary : palette.divider,
+                width: selected ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _ThemeMiniature(mode: mode, selected: selected),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, color: foreground, size: 15),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: foreground,
+                          fontSize: 12.5,
+                          fontWeight: selected
+                              ? FontWeight.w900
+                              : FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Miniatura de pantalla: fondo, una tarjeta y una barra de acento con los
+/// colores reales de la paleta que representa.
+class _ThemeMiniature extends StatelessWidget {
+  const _ThemeMiniature({required this.mode, required this.selected});
+
+  final ThemeMode mode;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final current = context.palette;
+    final light = AppPalette.light;
+    final dark = AppPalette.dark;
+    final child = switch (mode) {
+      ThemeMode.light => _MiniScreen(palette: light),
+      ThemeMode.dark => _MiniScreen(palette: dark),
+      ThemeMode.system => _MiniScreen(palette: light),
+    };
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        AspectRatio(
+          aspectRatio: 1.35,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(11),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: current.divider),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: child,
+            ),
+          ),
+        ),
+        if (selected)
+          Positioned(
+            top: -6,
+            right: -6,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: current.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: current.surface, width: 2),
+              ),
+              child: Icon(
+                PhosphorIconsBold.check,
+                size: 11,
+                color: current.onPrimary,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _MiniScreen extends StatelessWidget {
+  const _MiniScreen({required this.palette});
+
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: palette.background,
+    child: Padding(
+      padding: const EdgeInsets.all(7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 22,
+            height: 5,
+            decoration: BoxDecoration(
+              color: palette.textPrimary,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(height: 5),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: palette.surface,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: palette.border),
+              ),
+              padding: const EdgeInsets.all(5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 4,
+                    width: 18,
+                    decoration: BoxDecoration(
+                      color: palette.textSecondary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    height: 5,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          AppColors.gradientStart,
+                          AppColors.gradientEnd,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     ),
   );

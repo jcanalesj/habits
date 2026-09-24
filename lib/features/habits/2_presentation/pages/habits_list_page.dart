@@ -21,7 +21,7 @@ class HabitsListPage extends ConsumerWidget {
   static Future<void> openEditHabit(BuildContext context, Habit habit) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      barrierColor: AppColors.textPrimary.withValues(alpha: 0.62),
+      barrierColor: context.palette.scrim,
       builder: (_) => const _EditHabitWarningDialog(),
     );
     if (confirmed == true && context.mounted) {
@@ -36,7 +36,7 @@ class HabitsListPage extends ConsumerWidget {
     if (activeHabitCount >= freeHabitLimit) {
       final continueToCreate = await showDialog<bool>(
         context: context,
-        barrierColor: AppColors.textPrimary.withValues(alpha: 0.62),
+        barrierColor: context.palette.scrim,
         builder: (_) => const _PremiumHabitLimitDialog(),
       );
       if (continueToCreate != true || !context.mounted) return;
@@ -85,11 +85,12 @@ class _PremiumHabitLimitDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     return Dialog(
       key: const ValueKey('premium-habit-limit-dialog'),
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      backgroundColor: const Color(0xFFFCFBFF),
+      backgroundColor: palette.dialogSurface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480, maxHeight: 760),
@@ -110,7 +111,7 @@ class _PremiumHabitLimitDialog extends StatelessWidget {
                 l10n.premiumHabitLimitTitle,
                 textAlign: TextAlign.center,
                 style: textTheme.headlineSmall?.copyWith(
-                  color: AppColors.authHeading,
+                  color: palette.authHeading,
                   fontWeight: FontWeight.w900,
                   height: 1.15,
                 ),
@@ -120,7 +121,7 @@ class _PremiumHabitLimitDialog extends StatelessWidget {
                 l10n.premiumHabitLimitBody,
                 textAlign: TextAlign.center,
                 style: textTheme.bodyLarge?.copyWith(
-                  color: AppColors.authSecondary,
+                  color: palette.authSecondary,
                   height: 1.42,
                 ),
               ),
@@ -132,7 +133,7 @@ class _PremiumHabitLimitDialog extends StatelessWidget {
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: .055),
+                  color: palette.tint(palette.primary, .055),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Column(
@@ -164,7 +165,7 @@ class _PremiumHabitLimitDialog extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
+                        foregroundColor: palette.primary,
                         side: const BorderSide(
                           color: AppColors.gradientStart,
                           width: 1.5,
@@ -192,6 +193,7 @@ class _PremiumHabitLimitDialog extends StatelessWidget {
                         onPressed: () => Navigator.pop(context, true),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.transparent,
+                          side: BorderSide.none,
                           shadowColor: Colors.transparent,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -226,41 +228,44 @@ class _PremiumBenefit extends StatelessWidget {
   final String subtitle;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: .1),
-          shape: BoxShape.circle,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: palette.tint(palette.primary, .1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: context.palette.primary, size: 26),
         ),
-        child: Icon(icon, color: AppColors.gradientEnd, size: 26),
-      ),
-      const SizedBox(width: 14),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: AppColors.authHeading,
-                fontWeight: FontWeight.w800,
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: palette.authHeading,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.authSecondary),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: palette.authSecondary),
+              ),
+            ],
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 class _Content extends ConsumerWidget {
@@ -275,6 +280,7 @@ class _Content extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final palette = context.palette;
 
     if (summary.habits.isEmpty) {
       return const _EmptyHabits();
@@ -299,7 +305,7 @@ class _Content extends ConsumerWidget {
                   Text(
                     l10n.myHabitsManageSubtitle,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                     ),
                   ),
                 ],
@@ -310,8 +316,8 @@ class _Content extends ConsumerWidget {
                 key: const ValueKey('open-habit-calendars'),
                 onPressed: () => context.go('/habits'),
                 style: FilledButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.10),
+                  foregroundColor: palette.primary,
+                  backgroundColor: palette.tint(palette.primary, .10),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 11,
@@ -335,8 +341,17 @@ class _Content extends ConsumerWidget {
                     activeHabitCount: summary.habits.length,
                   ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: palette.isDark
+                        ? palette.primarySoft
+                        : palette.primary,
+                    foregroundColor: palette.isDark
+                        ? palette.primaryDeep
+                        : palette.onPrimary,
+                    side: palette.isDark
+                        ? BorderSide(
+                            color: palette.primary.withValues(alpha: .52),
+                          )
+                        : null,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 11,
@@ -408,11 +423,14 @@ class _ManageHabitsGroup extends StatelessWidget {
             onTap: () => onEdit(habit),
             dragHandle: ReorderableDragStartListener(
               index: index,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 16,
+                ),
                 child: Icon(
                   Icons.drag_indicator_rounded,
-                  color: AppColors.textSecondary,
+                  color: context.palette.textSecondary,
                   size: 28,
                 ),
               ),
@@ -441,6 +459,8 @@ class _ManageHabitCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = Color(habit.colorValue);
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
+    final tintEnd = color.withValues(alpha: 0.18);
 
     return Semantics(
       button: true,
@@ -457,12 +477,14 @@ class _ManageHabitCard extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withValues(alpha: 0.72),
-                  color.withValues(alpha: 0.18),
+                  palette.surface.withValues(alpha: palette.isDark ? 1 : 0.72),
+                  palette.isDark
+                      ? Color.alphaBlend(tintEnd, palette.surface)
+                      : tintEnd,
                 ],
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
+              border: Border.all(color: palette.border),
             ),
             child: Row(
               children: [
@@ -473,7 +495,7 @@ class _ManageHabitCard extends StatelessWidget {
                   height: 72,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4F1FC),
+                    color: palette.surfaceMuted,
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: HabitIcon(
@@ -492,7 +514,7 @@ class _ManageHabitCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: textTheme.titleMedium?.copyWith(
-                          color: AppColors.textPrimary,
+                          color: palette.textPrimary,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -505,7 +527,7 @@ class _ManageHabitCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
+                          color: palette.textSecondary,
                         ),
                       ),
                     ],
@@ -517,12 +539,14 @@ class _ManageHabitCard extends StatelessWidget {
                   height: 46,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.55),
+                    color: palette.isDark
+                        ? palette.surfaceMuted
+                        : palette.surface.withValues(alpha: 0.55),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsBold.pencilSimple,
-                    color: AppColors.primary,
+                    color: palette.primary,
                     size: 22,
                   ),
                 ),
@@ -542,6 +566,7 @@ class _EmptyHabits extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
     void createHabit() => context.push('/habit/new');
 
     return ListView(
@@ -565,7 +590,7 @@ class _EmptyHabits extends StatelessWidget {
                   Text(
                     l10n.myHabitsManageSubtitle,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                       height: 1.35,
                     ),
                   ),
@@ -577,8 +602,15 @@ class _EmptyHabits extends StatelessWidget {
               key: const ValueKey('empty-add-habit-top'),
               onPressed: createHabit,
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: palette.isDark
+                    ? palette.primarySoft
+                    : palette.primary,
+                foregroundColor: palette.isDark
+                    ? palette.primaryDeep
+                    : palette.onPrimary,
+                side: palette.isDark
+                    ? BorderSide(color: palette.primary.withValues(alpha: .52))
+                    : null,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 13,
@@ -610,7 +642,7 @@ class _EmptyHabits extends StatelessWidget {
           l10n.emptyHabitsBody,
           textAlign: TextAlign.center,
           style: textTheme.bodyMedium?.copyWith(
-            color: AppColors.textSecondary,
+            color: palette.textSecondary,
             height: 1.45,
           ),
         ),
@@ -621,8 +653,15 @@ class _EmptyHabits extends StatelessWidget {
             key: const ValueKey('empty-add-first-habit'),
             onPressed: createHabit,
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              backgroundColor: palette.isDark
+                  ? palette.primarySoft
+                  : palette.primary,
+              foregroundColor: palette.isDark
+                  ? palette.primaryDeep
+                  : palette.onPrimary,
+              side: palette.isDark
+                  ? BorderSide(color: palette.primary.withValues(alpha: .52))
+                  : null,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: const StadiumBorder(),
             ),
@@ -639,7 +678,7 @@ class _EmptyHabits extends StatelessWidget {
               child: Text(
                 l10n.needIdeas,
                 style: textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: palette.textSecondary,
                 ),
               ),
             ),
@@ -651,7 +690,7 @@ class _EmptyHabits extends StatelessWidget {
           children: [
             _HabitIdea(
               icon: PhosphorIconsRegular.sneakerMove,
-              color: AppColors.primary,
+              color: palette.primary,
               label: l10n.habitIdeaExercise,
             ),
             _HabitIdea(
@@ -666,7 +705,7 @@ class _EmptyHabits extends StatelessWidget {
             ),
             _HabitIdea(
               icon: PhosphorIconsRegular.moon,
-              color: AppColors.primary,
+              color: palette.primary,
               label: l10n.habitIdeaSleep,
             ),
           ],
@@ -688,30 +727,36 @@ class _HabitIdea extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Container(
-        height: 92,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(label, style: Theme.of(context).textTheme.bodySmall),
-            ),
-          ],
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Container(
+          height: 92,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          decoration: BoxDecoration(
+            color: palette.surface.withValues(alpha: palette.isDark ? 1 : 0.72),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(height: 8),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _EditHabitWarningDialog extends StatelessWidget {
@@ -721,11 +766,12 @@ class _EditHabitWarningDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-      backgroundColor: const Color(0xFFFCFBFF),
+      backgroundColor: palette.dialogSurface,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480, maxHeight: 760),
         child: SingleChildScrollView(
@@ -738,8 +784,8 @@ class _EditHabitWarningDialog extends StatelessWidget {
                 child: IconButton.filledTonal(
                   onPressed: () => Navigator.pop(context, false),
                   style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.08),
-                    foregroundColor: AppColors.textSecondary,
+                    backgroundColor: palette.tint(palette.primary, .08),
+                    foregroundColor: palette.textSecondary,
                     minimumSize: const Size(48, 48),
                   ),
                   icon: const Icon(Icons.close_rounded, size: 28),
@@ -762,7 +808,7 @@ class _EditHabitWarningDialog extends StatelessWidget {
                       l10n.editHabitWarningTitle,
                       textAlign: TextAlign.center,
                       style: textTheme.headlineSmall?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: palette.textPrimary,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -771,7 +817,7 @@ class _EditHabitWarningDialog extends StatelessWidget {
                       l10n.editHabitWarningBody,
                       textAlign: TextAlign.center,
                       style: textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                         height: 1.45,
                       ),
                     ),
@@ -780,7 +826,7 @@ class _EditHabitWarningDialog extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.055),
+                        color: palette.tint(palette.primary, .055),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Column(
@@ -809,11 +855,9 @@ class _EditHabitWarningDialog extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context, false),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
+                              foregroundColor: palette.primary,
                               side: BorderSide(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.35,
-                                ),
+                                color: palette.primary.withValues(alpha: 0.35),
                                 width: 1.5,
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 15),
@@ -877,6 +921,7 @@ class _WarningPoint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Row(
       children: [
         Container(
@@ -884,17 +929,17 @@ class _WarningPoint extends StatelessWidget {
           height: 42,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.10),
+            color: palette.tint(palette.primary, .10),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: AppColors.primary, size: 23),
+          child: Icon(icon, color: palette.primary, size: 23),
         ),
         const SizedBox(width: 14),
         Expanded(
           child: Text(
             text,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
+              color: palette.textSecondary,
               height: 1.25,
             ),
           ),
@@ -912,6 +957,7 @@ class _AmbitoHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = Color(ambito.colorValue);
+    final palette = context.palette;
 
     return Row(
       children: [
@@ -920,7 +966,7 @@ class _AmbitoHeader extends StatelessWidget {
           height: 36,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.14),
+            color: palette.tint(color, .14),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(ambito.emoji, style: const TextStyle(fontSize: 18)),
@@ -930,7 +976,7 @@ class _AmbitoHeader extends StatelessWidget {
           child: Text(
             ambito.name,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.textPrimary,
+              color: palette.textPrimary,
               fontWeight: FontWeight.w800,
             ),
           ),

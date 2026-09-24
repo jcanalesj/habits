@@ -37,119 +37,119 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
     if (!avatar.isSelectable) {
       await showDialog<void>(
         context: context,
-        builder: (context) => Dialog(
-          key: const ValueKey('premium-avatar-dialog'),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          backgroundColor: const Color(0xFFFCFBFF),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    CatMascot(size: 126, avatarId: avatar.id),
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                      ),
-                      child: const Icon(
-                        PhosphorIconsFill.lock,
-                        color: Colors.white,
-                        size: 19,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  context.l10n.avatarPremiumTitle,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  context.l10n.avatarPremiumBody,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Row(
+        builder: (context) {
+          final palette = context.palette;
+          return Dialog(
+            key: const ValueKey('premium-avatar-dialog'),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+            backgroundColor: palette.dialogSurface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    alignment: Alignment.bottomRight,
                     children: [
-                      const Icon(
-                        PhosphorIconsFill.sparkle,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              context.l10n.avatarPremiumBenefitTitle,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            Text(
-                              context.l10n.avatarPremiumBenefitBody,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
+                      CatMascot(size: 126, avatarId: avatar.id),
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: palette.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: palette.dialogSurface,
+                            width: 3,
+                          ),
+                        ),
+                        child: Icon(
+                          PhosphorIconsFill.lock,
+                          color: palette.onPrimary,
+                          size: 19,
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(context.l10n.premiumNotNow),
-                      ),
+                  const SizedBox(height: 18),
+                  Text(
+                    context.l10n.avatarPremiumTitle,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: FilledButton(
-                        key: const ValueKey('avatar-view-premium-plans'),
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          context.l10n.premiumViewPlans,
-                          textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    context.l10n.avatarPremiumBody,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: palette.textSecondary, height: 1.4),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: palette.primarySoft,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(PhosphorIconsFill.sparkle, color: palette.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                context.l10n.avatarPremiumBenefitTitle,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Text(
+                                context.l10n.avatarPremiumBenefitBody,
+                                style: TextStyle(
+                                  color: palette.textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(context.l10n.premiumNotNow),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton(
+                          key: const ValueKey('avatar-view-premium-plans'),
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            context.l10n.premiumViewPlans,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       );
       return;
     }
@@ -186,8 +186,8 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
             child: Text(
               context.l10n.chooseAvatarSubtitle,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.palette.textSecondary,
                 fontSize: 16,
               ),
             ),
@@ -234,6 +234,7 @@ class _AvatarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locked = !avatar.isSelectable;
+    final palette = context.palette;
     return Semantics(
       button: true,
       selected: selected,
@@ -244,8 +245,8 @@ class _AvatarCard extends StatelessWidget {
         curve: Curves.easeOut,
         child: Material(
           color: selected
-              ? const Color(0xFFF0EAFF)
-              : Colors.white.withValues(alpha: .78),
+              ? palette.primarySoft
+              : palette.surface.withValues(alpha: palette.isDark ? 1 : .78),
           borderRadius: BorderRadius.circular(24),
           child: InkWell(
             onTap: onTap,
@@ -256,7 +257,7 @@ class _AvatarCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: selected ? AppColors.primary : Colors.white,
+                  color: selected ? palette.primary : palette.border,
                   width: selected ? 2.5 : 1,
                 ),
               ),
@@ -277,25 +278,25 @@ class _AvatarCard extends StatelessWidget {
                         if (locked)
                           Container(
                             padding: const EdgeInsets.all(9),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
+                            decoration: BoxDecoration(
+                              color: palette.surface,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               PhosphorIconsFill.lock,
-                              color: AppColors.primary,
+                              color: palette.primary,
                             ),
                           ),
                         if (selected)
-                          const Positioned(
+                          Positioned(
                             right: 2,
                             top: 2,
                             child: CircleAvatar(
                               radius: 14,
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: palette.primary,
                               child: Icon(
                                 PhosphorIconsBold.check,
-                                color: Colors.white,
+                                color: palette.onPrimary,
                                 size: 17,
                               ),
                             ),
@@ -317,9 +318,7 @@ class _AvatarCard extends StatelessWidget {
                         ? context.l10n.avatarPremium
                         : context.l10n.avatarAvailable,
                     style: TextStyle(
-                      color: selected
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
+                      color: selected ? palette.primary : palette.textSecondary,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),

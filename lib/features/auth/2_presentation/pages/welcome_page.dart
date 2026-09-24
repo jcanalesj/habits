@@ -16,6 +16,7 @@ class WelcomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     void start() {
       // Limpia la marca antes de navegar: el redirect deja de anclar aquí.
@@ -27,9 +28,8 @@ class WelcomePage extends ConsumerWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/backgrounds/splash_background.png',
-            fit: BoxFit.cover,
+          const AuthBackground(
+            asset: 'assets/backgrounds/splash_background.png',
           ),
           SafeArea(
             child: Padding(
@@ -47,7 +47,7 @@ class WelcomePage extends ConsumerWidget {
                         width: 34,
                         height: 3,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.6),
+                          color: palette.primary.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -56,7 +56,7 @@ class WelcomePage extends ConsumerWidget {
                         l10n.welcomeTitle,
                         textAlign: TextAlign.center,
                         style: textTheme.headlineSmall?.copyWith(
-                          color: AppColors.authHeading,
+                          color: palette.authHeading,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -65,9 +65,7 @@ class WelcomePage extends ConsumerWidget {
                       Text.rich(
                         TextSpan(
                           style: textTheme.titleMedium?.copyWith(
-                            color: AppColors.authHeading.withValues(
-                              alpha: 0.82,
-                            ),
+                            color: palette.authHeading.withValues(alpha: 0.82),
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
                             height: 1.45,
@@ -77,8 +75,8 @@ class WelcomePage extends ConsumerWidget {
                             TextSpan(text: l10n.welcomeMessage),
                             TextSpan(
                               text: l10n.welcomeMessageHighlight,
-                              style: const TextStyle(
-                                color: AppColors.primaryDeep,
+                              style: TextStyle(
+                                color: context.palette.primaryDeep,
                                 fontWeight: FontWeight.w800,
                                 height: 1.45,
                               ),

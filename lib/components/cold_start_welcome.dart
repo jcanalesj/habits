@@ -91,6 +91,7 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
       animation: _controller,
       child: widget.child,
       builder: (context, child) {
+        final palette = context.palette;
         final value = _controller.value;
         final reveal = _reduceMotion
             ? Curves.easeOut.transform(value)
@@ -127,7 +128,7 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      const ColoredBox(color: AppColors.background),
+                      ColoredBox(color: palette.background),
                       Positioned.fill(
                         child: Opacity(
                           opacity: .15,
@@ -214,18 +215,18 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
                                   24,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: .9),
+                                  color: palette.surface.withValues(
+                                    alpha: palette.isDark ? 1 : .9,
+                                  ),
                                   borderRadius: BorderRadius.circular(28),
                                   border: Border.all(
-                                    color: AppColors.primary.withValues(
+                                    color: palette.primary.withValues(
                                       alpha: .14,
                                     ),
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.primary.withValues(
-                                        alpha: .10,
-                                      ),
+                                      color: palette.shadow,
                                       blurRadius: 28,
                                       offset: const Offset(0, 12),
                                     ),
@@ -237,7 +238,7 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
                                     Icon(
                                       Icons.format_quote_rounded,
                                       size: 34,
-                                      color: AppColors.primary.withValues(
+                                      color: palette.primary.withValues(
                                         alpha: .85,
                                       ),
                                     ),
@@ -249,7 +250,7 @@ class _ColdStartWelcomeState extends State<ColdStartWelcome>
                                           .textTheme
                                           .headlineSmall
                                           ?.copyWith(
-                                            color: AppColors.textPrimary,
+                                            color: palette.textPrimary,
                                             fontWeight: FontWeight.w800,
                                             height: 1.25,
                                           ),

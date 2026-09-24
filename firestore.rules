@@ -146,6 +146,7 @@ service cloud.firestore {
       allow create: if isOwner(uid)
         && validUser(incoming())
         && incoming().email == request.auth.token.email
+        && incoming().themeMode == 'light'
         && incoming().subscription == {'status': 'free'}
         && isServerTime(incoming().createdAt)
         && isServerTime(incoming().updatedAt)
@@ -170,6 +171,7 @@ service cloud.firestore {
             'email', 'displayName', 'avatarId', 'timezone', 'timezoneAutomatic',
             'welcomeAnimationEnabled',
             'customMotivationMessages',
+            'themeMode',
             'locale', 'subscription',
             'onboardingCompleted', 'createdAt', 'updatedAt', 'lastActiveAt'
           ])
@@ -183,6 +185,9 @@ service cloud.firestore {
           && isShortText(d.timezone, 64)
           && (!('timezoneAutomatic' in d) || d.timezoneAutomatic is bool)
           && (!('welcomeAnimationEnabled' in d) || d.welcomeAnimationEnabled is bool)
+          // `system` solo se tolera para no bloquear perfiles anteriores a
+          // la preferencia binaria; los clientes actuales lo migran a light.
+          && (!('themeMode' in d) || d.themeMode in ['system', 'light', 'dark'])
           && (!('customMotivationMessages' in d) || (
             d.customMotivationMessages is list
             && d.customMotivationMessages.size() <= 20

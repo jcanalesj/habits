@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habits/theme/app_theme.dart';
 
 /// Tarjeta blanca redondeada con sombra suave, contenedor base de
 /// formularios y secciones destacadas.
@@ -14,14 +15,15 @@ class SurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: palette.surface.withValues(alpha: palette.isDark ? 1 : 0.92),
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6D28D9).withValues(alpha: 0.08),
+            color: palette.shadow,
             blurRadius: 30,
             offset: const Offset(0, 12),
           ),

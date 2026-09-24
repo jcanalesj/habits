@@ -270,7 +270,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
-      barrierColor: AppColors.textPrimary.withValues(alpha: .48),
+      barrierColor: context.palette.scrim,
       builder: (context) => _DeleteHabitDialog(
         habitName: _nameController.text,
         emoji: _emojiController.text,
@@ -293,6 +293,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     final today = ref.watch(todayProvider);
     final ambitos = ref.watch(ambitosProvider).value ?? const <Ambito>[];
 
@@ -345,10 +346,10 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                 ] else ...[
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.lock_outline_rounded,
                         size: 18,
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -364,7 +365,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                   Text(
                     l10n.habitIdentityLockedHint,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -503,7 +504,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                   Text(
                     l10n.habitProgressIconSubtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -591,6 +592,7 @@ class _DeleteHabitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     final textTheme = Theme.of(context).textTheme;
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -598,7 +600,7 @@ class _DeleteHabitDialog extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Material(
-          color: const Color(0xFFFFFCFD),
+          color: palette.dialogSurface,
           elevation: 0,
           borderRadius: BorderRadius.circular(32),
           clipBehavior: Clip.antiAlias,
@@ -614,7 +616,9 @@ class _DeleteHabitDialog extends StatelessWidget {
                       height: 82,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFEDEF),
+                        color: palette.isDark
+                            ? palette.tint(const Color(0xFFE05262), .16)
+                            : const Color(0xFFFFEDEF),
                         borderRadius: BorderRadius.circular(26),
                       ),
                       child: Text(emoji, style: const TextStyle(fontSize: 42)),
@@ -624,7 +628,7 @@ class _DeleteHabitDialog extends StatelessWidget {
                       l10n.deleteHabitConfirmTitle,
                       textAlign: TextAlign.center,
                       style: textTheme.headlineSmall?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: palette.textPrimary,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -643,15 +647,15 @@ class _DeleteHabitDialog extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF7F4FD),
+                        color: palette.surfaceMuted,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.history_rounded,
-                            color: AppColors.primary,
+                            color: palette.primary,
                             size: 23,
                           ),
                           const SizedBox(width: 12),
@@ -659,7 +663,7 @@ class _DeleteHabitDialog extends StatelessWidget {
                             child: Text(
                               l10n.deleteHabitConfirmBody,
                               style: textTheme.bodyMedium?.copyWith(
-                                color: AppColors.textSecondary,
+                                color: palette.textSecondary,
                                 height: 1.38,
                               ),
                             ),
@@ -674,9 +678,9 @@ class _DeleteHabitDialog extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context, false),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
+                              foregroundColor: palette.primary,
                               side: BorderSide(
-                                color: AppColors.primary.withValues(alpha: .35),
+                                color: palette.primary.withValues(alpha: .35),
                               ),
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
@@ -733,7 +737,7 @@ class _DeleteHabitDialog extends StatelessWidget {
                   tooltip: l10n.cancel,
                   onPressed: () => Navigator.pop(context, false),
                   style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFF4F1F8),
+                    backgroundColor: palette.surfaceMuted,
                   ),
                   icon: const Icon(Icons.close_rounded),
                 ),
@@ -777,7 +781,7 @@ class _Label extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: AppColors.textSecondary,
+          color: context.palette.textSecondary,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1020,32 +1024,33 @@ class _EmojiPicker extends StatelessWidget {
     '➖',
   ];
 
-  Widget _item(String emoji, {VoidCallback? onTap}) => Semantics(
-    button: true,
-    selected: emoji == selected,
-    label: emoji,
-    child: InkWell(
-      key: ValueKey('habit-emoji-$emoji'),
-      onTap: onTap ?? () => onSelected(emoji),
-      borderRadius: BorderRadius.circular(14),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        width: 44,
-        height: 44,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: emoji == selected
-              ? AppColors.primary.withValues(alpha: .14)
-              : Colors.black.withValues(alpha: .035),
+  Widget _item(AppPalette palette, String emoji, {VoidCallback? onTap}) =>
+      Semantics(
+        button: true,
+        selected: emoji == selected,
+        label: emoji,
+        child: InkWell(
+          key: ValueKey('habit-emoji-$emoji'),
+          onTap: onTap ?? () => onSelected(emoji),
           borderRadius: BorderRadius.circular(14),
-          border: emoji == selected
-              ? Border.all(color: AppColors.primary, width: 2)
-              : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: emoji == selected
+                  ? palette.primarySoft
+                  : palette.surfaceMuted,
+              borderRadius: BorderRadius.circular(14),
+              border: emoji == selected
+                  ? Border.all(color: palette.primary, width: 2)
+                  : null,
+            ),
+            child: Text(emoji, style: const TextStyle(fontSize: 22)),
+          ),
         ),
-        child: Text(emoji, style: const TextStyle(fontSize: 22)),
-      ),
-    ),
-  );
+      );
 
   Future<void> _showAll(BuildContext context) async {
     final picked = await showModalBottomSheet<String>(
@@ -1075,9 +1080,10 @@ class _EmojiPicker extends StatelessWidget {
                     crossAxisSpacing: 10,
                   ),
                   itemCount: _allEmojis.length,
-                  itemBuilder: (_, index) {
+                  itemBuilder: (itemContext, index) {
                     final emoji = _allEmojis[index];
                     return _item(
+                      itemContext.palette,
                       emoji,
                       onTap: () => Navigator.pop(sheetContext, emoji),
                     );
@@ -1099,7 +1105,7 @@ class _EmojiPicker extends StatelessWidget {
       Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: [for (final emoji in emojis) _item(emoji)],
+        children: [for (final emoji in emojis) _item(context.palette, emoji)],
       ),
       const SizedBox(height: 8),
       TextButton.icon(
@@ -1138,7 +1144,7 @@ class _ColorPicker extends StatelessWidget {
                 color: color,
                 shape: BoxShape.circle,
                 border: color.toARGB32() == selected
-                    ? Border.all(color: AppColors.textPrimary, width: 3)
+                    ? Border.all(color: context.palette.textPrimary, width: 3)
                     : null,
               ),
               child: color.toARGB32() == selected

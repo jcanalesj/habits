@@ -24,8 +24,7 @@ class HabitReminder implements Comparable<HabitReminder> {
   /// Se deriva del hábito y del día, así que reprogramar el mismo
   /// recordatorio dos veces no crea duplicados: pisa el anterior.
   /// Se recorta a 31 bits porque Android exige un int de 32 bits con signo.
-  int get notificationId =>
-      Object.hash(habitId, date.key) & 0x7fffffff;
+  int get notificationId => Object.hash(habitId, date.key) & 0x7fffffff;
 
   /// "HH:mm", el mismo formato que guarda `Habit.reminderTime`.
   String get time =>

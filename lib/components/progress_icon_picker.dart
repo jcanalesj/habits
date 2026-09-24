@@ -125,41 +125,44 @@ class ProgressIconPicker extends StatelessWidget {
   final String selectedId;
   final ValueChanged<String> onSelected;
   @override
-  Widget build(BuildContext context) => GridView.count(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    crossAxisCount: 6,
-    mainAxisSpacing: 8,
-    crossAxisSpacing: 8,
-    children: [
-      for (final option in ProgressIconCatalog.options)
-        Semantics(
-          button: true,
-          selected: selectedId == option.id,
-          label: option.label,
-          child: InkWell(
-            key: ValueKey('progress-icon-${option.id}'),
-            onTap: () => onSelected(option.id),
-            borderRadius: BorderRadius.circular(14),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: selectedId == option.id
-                    ? AppColors.primary.withValues(alpha: .14)
-                    : Colors.black.withValues(alpha: .035),
-                borderRadius: BorderRadius.circular(14),
-                border: selectedId == option.id
-                    ? Border.all(color: AppColors.primary, width: 2)
-                    : null,
-              ),
-              child: HabitProgressIcon(
-                iconId: option.id,
-                completed: selectedId == option.id,
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 6,
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      children: [
+        for (final option in ProgressIconCatalog.options)
+          Semantics(
+            button: true,
+            selected: selectedId == option.id,
+            label: option.label,
+            child: InkWell(
+              key: ValueKey('progress-icon-${option.id}'),
+              onTap: () => onSelected(option.id),
+              borderRadius: BorderRadius.circular(14),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: selectedId == option.id
+                      ? palette.primarySoft
+                      : palette.surfaceMuted,
+                  borderRadius: BorderRadius.circular(14),
+                  border: selectedId == option.id
+                      ? Border.all(color: palette.primary, width: 2)
+                      : null,
+                ),
+                child: HabitProgressIcon(
+                  iconId: option.id,
+                  completed: selectedId == option.id,
+                ),
               ),
             ),
           ),
-        ),
-    ],
-  );
+      ],
+    );
+  }
 }

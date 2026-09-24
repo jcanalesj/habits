@@ -52,7 +52,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     final summary = ref.watch(homeControllerProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: widget.standalone
           ? AppBar(
               key: const ValueKey('standalone-stats-app-bar'),
@@ -139,6 +139,7 @@ class _StatisticsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     final totalCompleted = logs.where((log) => log.isActivity).length;
     final totalTarget = summary.habits.fold<int>(
       0,
@@ -183,7 +184,7 @@ class _StatisticsContent extends StatelessWidget {
           maxLines: 1,
           style: Theme.of(
             context,
-          ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+          ).textTheme.bodyLarge?.copyWith(color: palette.textSecondary),
         ),
         const SizedBox(height: 10),
         SizedBox(
@@ -197,14 +198,14 @@ class _StatisticsContent extends StatelessWidget {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: .10),
+                    color: palette.primarySoft,
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
                     l10n.habitPendingEncouragement,
                     maxLines: 2,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.primaryDeep,
+                      color: palette.primaryDeep,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -288,7 +289,7 @@ class _StatisticsContent extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .72),
+            color: palette.surface.withValues(alpha: palette.isDark ? 1 : .72),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
@@ -321,6 +322,7 @@ class _PeriodPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return PopupMenuButton<_StatsPeriod>(
       key: const ValueKey('stats-period-picker'),
       initialValue: value,
@@ -333,15 +335,15 @@ class _PeriodPicker extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: palette.surface,
           borderRadius: BorderRadius.circular(22),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               PhosphorIconsBold.calendarDots,
-              color: AppColors.primary,
+              color: palette.primary,
               size: 20,
             ),
             const SizedBox(width: 7),
@@ -350,11 +352,7 @@ class _PeriodPicker extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(width: 5),
-            const Icon(
-              PhosphorIconsBold.caretDown,
-              color: AppColors.primary,
-              size: 15,
-            ),
+            Icon(PhosphorIconsBold.caretDown, color: palette.primary, size: 15),
           ],
         ),
       ),
@@ -370,12 +368,13 @@ class _StreakSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .78),
+        color: palette.surface.withValues(alpha: palette.isDark ? 1 : .78),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withValues(alpha: .10)),
+        border: Border.all(color: palette.primary.withValues(alpha: .10)),
       ),
       child: Row(
         children: [
@@ -390,7 +389,7 @@ class _StreakSummary extends StatelessWidget {
             width: 1,
             height: 48,
             margin: const EdgeInsets.symmetric(horizontal: 16),
-            color: AppColors.primary.withValues(alpha: .14),
+            color: palette.primary.withValues(alpha: .14),
           ),
           Expanded(
             child: _StreakMetric(
@@ -418,6 +417,7 @@ class _StreakMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Row(
       children: [
         Text(emoji, style: const TextStyle(fontSize: 30)),
@@ -431,8 +431,8 @@ class _StreakMetric extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   context.l10n.statsDayCount(value),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: palette.textPrimary,
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
                   ),
@@ -442,8 +442,8 @@ class _StreakMetric extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: palette.textSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -471,11 +471,12 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       height: 132,
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .75),
+        color: palette.surface.withValues(alpha: palette.isDark ? 1 : .75),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -484,7 +485,7 @@ class _MetricCard extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: .13),
+              color: palette.tint(color, .13),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 23),
@@ -500,8 +501,8 @@ class _MetricCard extends StatelessWidget {
                 label,
                 textAlign: TextAlign.center,
                 maxLines: 2,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: palette.textSecondary,
                   fontSize: 10,
                   height: 1.05,
                 ),
@@ -546,11 +547,13 @@ class _RangeChart extends StatelessWidget {
       Localizations.localeOf(context).toLanguageTag(),
     );
 
+    final palette = context.palette;
+
     return Container(
       key: ValueKey('stats-${isMonth ? 'month' : 'year'}-chart'),
       padding: const EdgeInsets.fromLTRB(16, 15, 16, 18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .82),
+        color: palette.surface.withValues(alpha: palette.isDark ? 1 : .82),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -625,11 +628,12 @@ class _WeeklyChartState extends ConsumerState<_WeeklyChart> {
       1 - widget.summary.today.weekday,
     );
     final repository = ref.watch(habitsRepositoryProvider);
+    final palette = context.palette;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 15, 16, 18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .82),
+        color: palette.surface.withValues(alpha: palette.isDark ? 1 : .82),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -734,6 +738,7 @@ class _WeeklyBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     const labelWidth = 28.0;
     const dayLabelHeight = 24.0;
+    final axisLabelStyle = _axisLabelStyle(context);
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
@@ -747,9 +752,9 @@ class _WeeklyBarChart extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('$maximum', style: _axisLabelStyle),
-                  Text('${maximum ~/ 2}', style: _axisLabelStyle),
-                  const Text('0', style: _axisLabelStyle),
+                  Text('$maximum', style: axisLabelStyle),
+                  Text('${maximum ~/ 2}', style: axisLabelStyle),
+                  Text('0', style: axisLabelStyle),
                 ],
               ),
             ),
@@ -791,8 +796,8 @@ class _WeeklyBarChart extends StatelessWidget {
   }
 }
 
-const _axisLabelStyle = TextStyle(
-  color: AppColors.textSecondary,
+TextStyle _axisLabelStyle(BuildContext context) => TextStyle(
+  color: context.palette.textSecondary,
   fontSize: 11,
   fontWeight: FontWeight.w600,
 );
@@ -805,7 +810,7 @@ class _ChartGridLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     height: 1,
-    color: AppColors.primary.withValues(alpha: solid ? .14 : .08),
+    color: context.palette.primary.withValues(alpha: solid ? .14 : .08),
   );
 }
 
@@ -836,7 +841,9 @@ class _WeeklyBar extends StatelessWidget {
               heightFactor: heightFactor,
               child: outlined
                   ? CustomPaint(
-                      painter: _DashedRoundedBorderPainter(),
+                      painter: _DashedRoundedBorderPainter(
+                        color: context.palette.primary.withValues(alpha: .42),
+                      ),
                       child: const SizedBox(width: 26),
                     )
                   : Container(
@@ -854,13 +861,20 @@ class _WeeklyBar extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 7),
-        SizedBox(height: 17, child: Text(label, style: _axisLabelStyle)),
+        SizedBox(
+          height: 17,
+          child: Text(label, style: _axisLabelStyle(context)),
+        ),
       ],
     );
   }
 }
 
 class _DashedRoundedBorderPainter extends CustomPainter {
+  const _DashedRoundedBorderPainter({required this.color});
+
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final path = Path()
@@ -868,7 +882,7 @@ class _DashedRoundedBorderPainter extends CustomPainter {
         RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(7)),
       );
     final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: .42)
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     const dashLength = 4.0;
@@ -889,7 +903,8 @@ class _DashedRoundedBorderPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DashedRoundedBorderPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 class _DayBar extends StatelessWidget {
@@ -908,6 +923,7 @@ class _DayBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ratio = count / maximum;
+    final palette = context.palette;
     return Column(
       children: [
         Expanded(
@@ -925,9 +941,7 @@ class _DayBar extends StatelessWidget {
                           end: Alignment.topCenter,
                           colors: [AppColors.primary, AppColors.gradientStart],
                         ),
-                  color: isFuture || count == 0
-                      ? AppColors.primary.withValues(alpha: .09)
-                      : null,
+                  color: isFuture || count == 0 ? palette.divider : null,
                   borderRadius: BorderRadius.circular(9),
                 ),
               ),
@@ -940,8 +954,8 @@ class _DayBar extends StatelessWidget {
         Icon(
           count > 0 ? PhosphorIconsFill.checkCircle : PhosphorIconsFill.circle,
           color: count > 0
-              ? AppColors.primary
-              : AppColors.textSecondary.withValues(alpha: .20),
+              ? palette.primary
+              : palette.textSecondary.withValues(alpha: .20),
           size: 18,
         ),
       ],
@@ -1002,6 +1016,7 @@ class _HabitProgressRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final color = Color(habit.colorValue);
     final fraction = target == 0 ? 0.0 : (completed / target).clamp(0.0, 1.0);
     final percent = (fraction * 100).round();
@@ -1016,7 +1031,7 @@ class _HabitProgressRow extends StatelessWidget {
             height: 48,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: .13),
+              color: palette.tint(color, .13),
               borderRadius: BorderRadius.circular(15),
             ),
             child: HabitIcon(
@@ -1044,7 +1059,7 @@ class _HabitProgressRow extends StatelessWidget {
                     value: fraction,
                     minHeight: 7,
                     color: color,
-                    backgroundColor: color.withValues(alpha: .12),
+                    backgroundColor: palette.divider,
                   ),
                 ),
               ],
@@ -1062,10 +1077,7 @@ class _HabitProgressRow extends StatelessWidget {
                 ),
                 Text(
                   '$percent%',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: palette.textSecondary, fontSize: 11),
                 ),
               ],
             ),

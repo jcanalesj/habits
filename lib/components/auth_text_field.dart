@@ -35,18 +35,19 @@ class _AuthTextFieldState extends State<AuthTextField> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: palette.isDark ? palette.surfaceMuted : palette.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: widget.errorText != null
                   ? Colors.redAccent.withValues(alpha: 0.6)
-                  : AppColors.primary.withValues(alpha: 0.15),
+                  : palette.primary.withValues(alpha: 0.15),
             ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -57,10 +58,10 @@ class _AuthTextFieldState extends State<AuthTextField> {
                 height: 36,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: palette.tint(palette.primary, 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(widget.icon, size: 19, color: AppColors.primary),
+                child: Icon(widget.icon, size: 19, color: palette.primary),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -80,7 +81,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
                       fontWeight: FontWeight.w600,
                     ),
                     hintStyle: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                     ),
                     border: InputBorder.none,
                     contentPadding: widget.errorText == null
@@ -97,7 +98,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
                     size: 22,
-                    color: AppColors.primary,
+                    color: palette.primary,
                   ),
                 ),
             ],

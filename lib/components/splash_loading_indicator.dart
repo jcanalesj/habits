@@ -12,15 +12,16 @@ class SplashLoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = context.palette;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.spa_outlined, size: 28, color: AppColors.primary),
+        Icon(Icons.spa_outlined, size: 28, color: palette.primary),
         const SizedBox(height: 12),
         Text(
           context.l10n.loadingYourBestVersion,
-          style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          style: textTheme.bodyMedium?.copyWith(color: palette.textSecondary),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -30,8 +31,8 @@ class SplashLoadingIndicator extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.18),
-              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+              backgroundColor: palette.primary.withValues(alpha: 0.18),
+              valueColor: AlwaysStoppedAnimation(palette.primary),
             ),
           ),
         ),
