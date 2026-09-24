@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' show Color;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:habits/features/habits/0_entity/habit_reminder.dart';
@@ -23,13 +24,19 @@ class LocalNotificationsRepository implements NotificationsRepository {
   static const _channelDescription =
       'Avisos a la hora que hayas elegido para cada hábito.';
 
+  /// Silueta blanca en `res/drawable-*`: Android pinta el icono pequeño de
+  /// las notificaciones como máscara, así que el icono a color saldría como
+  /// un cuadrado blanco.
+  static const _androidIcon = 'ic_stat_constanza';
+  static const _brandColor = Color(0xFF7C5CE0); // AppColors.primary
+
   @override
   Future<void> initialize() async {
     if (_initialized) return;
     initializeTimezones();
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings(_androidIcon),
         iOS: DarwinInitializationSettings(
           // El permiso se pide explícitamente desde los ajustes, no al
           // arrancar: pedirlo a bocajarro se deniega mucho más.
@@ -118,9 +125,7 @@ class LocalNotificationsRepository implements NotificationsRepository {
     // El calendario ya sabe resolver "esta hora en la zona del perfil", y
     // degrada a UTC si la zona guardada es inválida.
     final calendar = LogicalCalendar(timezone);
-    final nowInZone = tz.TZDateTime.now(
-      TimezoneDatabase.locationOf(timezone),
-    );
+    final nowInZone = tz.TZDateTime.now(TimezoneDatabase.locationOf(timezone));
 
     for (final reminder in reminders) {
       final when = calendar.instantAt(
@@ -142,6 +147,8 @@ class LocalNotificationsRepository implements NotificationsRepository {
             _channelId,
             _channelName,
             channelDescription: _channelDescription,
+            icon: _androidIcon,
+            color: _brandColor,
             importance: Importance.defaultImportance,
             priority: Priority.defaultPriority,
           ),

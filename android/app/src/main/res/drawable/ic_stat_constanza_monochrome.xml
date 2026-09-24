@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono temático de Android 13+: la silueta de la notificación dentro de
+     la zona segura del adaptativo (72 dp de 108). -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_stat_constanza"
+    android:inset="27%" />

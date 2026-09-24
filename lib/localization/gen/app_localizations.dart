@@ -1478,6 +1478,48 @@ abstract class AppLocalizations {
   /// **'Classic'**
   String get appearanceClassic;
 
+  /// No description provided for @appIconCrown.
+  ///
+  /// In en, this message translates to:
+  /// **'Royalty'**
+  String get appIconCrown;
+
+  /// No description provided for @appIconYarn.
+  ///
+  /// In en, this message translates to:
+  /// **'Yarn'**
+  String get appIconYarn;
+
+  /// No description provided for @appIconChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon updated'**
+  String get appIconChanged;
+
+  /// No description provided for @appIconChangeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t change the icon. Please try again.'**
+  String get appIconChangeFailed;
+
+  /// No description provided for @premiumAppIconTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclusive icons'**
+  String get premiumAppIconTitle;
+
+  /// No description provided for @premiumAppIconBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap Constanza\'s home screen icon for one of our Premium kitties.'**
+  String get premiumAppIconBody;
+
+  /// No description provided for @premiumAppIconPreviewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza Premium icons'**
+  String get premiumAppIconPreviewLabel;
+
   /// No description provided for @appearanceSystemHint.
   ///
   /// In en, this message translates to:

@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/profile/appearance/app_icon.dart';
 import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
 import 'package:habits/firebase_setup.dart';
+import 'package:habits/local_preferences.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/navigation.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -21,6 +23,7 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [
+        sharedPreferencesProvider.overrideWithValue(preferences),
         welcomeAnimationPreferencesProvider.overrideWithValue(
           preferences == null
               ? MemoryWelcomeAnimationPreferences()
@@ -58,6 +61,8 @@ class HabitsApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
+    // Mantiene vivo el control del icono para revertirlo si caduca Premium.
+    ref.watch(appIconProvider);
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appTitle,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/profile/appearance/app_icon.dart';
 import 'package:habits/features/profile/appearance/appearance_page.dart';
 import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -389,4 +390,89 @@ void main() {
 
     expect(preferences.getBool('welcome_animation_enabled'), isTrue);
   });
+  group('icono de la app', () {
+    Future<_FakeAppIconService> pumpPage(WidgetTester tester) async {
+      final service = _FakeAppIconService();
+      final env = AuthTestEnv(initialUser: verifiedUser);
+      await tester.pumpWidget(
+        localizedApp(
+          const AppearancePage(),
+          overrides: [
+            ...env.overrides,
+            appIconServiceProvider.overrideWithValue(service),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('app-icon-crown')),
+        220,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      return service;
+    }
+
+    testWidgets('los iconos Premium piden Premium y "Ver planes" lo aplica', (
+      tester,
+    ) async {
+      final service = await pumpPage(tester);
+      expect(find.text('Icono de la app'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('app-icon-crown')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('premium-app-icon-dialog')),
+        findsOneWidget,
+      );
+      expect(service.changes, isEmpty);
+
+      final viewPlans = find.byKey(
+        const ValueKey('app-icon-view-premium-plans'),
+      );
+      await tester.ensureVisible(viewPlans);
+      await tester.pumpAndSettle();
+      await tester.tap(viewPlans);
+      await tester.pumpAndSettle();
+
+      expect(service.changes, [AppIconOption.crown]);
+      expect(find.text('Icono actualizado'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      // Con el acceso de prueba ya activo, el otro icono no vuelve a preguntar.
+      await tester.tap(find.byKey(const ValueKey('app-icon-yarn')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('premium-app-icon-dialog')),
+        findsNothing,
+      );
+      expect(service.changes, [AppIconOption.crown, AppIconOption.yarn]);
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('"Ahora no" deja el icono como estaba', (tester) async {
+      final service = await pumpPage(tester);
+      await tester.tap(find.byKey(const ValueKey('app-icon-yarn')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ahora no'));
+      await tester.pumpAndSettle();
+      expect(service.changes, isEmpty);
+    });
+  });
+}
+
+class _FakeAppIconService implements AppIconService {
+  AppIconOption icon = AppIconOption.classic;
+  final changes = <AppIconOption>[];
+
+  @override
+  Future<AppIconOption> current() async => icon;
+
+  @override
+  Future<void> set(AppIconOption icon) async {
+    this.icon = icon;
+    changes.add(icon);
+  }
 }

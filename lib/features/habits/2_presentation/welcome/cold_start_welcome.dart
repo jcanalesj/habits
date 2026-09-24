@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
+import 'package:habits/local_preferences.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -77,8 +78,9 @@ final isPremiumProvider = StreamProvider<bool>((ref) {
   return ref.watch(userProfileRepositoryProvider).watchIsPremium(userId);
 });
 
-/// Acceso de demostración activado desde los CTA Premium. Solo vive durante
-/// la sesión actual y nunca modifica la suscripción guardada en Firebase.
+/// Acceso de demostración activado desde los CTA Premium. Se guarda en las
+/// preferencias del dispositivo (sobrevive a cerrar la app) y nunca modifica
+/// la suscripción guardada en Firebase.
 final premiumPreviewEnabledProvider =
     NotifierProvider<PremiumPreviewController, bool>(
       PremiumPreviewController.new,
@@ -90,10 +92,15 @@ final premiumAccessProvider = Provider<bool>((ref) {
 });
 
 class PremiumPreviewController extends Notifier<bool> {
-  @override
-  bool build() => false;
+  static const key = 'premium_preview_enabled';
 
-  void enable() => state = true;
+  @override
+  bool build() => ref.watch(sharedPreferencesProvider)?.getBool(key) ?? false;
+
+  void enable() {
+    state = true;
+    unawaited(ref.read(sharedPreferencesProvider)?.setBool(key, true));
+  }
 }
 
 class CustomMotivationMessagesController extends Notifier<List<String>> {

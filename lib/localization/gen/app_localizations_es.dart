@@ -759,6 +759,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get appearanceClassic => 'Clásico';
 
   @override
+  String get appIconCrown => 'Realeza';
+
+  @override
+  String get appIconYarn => 'Ovillo';
+
+  @override
+  String get appIconChanged => 'Icono actualizado';
+
+  @override
+  String get appIconChangeFailed =>
+      'No se pudo cambiar el icono. Inténtalo de nuevo.';
+
+  @override
+  String get premiumAppIconTitle => 'Iconos exclusivos';
+
+  @override
+  String get premiumAppIconBody =>
+      'Cambia el icono de Constanza en tu pantalla de inicio por uno de nuestros gatitos Premium.';
+
+  @override
+  String get premiumAppIconPreviewLabel => 'Iconos Premium de Constanza';
+
+  @override
   String get appearanceSystemHint =>
       'La reducción de movimiento se adapta automáticamente a los ajustes de accesibilidad del dispositivo.';
 

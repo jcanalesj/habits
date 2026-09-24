@@ -48,9 +48,9 @@ flutter:
   assets:
     - assets/backgrounds/
     - assets/icons/
-    - assets/icons/habits/
     - assets/icons/progress/
     - assets/images/
+    - assets/images/app_icons/
     - assets/images/avatars/
     - assets/images/cards/
     - assets/logo/

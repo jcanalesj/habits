@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habits/components/app_notice.dart';
 import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/profile/appearance/app_icon.dart';
 import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
 import 'package:habits/features/profile/premium/premium_gate.dart';
 import 'package:habits/localization/l10n.dart';
@@ -27,6 +29,40 @@ class AppearancePage extends ConsumerWidget {
       if (!allowed) return;
     }
     ref.read(themeModeProvider.notifier).setMode(mode);
+  }
+
+  Future<void> _selectAppIcon(
+    BuildContext context,
+    WidgetRef ref,
+    AppIconOption icon,
+  ) async {
+    if (icon == ref.read(appIconProvider).value) return;
+    if (icon.isPremium) {
+      final allowed = await requestPremiumAccess(
+        context,
+        ref,
+        dialogBuilder: (_) => const _PremiumAppIconDialog(),
+      );
+      if (!allowed || !context.mounted) return;
+    }
+    final l10n = context.l10n;
+    try {
+      await ref.read(appIconProvider.notifier).select(icon);
+      if (!context.mounted) return;
+      AppNotice.show(
+        context,
+        message: l10n.appIconChanged,
+        type: AppNoticeType.success,
+      );
+    } catch (error) {
+      debugPrint('No se pudo cambiar el icono: $error');
+      if (!context.mounted) return;
+      AppNotice.show(
+        context,
+        message: l10n.appIconChangeFailed,
+        type: AppNoticeType.error,
+      );
+    }
   }
 
   Future<void> _editMessage(
@@ -153,6 +189,26 @@ class AppearancePage extends ConsumerWidget {
                   value: themeMode,
                   isPremium: isPremium,
                   onChanged: (mode) => _selectTheme(context, ref, mode: mode),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          _SectionTitle(l10n.appearanceAppIcon),
+          const SizedBox(height: 4),
+          Text(
+            l10n.appearanceAppIconHint,
+            style: TextStyle(color: palette.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          _Card(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: _AppIconSelector(
+                  value:
+                      ref.watch(appIconProvider).value ?? AppIconOption.classic,
+                  onChanged: (icon) => _selectAppIcon(context, ref, icon),
                 ),
               ),
             ],
@@ -859,6 +915,289 @@ class _PremiumDarkThemeDialog extends StatelessWidget {
                       ),
                       child: FilledButton(
                         key: const ValueKey('dark-theme-view-premium-plans'),
+                        onPressed: () => Navigator.pop(context, true),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          side: BorderSide.none,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          l10n.premiumViewPlans,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AppIconSelector extends StatelessWidget {
+  const _AppIconSelector({required this.value, required this.onChanged});
+
+  final AppIconOption value;
+  final ValueChanged<AppIconOption> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Row(
+      children: [
+        for (final icon in AppIconOption.values) ...[
+          if (icon != AppIconOption.values.first) const SizedBox(width: 8),
+          Expanded(
+            child: _AppIconTile(
+              key: ValueKey('app-icon-${icon.name}'),
+              icon: icon,
+              label: switch (icon) {
+                AppIconOption.classic => l10n.appearanceClassic,
+                AppIconOption.crown => l10n.appIconCrown,
+                AppIconOption.yarn => l10n.appIconYarn,
+              },
+              selected: value == icon,
+              premium: icon.isPremium,
+              onTap: () => onChanged(icon),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AppIconTile extends StatelessWidget {
+  const _AppIconTile({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.premium,
+    required this.onTap,
+  });
+
+  final AppIconOption icon;
+  final String label;
+  final bool selected;
+  final bool premium;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final foreground = selected ? palette.primary : palette.textSecondary;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
+            decoration: BoxDecoration(
+              color: selected ? palette.primarySoft : palette.surfaceMuted,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: selected ? palette.primary : palette.divider,
+                width: selected ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ClipRRect(
+                      // Mismo redondeo relativo que la máscara de iOS.
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.asset(
+                        icon.previewAsset,
+                        width: 62,
+                        height: 62,
+                        excludeFromSemantics: true,
+                      ),
+                    ),
+                    // La corona marca siempre los iconos Premium, también
+                    // cuando ya se tiene acceso o están seleccionados.
+                    if (premium)
+                      Positioned(
+                        top: -6,
+                        right: -6,
+                        child: _IconBadge(
+                          icon: PhosphorIconsFill.crown,
+                          gradient: true,
+                        ),
+                      ),
+                    if (selected)
+                      const Positioned(
+                        bottom: -6,
+                        right: -6,
+                        child: _IconBadge(icon: PhosphorIconsBold.check),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: 12.5,
+                    fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IconBadge extends StatelessWidget {
+  const _IconBadge({required this.icon, this.gradient = false});
+
+  final IconData icon;
+  final bool gradient;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        color: gradient ? null : palette.primary,
+        gradient: gradient
+            ? const LinearGradient(
+                colors: [AppColors.gradientStart, AppColors.gradientEnd],
+              )
+            : null,
+        shape: BoxShape.circle,
+        border: Border.all(color: palette.surface, width: 2),
+      ),
+      child: Icon(
+        icon,
+        size: 11,
+        color: gradient ? Colors.white : palette.onPrimary,
+      ),
+    );
+  }
+}
+
+class _PremiumAppIconDialog extends StatelessWidget {
+  const _PremiumAppIconDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final palette = context.palette;
+    Widget preview(AppIconOption icon) => Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: palette.primary.withValues(alpha: .22),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Image.asset(
+          icon.previewAsset,
+          width: 104,
+          height: 104,
+          excludeFromSemantics: true,
+        ),
+      ),
+    );
+    return Dialog(
+      key: const ValueKey('premium-app-icon-dialog'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: palette.dialogSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 430),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 26, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Semantics(
+                image: true,
+                label: l10n.premiumAppIconPreviewLabel,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Transform.rotate(
+                      angle: -.08,
+                      child: preview(AppIconOption.crown),
+                    ),
+                    const SizedBox(width: 14),
+                    Transform.rotate(
+                      angle: .08,
+                      child: preview(AppIconOption.yarn),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              Text(
+                l10n.premiumAppIconTitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: palette.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                l10n.premiumAppIconBody,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: palette.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(l10n.premiumNotNow),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.gradientStart,
+                            AppColors.gradientEnd,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(999)),
+                      ),
+                      child: FilledButton(
+                        key: const ValueKey('app-icon-view-premium-plans'),
                         onPressed: () => Navigator.pop(context, true),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.transparent,
