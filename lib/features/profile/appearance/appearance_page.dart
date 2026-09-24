@@ -12,6 +12,23 @@ class AppearancePage extends ConsumerWidget {
 
   static const freeMessageLimit = 1;
 
+  Future<void> _selectTheme(
+    BuildContext context,
+    WidgetRef ref, {
+    required ThemeMode mode,
+    required bool isPremium,
+  }) async {
+    if (mode == ThemeMode.dark && !isPremium) {
+      await showDialog<void>(
+        context: context,
+        barrierColor: context.palette.scrim,
+        builder: (_) => const _PremiumDarkThemeDialog(),
+      );
+      return;
+    }
+    ref.read(themeModeProvider.notifier).setMode(mode);
+  }
+
   Future<void> _editMessage(
     BuildContext context,
     WidgetRef ref, {
@@ -139,7 +156,13 @@ class AppearancePage extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
                 child: _ThemeModeSelector(
                   value: themeMode,
-                  onChanged: ref.read(themeModeProvider.notifier).setMode,
+                  isPremium: isPremium,
+                  onChanged: (mode) => _selectTheme(
+                    context,
+                    ref,
+                    mode: mode,
+                    isPremium: isPremium,
+                  ),
                 ),
               ),
             ],
@@ -171,8 +194,8 @@ class _PremiumMessageLimitDialog extends StatelessWidget {
             children: [
               Image.asset(
                 'assets/images/premium.png',
-                width: 190,
-                height: 150,
+                width: 150,
+                height: 112,
                 fit: BoxFit.contain,
                 semanticLabel: l10n.premiumCatImageLabel,
               ),
@@ -610,9 +633,14 @@ class _SettingRow extends StatelessWidget {
 /// iguales, con una miniatura que anticipa el resultado. La opción activa se
 /// resalta con el acento y una marca; el resto se atenúa sin desaparecer.
 class _ThemeModeSelector extends StatelessWidget {
-  const _ThemeModeSelector({required this.value, required this.onChanged});
+  const _ThemeModeSelector({
+    required this.value,
+    required this.isPremium,
+    required this.onChanged,
+  });
 
   final ThemeMode value;
+  final bool isPremium;
   final ValueChanged<ThemeMode> onChanged;
 
   @override
@@ -638,6 +666,7 @@ class _ThemeModeSelector extends StatelessWidget {
             icon: PhosphorIconsBold.moon,
             label: l10n.appearanceDarkTheme,
             selected: value == ThemeMode.dark,
+            premium: !isPremium,
             onTap: () => onChanged(ThemeMode.dark),
           ),
         ),
@@ -654,6 +683,7 @@ class _ThemeModeOption extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.premium = false,
   });
 
   final ThemeMode mode;
@@ -661,6 +691,7 @@ class _ThemeModeOption extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final bool premium;
 
   @override
   Widget build(BuildContext context) {
@@ -711,10 +742,150 @@ class _ThemeModeOption extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (premium) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              AppColors.gradientStart,
+                              AppColors.gradientEnd,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: const Icon(
+                          PhosphorIconsFill.crown,
+                          size: 10,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PremiumDarkThemeDialog extends StatelessWidget {
+  const _PremiumDarkThemeDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final palette = context.palette;
+    return Dialog(
+      key: const ValueKey('premium-dark-theme-dialog'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: palette.dialogSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 430),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/premium.png',
+                width: 190,
+                height: 150,
+                fit: BoxFit.contain,
+                semanticLabel: l10n.premiumCatImageLabel,
+              ),
+              Text(
+                l10n.premiumDarkThemeTitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: palette.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                l10n.premiumDarkThemeBody,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: palette.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: 150,
+                height: 238,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: palette.primary.withValues(alpha: .55),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: palette.primary.withValues(alpha: .2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Image.asset(
+                  'assets/images/dark_theme_premium_preview.png',
+                  key: const ValueKey('dark-theme-premium-preview'),
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  semanticLabel: l10n.premiumDarkThemePreviewLabel,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(l10n.premiumNotNow),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.gradientStart,
+                            AppColors.gradientEnd,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(999)),
+                      ),
+                      child: FilledButton(
+                        key: const ValueKey('dark-theme-view-premium-plans'),
+                        onPressed: () => Navigator.pop(context),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          side: BorderSide.none,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          l10n.premiumViewPlans,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

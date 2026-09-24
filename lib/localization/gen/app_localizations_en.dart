@@ -739,6 +739,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appearanceDarkThemeHint => 'Easier on the eyes at night';
 
   @override
+  String get premiumDarkThemeTitle => 'Discover Constanza at night';
+
+  @override
+  String get premiumDarkThemeBody =>
+      'A more immersive look, with vivid colors and less glare to support you at the end of the day too.';
+
+  @override
+  String get premiumDarkThemePreviewLabel =>
+      'Preview of Constanza in dark mode';
+
+  @override
   String get appearanceAppIcon => 'App icon';
 
   @override

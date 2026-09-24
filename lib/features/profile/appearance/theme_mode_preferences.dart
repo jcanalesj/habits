@@ -74,10 +74,15 @@ final themeModeProvider = NotifierProvider<ThemeModeController, ThemeMode>(
 
 class ThemeModeController extends Notifier<ThemeMode> {
   StreamSubscription<ThemeMode?>? _remoteSubscription;
+  StreamSubscription<bool>? _premiumSubscription;
+  bool? _isPremium;
 
   @override
   ThemeMode build() {
-    ref.onDispose(() => _remoteSubscription?.cancel());
+    ref.onDispose(() {
+      _remoteSubscription?.cancel();
+      _premiumSubscription?.cancel();
+    });
     ref.listen(authControllerProvider, (_, auth) {
       _watchRemote(auth.value?.id);
     }, fireImmediately: true);
@@ -86,8 +91,21 @@ class ThemeModeController extends Notifier<ThemeMode> {
 
   void _watchRemote(String? userId) {
     unawaited(_remoteSubscription?.cancel());
+    unawaited(_premiumSubscription?.cancel());
     _remoteSubscription = null;
+    _premiumSubscription = null;
+    _isPremium = null;
     if (userId == null) return;
+    _premiumSubscription = ref
+        .read(userProfileRepositoryProvider)
+        .watchIsPremium(userId)
+        .listen((isPremium) {
+          _isPremium = isPremium;
+          if (!isPremium && state == ThemeMode.dark) {
+            _applyMode(ThemeMode.light);
+            unawaited(_persistRemote(userId, ThemeMode.light));
+          }
+        });
     _remoteSubscription = ref
         .read(userProfileRepositoryProvider)
         .watchThemeMode(userId)
@@ -97,9 +115,11 @@ class ThemeModeController extends Notifier<ThemeMode> {
             unawaited(_persistRemote(userId, state));
             return;
           }
-          if (mode == state) return;
-          state = mode;
-          unawaited(ref.read(themeModePreferencesProvider).setMode(mode));
+          final entitledMode = mode == ThemeMode.dark && _isPremium == false
+              ? ThemeMode.light
+              : mode;
+          if (entitledMode == state) return;
+          _applyMode(entitledMode);
         });
   }
 
@@ -107,10 +127,15 @@ class ThemeModeController extends Notifier<ThemeMode> {
     final supportedMode = mode == ThemeMode.dark
         ? ThemeMode.dark
         : ThemeMode.light;
-    state = supportedMode;
-    unawaited(ref.read(themeModePreferencesProvider).setMode(supportedMode));
+    if (supportedMode == ThemeMode.dark && _isPremium == false) return;
+    _applyMode(supportedMode);
     final userId = ref.read(authControllerProvider).value?.id;
     if (userId != null) unawaited(_persistRemote(userId, supportedMode));
+  }
+
+  void _applyMode(ThemeMode mode) {
+    state = mode;
+    unawaited(ref.read(themeModePreferencesProvider).setMode(mode));
   }
 
   Future<void> _persistRemote(String userId, ThemeMode mode) async {

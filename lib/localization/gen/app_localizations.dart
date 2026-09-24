@@ -1442,6 +1442,24 @@ abstract class AppLocalizations {
   /// **'Easier on the eyes at night'**
   String get appearanceDarkThemeHint;
 
+  /// No description provided for @premiumDarkThemeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover Constanza at night'**
+  String get premiumDarkThemeTitle;
+
+  /// No description provided for @premiumDarkThemeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A more immersive look, with vivid colors and less glare to support you at the end of the day too.'**
+  String get premiumDarkThemeBody;
+
+  /// No description provided for @premiumDarkThemePreviewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview of Constanza in dark mode'**
+  String get premiumDarkThemePreviewLabel;
+
   /// No description provided for @appearanceAppIcon.
   ///
   /// In en, this message translates to:
