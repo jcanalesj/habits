@@ -133,7 +133,7 @@ void main() {
     expect(preferences.getString(SharedThemeModePreferences.key), isNull);
   });
 
-  testWidgets('"Ver planes" activa la prueba Premium y aplica el tema oscuro', (
+  testWidgets('"Ver planes" abre los planes y al comprar aplica el oscuro', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -171,9 +171,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(viewPlans);
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('paywall-page')), findsOneWidget);
+    await buyPremiumOnPaywall(tester);
 
     expect(container.read(themeModeProvider), ThemeMode.dark);
-    expect(container.read(premiumAccessProvider), isTrue);
+    expect(container.read(premiumSubscribedProvider), isTrue);
     expect(
       find.byKey(const ValueKey('premium-dark-theme-dialog')),
       findsNothing,
@@ -413,7 +415,7 @@ void main() {
       return service;
     }
 
-    testWidgets('los iconos Premium piden Premium y "Ver planes" lo aplica', (
+    testWidgets('los iconos Premium piden Premium y al comprar se aplican', (
       tester,
     ) async {
       final service = await pumpPage(tester);
@@ -434,23 +436,20 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(viewPlans);
       await tester.pumpAndSettle();
+      await buyPremiumOnPaywall(tester);
 
       expect(service.changes, [AppIconOption.crown]);
       expect(find.text('Icono actualizado'), findsOneWidget);
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
-      // Sin suscripción real el pop-up vuelve a salir en cada icono Premium.
+      // Ya con Premium, el resto de iconos se aplican sin pop-up.
       await tester.tap(find.byKey(const ValueKey('app-icon-yarn')));
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('premium-app-icon-dialog')),
-        findsOneWidget,
+        findsNothing,
       );
-      await tester.ensureVisible(viewPlans);
-      await tester.pumpAndSettle();
-      await tester.tap(viewPlans);
-      await tester.pumpAndSettle();
       expect(service.changes, [AppIconOption.crown, AppIconOption.yarn]);
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();

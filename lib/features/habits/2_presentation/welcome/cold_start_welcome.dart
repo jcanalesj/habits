@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
-import 'package:habits/local_preferences.dart';
+import 'package:habits/features/premium/2_presentation/premium_providers.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -72,43 +72,36 @@ final remoteCustomMotivationMessagesProvider = StreamProvider<List<String>>((
       .watchCustomMotivationMessages(userId);
 });
 
-final isPremiumProvider = StreamProvider<bool>((ref) {
+/// Suscripción según Firestore (`users/{uid}.subscription`), que escribe la
+/// Cloud Function del webhook de RevenueCat. Es la fuente fiable: las reglas
+/// la consultan.
+final remotePremiumProvider = StreamProvider<bool>((ref) {
   final userId = ref.watch(authControllerProvider).value?.id;
   if (userId == null) return Stream.value(false);
   return ref.watch(userProfileRepositoryProvider).watchIsPremium(userId);
 });
 
-/// Acceso de demostración activado desde los CTA Premium. Se guarda en las
-/// preferencias del dispositivo (sobrevive a cerrar la app) y nunca modifica
-/// la suscripción guardada en Firebase.
-final premiumPreviewEnabledProvider =
-    NotifierProvider<PremiumPreviewController, bool>(
-      PremiumPreviewController.new,
-    );
+/// Premium efectivo: Firestore o, mientras llega el webhook, la tienda (que
+/// responde en cuanto se confirma la compra). Carga mientras Firestore no
+/// ha contestado, para no quitarle nada a quien sí paga.
+final isPremiumProvider = Provider<AsyncValue<bool>>((ref) {
+  if (ref.watch(forcePremiumProvider)) return const AsyncData(true);
+  final remote = ref.watch(remotePremiumProvider);
+  final store = ref.watch(storeEntitlementProvider);
+  if (remote.value == true || store.value == true) return const AsyncData(true);
+  if (!remote.hasValue && !remote.hasError) return const AsyncLoading();
+  return const AsyncData(false);
+});
 
-/// Suscripción real (sin contar el acceso de prueba). Decide cuándo se
-/// muestran los pop-ups y las marcas Premium.
+/// Suscripción activa. Decide cuándo se muestran los pop-ups y las marcas
+/// Premium y qué funciones se desbloquean.
 final premiumSubscribedProvider = Provider<bool>(
   (ref) => ref.watch(isPremiumProvider).value ?? false,
 );
 
-/// Acceso efectivo a las funciones Premium: suscripción o acceso de prueba.
-final premiumAccessProvider = Provider<bool>((ref) {
-  final subscribed = ref.watch(isPremiumProvider).value ?? false;
-  return subscribed || ref.watch(premiumPreviewEnabledProvider);
-});
-
-class PremiumPreviewController extends Notifier<bool> {
-  static const key = 'premium_preview_enabled';
-
-  @override
-  bool build() => ref.watch(sharedPreferencesProvider)?.getBool(key) ?? false;
-
-  void enable() {
-    state = true;
-    unawaited(ref.read(sharedPreferencesProvider)?.setBool(key, true));
-  }
-}
+/// Alias histórico de [premiumSubscribedProvider]: sin acceso de prueba,
+/// tener acceso y estar suscrito son lo mismo.
+final premiumAccessProvider = premiumSubscribedProvider;
 
 class CustomMotivationMessagesController extends Notifier<List<String>> {
   StreamSubscription<List<String>>? _remoteSubscription;
@@ -146,12 +139,7 @@ class CustomMotivationMessagesController extends Notifier<List<String>> {
   void _set(List<String> messages) {
     state = messages;
     final userId = ref.read(authControllerProvider).value?.id;
-    // Las reglas limitan los mensajes de las cuentas gratuitas, así que con el
-    // acceso de prueba los cambios se quedan en la sesión en vez de rebotar.
-    final previewOnly =
-        !(ref.read(isPremiumProvider).value ?? false) &&
-        ref.read(premiumPreviewEnabledProvider);
-    if (userId != null && !previewOnly) unawaited(_persist(userId, messages));
+    if (userId != null) unawaited(_persist(userId, messages));
   }
 
   Future<void> _persist(String userId, List<String> messages) async {

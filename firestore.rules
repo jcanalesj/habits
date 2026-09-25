@@ -96,6 +96,21 @@ service cloud.firestore {
     function mesActual() {
       return request.time.year() * 12 + request.time.month();
     }
+    // Premium vigente según el perfil (lo escribe solo el backend a partir
+    // de RevenueCat). La fecha de caducidad protege frente a un webhook
+    // perdido. Cuesta una lectura: evaluarla siempre al FINAL de un `||`.
+    function isPremiumUser(uid) {
+      let sub = get(/databases/$(database)/documents/users/$(uid)).data.subscription;
+      return sub.status in ['active', 'premium']
+        && (!('expiresAt' in sub) || sub.expiresAt == null
+            || sub.expiresAt > request.time);
+    }
+    function subscriptionIsPremium(sub) {
+      return sub.status in ['active', 'premium']
+        && (!('expiresAt' in sub) || sub.expiresAt == null
+            || sub.expiresAt > request.time);
+    }
+
     function isHora(value) {
       return value is string && value.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$');
     }
@@ -110,6 +125,28 @@ service cloud.firestore {
         && value.keys().hasAll(['tipo', 'veces'])
         && isTipoPeriodo(value.tipo)
         && value.veces is int && value.veces >= 1 && value.veces <= 366;
+    }
+    function isCambioPeriodicidad(value) {
+      return value is map
+        && value.keys().hasOnly(['tipo', 'veces', 'desde'])
+        && value.keys().hasAll(['tipo', 'veces', 'desde'])
+        && isTipoPeriodo(value.tipo)
+        && value.veces is int && value.veces >= 1 && value.veces <= 366
+        && isDia(value.desde);
+    }
+    // Frases de motivación: como las reglas no pueden recorrer listas, se
+    // valida cada posición posible (el tope es 20).
+    function isMensajeEn(list, i) {
+      return list.size() <= i || isShortText(list[i], 160);
+    }
+    function sonMensajesValidos(list) {
+      return isMensajeEn(list, 0) && isMensajeEn(list, 1) && isMensajeEn(list, 2)
+        && isMensajeEn(list, 3) && isMensajeEn(list, 4) && isMensajeEn(list, 5)
+        && isMensajeEn(list, 6) && isMensajeEn(list, 7) && isMensajeEn(list, 8)
+        && isMensajeEn(list, 9) && isMensajeEn(list, 10) && isMensajeEn(list, 11)
+        && isMensajeEn(list, 12) && isMensajeEn(list, 13) && isMensajeEn(list, 14)
+        && isMensajeEn(list, 15) && isMensajeEn(list, 16) && isMensajeEn(list, 17)
+        && isMensajeEn(list, 18) && isMensajeEn(list, 19);
     }
     // Desde la fase 5 la app solo escribe 'completed'. Los documentos
     // antiguos con 'recovery'/'plannedRest' se conservan y se siguen leyendo,
@@ -158,6 +195,12 @@ service cloud.firestore {
         && unchanged('createdAt')
         // La suscripción solo la cambia el backend (Admin SDK / Functions).
         && unchanged('subscription')
+        // El tema oscuro es Premium. Solo se comprueba al CAMBIARLO: si la
+        // suscripción caduca con el oscuro puesto, el resto del perfil se
+        // sigue pudiendo editar (la app vuelve sola al claro).
+        && (unchanged('themeMode')
+            || incoming().themeMode != 'dark'
+            || subscriptionIsPremium(existing().subscription))
         && isServerTime(incoming().updatedAt)
         && (!('lastActiveAt' in incoming())
             || isServerTime(incoming().lastActiveAt)
@@ -191,8 +234,9 @@ service cloud.firestore {
           && (!('customMotivationMessages' in d) || (
             d.customMotivationMessages is list
             && d.customMotivationMessages.size() <= 20
+            && sonMensajesValidos(d.customMotivationMessages)
             && (
-              d.subscription.status != 'free'
+              subscriptionIsPremium(d.subscription)
               || d.customMotivationMessages.size() <= 1
               || (
                 'customMotivationMessages' in existing()
@@ -252,14 +296,18 @@ service cloud.firestore {
         && docId == 'config'
         && validWeightConfig(incoming());
 
-      allow delete: if false;
+      // Las mediciones son del usuario: puede borrar una errónea (derecho de
+      // rectificación y supresión). El documento de configuración no.
+      allow delete: if isOwner(uid) && docId != 'config';
 
       function validWeightConfig(d) {
         return d.keys().hasOnly([
             'tipo', 'objetivoKg', 'pesoActualKg', 'edad', 'alturaCm',
             'sexoCalculo', 'nivelActividad', 'tipoObjetivo',
-            'caloriasEstimadas', 'onboardingCompleted', 'updatedAt'
+            'caloriasEstimadas', 'onboardingCompleted', 'consentimientoSalud',
+            'updatedAt'
           ])
+          && (!('consentimientoSalud' in d) || d.consentimientoSalud is bool)
           && d.keys().hasAll(['tipo', 'objetivoKg', 'updatedAt'])
           && d.tipo == 'config'
           && d.objetivoKg is number
@@ -290,7 +338,9 @@ service cloud.firestore {
           && d.pesoKg is number
           && d.pesoKg >= 20 && d.pesoKg <= 400
           && d.recordedAt is timestamp
-          && d.recordedAt <= request.time
+          // Margen de 5 minutos: un reloj del dispositivo algo adelantado no
+          // debe impedir registrar el peso.
+          && d.recordedAt <= request.time + duration.value(5, 'm')
           && d.recordedAt >= request.time - duration.value(3660, 'd')
           && isServerTime(d.createdAt);
       }
@@ -304,6 +354,10 @@ service cloud.firestore {
       allow create: if isOwner(uid)
         && validHabito(incoming())
         && incoming().deletedAt == null
+        // Mensaje propio del recordatorio: Premium.
+        && (!('recordatorioMensaje' in incoming())
+            || incoming().recordatorioMensaje == null
+            || isPremiumUser(uid))
         && isServerTime(incoming().createdAt)
         && isServerTime(incoming().updatedAt)
         && exists(ambitoPath(uid, incoming().ambitoId));
@@ -311,6 +365,11 @@ service cloud.firestore {
       allow update: if isOwner(uid)
         && validHabito(incoming())
         && unchanged('createdAt')
+        && (!('recordatorioMensaje' in incoming())
+            || incoming().recordatorioMensaje == null
+            || ('recordatorioMensaje' in existing()
+                && unchanged('recordatorioMensaje'))
+            || isPremiumUser(uid))
         && isServerTime(incoming().updatedAt)
         && (unchanged('ambitoId') || exists(ambitoPath(uid, incoming().ambitoId)))
         // deletedAt solo puede quedarse igual, ponerse a null (restaurar) o
@@ -352,7 +411,13 @@ service cloud.firestore {
           && isShortText(d.ambitoId, 128)
           && isPeriodicidad(d.periodicidad)
           && d.cambiosPeriodicidad is list
-          && d.cambiosPeriodicidad.size() <= 50
+          // Cada cambio real añade una entrada (los pendientes se sustituyen),
+          // así que 400 es holgado; el tope evita documentos gigantes.
+          && d.cambiosPeriodicidad.size() <= 400
+          // La app siempre añade al final: se valida la última entrada.
+          && (d.cambiosPeriodicidad.size() == 0
+              || isCambioPeriodicidad(
+                d.cambiosPeriodicidad[d.cambiosPeriodicidad.size() - 1]))
           && (!('recordatorioHora' in d) || d.recordatorioHora == null || isHora(d.recordatorioHora))
           && (!('recordatorioMensaje' in d) || d.recordatorioMensaje == null || isShortText(d.recordatorioMensaje, 120))
           && (!('trackingType' in d) || d.trackingType in ['single', 'repetitions'])

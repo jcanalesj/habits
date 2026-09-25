@@ -61,7 +61,6 @@ class AppIconController extends AsyncNotifier<AppIconOption> {
   @override
   Future<AppIconOption> build() {
     ref.listen(isPremiumProvider, (_, _) => _enforceEntitlement());
-    ref.listen(premiumPreviewEnabledProvider, (_, _) => _enforceEntitlement());
     return _restore().then((icon) {
       Future.microtask(_enforceEntitlement);
       return icon;
@@ -92,7 +91,7 @@ class AppIconController extends AsyncNotifier<AppIconOption> {
     return stored;
   }
 
-  /// Sin Premium (ni suscripción ni acceso de prueba) solo vale el icono
+  /// Sin Premium solo vale el icono
   /// clásico: si había uno Premium puesto, se restaura el de por defecto.
   Future<void> _enforceEntitlement() async {
     // Sin sesión o con la suscripción aún cargando no se sabe nada: mejor
@@ -100,9 +99,7 @@ class AppIconController extends AsyncNotifier<AppIconOption> {
     if (ref.read(authControllerProvider).value == null) return;
     final subscription = ref.read(isPremiumProvider);
     if (subscription.isLoading || !subscription.hasValue) return;
-    if (subscription.requireValue || ref.read(premiumPreviewEnabledProvider)) {
-      return;
-    }
+    if (subscription.requireValue) return;
     final icon = await future;
     if (!icon.isPremium) return;
     try {

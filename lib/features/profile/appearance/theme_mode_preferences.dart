@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
-import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Nombres con los que el tema viaja a Firestore y a SharedPreferences.
@@ -75,38 +75,38 @@ final themeModeProvider = NotifierProvider<ThemeModeController, ThemeMode>(
 
 class ThemeModeController extends Notifier<ThemeMode> {
   StreamSubscription<ThemeMode?>? _remoteSubscription;
-  StreamSubscription<bool>? _premiumSubscription;
   bool? _isPremium;
+
+  /// Último tema del perfil remoto. Se guarda para aplicar el oscuro cuando
+  /// se confirme la suscripción, que puede llegar después.
+  ThemeMode? _remoteMode;
 
   @override
   ThemeMode build() {
     ref.onDispose(() {
       _remoteSubscription?.cancel();
-      _premiumSubscription?.cancel();
     });
     ref.listen(authControllerProvider, (_, auth) {
       _watchRemote(auth.value?.id);
+    }, fireImmediately: true);
+    // Premium efectivo (Firestore o la tienda recién confirmada): así el
+    // oscuro se puede aplicar nada más comprar, sin esperar al webhook.
+    ref.listen(isPremiumProvider, (_, premium) {
+      final userId = ref.read(authControllerProvider).value?.id;
+      if (userId == null || !premium.hasValue) return;
+      _onPremium(userId, premium.requireValue);
     }, fireImmediately: true);
     return ref.watch(themeModePreferencesProvider).mode;
   }
 
   void _watchRemote(String? userId) {
     unawaited(_remoteSubscription?.cancel());
-    unawaited(_premiumSubscription?.cancel());
     _remoteSubscription = null;
-    _premiumSubscription = null;
     _isPremium = null;
+    _remoteMode = null;
     if (userId == null) return;
-    _premiumSubscription = ref
-        .read(userProfileRepositoryProvider)
-        .watchIsPremium(userId)
-        .listen((isPremium) {
-          _isPremium = isPremium;
-          if (!_hasDarkAccess && state == ThemeMode.dark) {
-            _applyMode(ThemeMode.light);
-            unawaited(_persistRemote(userId, ThemeMode.light));
-          }
-        });
+    final premium = ref.read(isPremiumProvider);
+    if (premium.hasValue) _onPremium(userId, premium.requireValue);
     _remoteSubscription = ref
         .read(userProfileRepositoryProvider)
         .watchThemeMode(userId)
@@ -116,12 +116,35 @@ class ThemeModeController extends Notifier<ThemeMode> {
             unawaited(_persistRemote(userId, state));
             return;
           }
+          _remoteMode = mode;
+          // Con la suscripción aún cargando no se decide: si resulta ser
+          // Premium, el listener de arriba aplicará el oscuro.
+          if (mode == ThemeMode.dark && _isPremium == null) return;
           final entitledMode = mode == ThemeMode.dark && !_hasDarkAccess
               ? ThemeMode.light
               : mode;
           if (entitledMode == state) return;
           _applyMode(entitledMode);
         });
+  }
+
+  /// Se aplaza a una microtarea: puede llegar durante `build` (listeners con
+  /// `fireImmediately`), y ahí no se puede cambiar el estado.
+  void _onPremium(String userId, bool isPremium) => Future.microtask(() {
+    if (!ref.mounted) return;
+    _applyPremium(userId, isPremium);
+  });
+
+  void _applyPremium(String userId, bool isPremium) {
+    _isPremium = isPremium;
+    if (!_hasDarkAccess && state == ThemeMode.dark) {
+      _applyMode(ThemeMode.light);
+      unawaited(_persistRemote(userId, ThemeMode.light));
+    } else if (_hasDarkAccess &&
+        _remoteMode == ThemeMode.dark &&
+        state != ThemeMode.dark) {
+      _applyMode(ThemeMode.dark);
+    }
   }
 
   void setMode(ThemeMode mode) {
@@ -134,9 +157,14 @@ class ThemeModeController extends Notifier<ThemeMode> {
     if (userId != null) unawaited(_persistRemote(userId, supportedMode));
   }
 
-  /// El acceso de prueba de la sesión también desbloquea el tema oscuro.
+  /// Tema al cerrar sesión: el siguiente usuario del dispositivo no hereda
+  /// el oscuro (Premium) del anterior. Al entrar, su perfil manda.
+  void resetForSignOut() => _applyMode(ThemeMode.light);
+
+  /// Solo con la suscripción confirmada: mientras carga, el oscuro no se
+  /// concede.
   bool get _hasDarkAccess =>
-      _isPremium != false || ref.read(premiumPreviewEnabledProvider);
+      _isPremium == true || ref.read(premiumSubscribedProvider);
 
   void _applyMode(ThemeMode mode) {
     state = mode;

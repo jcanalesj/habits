@@ -24,7 +24,7 @@ async function check(name, expectOk, fn) {
 const ts = () => serverTimestamp();
 const user = (over = {}) => ({
   email: 'alice@example.com', displayName: 'Alice', timezone: 'Europe/Madrid',
-  locale: 'es', subscription: { status: 'free' }, createdAt: ts(), updatedAt: ts(), ...over,
+  locale: 'es', themeMode: 'light', subscription: { status: 'free' }, createdAt: ts(), updatedAt: ts(), ...over,
 });
 const ambito = (over = {}) => ({
   nombre: 'Salud', emoji: '💜', colorValue: 0xFF8B5CF6, esPredefinido: true, orden: 0,
@@ -401,6 +401,74 @@ const saldo = (over = {}) => ({
   await check('cache sin updatedAt servidor falla', false, () => setDoc(U(alice, 'cache', 'rachas'), cache({ updatedAt: Timestamp.now() })));
   await check('cache se puede borrar entera (es reconstruible)', true, () => deleteDoc(U(alice, 'cache', 'rachas')));
   await check('bob no escribe cache de alice', false, () => setDoc(doc(bob, 'users', 'alice', 'cache', 'rachas'), cache()));
+
+  // ---------------- Premium en servidor
+  // gina es gratuita y hugo Premium (la suscripción la escribe el backend,
+  // aquí simulado con las reglas desactivadas).
+  const gina = env.authenticatedContext('gina', { email: 'gina@example.com', email_verified: true }).firestore();
+  const hugo = env.authenticatedContext('hugo', { email: 'hugo@example.com', email_verified: true }).firestore();
+  await check('gina: perfil', true, () => setDoc(doc(gina, 'users', 'gina'), user({ email: 'gina@example.com' })));
+  await check('gina: ámbito salud', true, () => setDoc(doc(gina, 'users', 'gina', 'ambitos', 'salud'), ambito()));
+  await check('hugo: perfil', true, () => setDoc(doc(hugo, 'users', 'hugo'), user({ email: 'hugo@example.com' })));
+  await check('hugo: ámbito salud', true, () => setDoc(doc(hugo, 'users', 'hugo', 'ambitos', 'salud'), ambito()));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await updateDoc(doc(ctx.firestore(), 'users', 'hugo'), {
+      subscription: { status: 'active', expiresAt: Timestamp.fromMillis(Date.now() + 30 * 86400000) },
+    });
+  });
+  await check('gratis: no puede poner el tema oscuro', false,
+    () => updateDoc(doc(gina, 'users', 'gina'), { themeMode: 'dark', updatedAt: ts() }));
+  await check('gratis: sí puede poner el tema claro', true,
+    () => updateDoc(doc(gina, 'users', 'gina'), { themeMode: 'light', updatedAt: ts() }));
+  await check('premium: puede poner el tema oscuro', true,
+    () => updateDoc(doc(hugo, 'users', 'hugo'), { themeMode: 'dark', updatedAt: ts() }));
+  await check('gratis: hábito con mensaje de recordatorio falla', false,
+    () => setDoc(doc(gina, 'users', 'gina', 'habitos', 'h1'), habito({ recordatorioMensaje: '¡Vamos!' })));
+  await check('gratis: hábito sin mensaje se crea', true,
+    () => setDoc(doc(gina, 'users', 'gina', 'habitos', 'h1'), habito()));
+  await check('gratis: añadir mensaje después falla', false,
+    () => updateDoc(doc(gina, 'users', 'gina', 'habitos', 'h1'), { recordatorioMensaje: '¡Vamos!', updatedAt: ts() }));
+  await check('premium: hábito con mensaje se crea', true,
+    () => setDoc(doc(hugo, 'users', 'hugo', 'habitos', 'h1'), habito({ recordatorioMensaje: '¡Vamos!' })));
+  await check('premium: 3 frases de motivación', true,
+    () => updateDoc(doc(hugo, 'users', 'hugo'), { customMotivationMessages: ['a', 'b', 'c'], updatedAt: ts() }));
+  await check('gratis: 3 frases de motivación falla', false,
+    () => updateDoc(doc(gina, 'users', 'gina'), { customMotivationMessages: ['a', 'b', 'c'], updatedAt: ts() }));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await updateDoc(doc(ctx.firestore(), 'users', 'hugo'), {
+      subscription: { status: 'active', expiresAt: Timestamp.fromMillis(Date.now() - 86400000) },
+    });
+  });
+  await check('premium caducado: ya no añade mensajes de recordatorio', false,
+    () => setDoc(doc(hugo, 'users', 'hugo', 'habitos', 'h2'), habito({ recordatorioMensaje: 'Otra' })));
+  await check('premium caducado: con el oscuro puesto sigue editando su perfil', true,
+    () => updateDoc(doc(hugo, 'users', 'hugo'), { timezone: 'Europe/Lisbon', updatedAt: ts() }));
+  await check('premium caducado: su hábito con mensaje sigue editable', true,
+    () => updateDoc(doc(hugo, 'users', 'hugo', 'habitos', 'h1'), { nombre: 'Leer', updatedAt: ts() }));
+
+  // ---------------- validación del contenido de listas
+  await check('frases: un elemento que no es texto falla', false,
+    () => updateDoc(doc(gina, 'users', 'gina'), { customMotivationMessages: [42], updatedAt: ts() }));
+  await check('frases: una frase gigante falla', false,
+    () => updateDoc(doc(gina, 'users', 'gina'), { customMotivationMessages: ['x'.repeat(5000)], updatedAt: ts() }));
+  await check('frases: una frase normal se guarda', true,
+    () => updateDoc(doc(gina, 'users', 'gina'), { customMotivationMessages: ['¡A por ello!'], updatedAt: ts() }));
+  await check('cambio de periodicidad sin fecha falla', false,
+    () => updateDoc(doc(gina, 'users', 'gina', 'habitos', 'h1'), { cambiosPeriodicidad: [{ tipo: 'weekly', veces: 3 }], updatedAt: ts() }));
+  await check('cambio de periodicidad válido se guarda', true,
+    () => updateDoc(doc(gina, 'users', 'gina', 'habitos', 'h1'), { cambiosPeriodicidad: [{ tipo: 'weekly', veces: 3, desde: '2026-10-05' }], updatedAt: ts() }));
+
+  // ---------------- peso
+  const P = (db, id) => doc(db, 'users', 'alice', 'peso', id);
+  const medicion = (over = {}) => ({ tipo: 'medicion', pesoKg: 70.5, recordedAt: Timestamp.now(), createdAt: ts(), ...over });
+  await check('peso: medición válida', true, () => setDoc(P(alice, 'm1'), medicion()));
+  await check('peso: reloj 2 min adelantado se acepta', true,
+    () => setDoc(P(alice, 'm2'), medicion({ recordedAt: Timestamp.fromMillis(Date.now() + 120000) })));
+  await check('peso: fecha 1 hora en el futuro falla', false,
+    () => setDoc(P(alice, 'm3'), medicion({ recordedAt: Timestamp.fromMillis(Date.now() + 3600000) })));
+  await check('peso: borrar una medición propia', true, () => deleteDoc(P(alice, 'm2')));
+  await check('peso: bob no borra mediciones de alice', false, () => deleteDoc(P(bob, 'm1')));
+  await check('peso: config no se borra', false, () => deleteDoc(P(alice, 'config')));
 
   // ---------------- fuera del modelo
   await check('colección raíz desconocida falla', false, () => setDoc(doc(alice, 'global', 'x'), { a: 1 }));

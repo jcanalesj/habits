@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/premium/2_presentation/premium_providers.dart';
 import 'package:habits/features/profile/appearance/app_icon.dart';
 import 'package:habits/local_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,11 +24,6 @@ class _FakeAppIconService implements AppIconService {
   }
 }
 
-class _EnabledPreview extends PremiumPreviewController {
-  @override
-  bool build() => true;
-}
-
 /// Igual que la raíz de la app: solo mantiene vivo el controlador.
 class _Host extends ConsumerWidget {
   const _Host();
@@ -44,7 +39,7 @@ void main() {
   Future<_FakeAppIconService> pumpHost(
     WidgetTester tester, {
     required bool subscribed,
-    bool preview = false,
+    bool storeEntitlement = false,
     AppIconOption system = AppIconOption.crown,
     SharedPreferences? preferences,
   }) async {
@@ -59,8 +54,8 @@ void main() {
           appIconServiceProvider.overrideWithValue(service),
           if (preferences != null)
             sharedPreferencesProvider.overrideWithValue(preferences),
-          if (preview)
-            premiumPreviewEnabledProvider.overrideWith(_EnabledPreview.new),
+          if (storeEntitlement)
+            storeEntitlementProvider.overrideWith((ref) => Stream.value(true)),
         ],
       ),
     );
@@ -80,21 +75,15 @@ void main() {
     expect(service.icon, AppIconOption.crown);
   });
 
-  testWidgets('el acceso de prueba también lo conserva', (tester) async {
-    final service = await pumpHost(tester, subscribed: false, preview: true);
-    expect(service.icon, AppIconOption.crown);
-  });
-
-  testWidgets('el acceso de prueba guardado sobrevive a reabrir la app', (
+  testWidgets('la compra confirmada por la tienda también lo conserva', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({
-      PremiumPreviewController.key: true,
-    });
+    // Antes de que el webhook actualice Firestore, la tienda ya sabe que
+    // hay Premium.
     final service = await pumpHost(
       tester,
       subscribed: false,
-      preferences: await SharedPreferences.getInstance(),
+      storeEntitlement: true,
     );
     expect(service.icon, AppIconOption.crown);
   });
@@ -102,13 +91,10 @@ void main() {
   testWidgets(
     'el icono guardado se vuelve a pedir si el sistema no lo aplicó',
     (tester) async {
-      SharedPreferences.setMockInitialValues({
-        PremiumPreviewController.key: true,
-        'app_icon': 'yarn',
-      });
+      SharedPreferences.setMockInitialValues({'app_icon': 'yarn'});
       final service = await pumpHost(
         tester,
-        subscribed: false,
+        subscribed: true,
         system: AppIconOption.classic,
         preferences: await SharedPreferences.getInstance(),
       );

@@ -71,48 +71,55 @@ void main() {
     expect(find.text('Cada día a las 15:00'), findsOneWidget);
   });
 
-  testWidgets('el mensaje personalizado muestra Premium en una cuenta gratis', (
-    tester,
-  ) async {
-    final env = AuthTestEnv(initialUser: verifiedUser, seededHabits: true);
-    await tester.pumpWidget(
-      localizedApp(const NotificationSettingsPage(), overrides: env.overrides),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'el mensaje personalizado pide Premium y se desbloquea al comprar',
+    (tester) async {
+      final env = AuthTestEnv(initialUser: verifiedUser, seededHabits: true);
+      await tester.pumpWidget(
+        localizedApp(
+          const NotificationSettingsPage(),
+          overrides: env.overrides,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    final action = find.byKey(const ValueKey('reminder-message-entrenar'));
-    await tester.scrollUntilVisible(
-      action,
-      220,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
-    await tester.pumpAndSettle();
-    await tester.tap(action);
-    await tester.pumpAndSettle();
+      final action = find.byKey(const ValueKey('reminder-message-entrenar'));
+      await tester.scrollUntilVisible(
+        action,
+        220,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
+      await tester.pumpAndSettle();
+      await tester.tap(action);
+      await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const ValueKey('premium-reminder-message-dialog')),
-      findsOneWidget,
-    );
-    expect(find.text('Tus recordatorios, a tu manera'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('premium-reminder-message-dialog')),
+        findsOneWidget,
+      );
+      expect(find.text('Tus recordatorios, a tu manera'), findsOneWidget);
 
-    await tester.tap(
-      find.byKey(const ValueKey('reminder-message-view-premium-plans')),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('premium-reminder-message-dialog')),
-      findsNothing,
-    );
+      await tester.tap(
+        find.byKey(const ValueKey('reminder-message-view-premium-plans')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('paywall-page')), findsOneWidget);
+      await buyPremiumOnPaywall(tester);
+      expect(find.byKey(const ValueKey('paywall-page')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('premium-reminder-message-dialog')),
+        findsNothing,
+      );
 
-    await tester.tap(action);
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('reminder-message-dialog')),
-      findsOneWidget,
-    );
-  });
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('reminder-message-dialog')),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('Premium guarda un mensaje distinto para cada hábito', (
     tester,
