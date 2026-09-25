@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:habits/app_lifecycle.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/features/profile/appearance/app_icon.dart';
@@ -14,11 +17,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Las fuentes van en assets/fonts: nada de pedirlas a Google en tiempo de
+  // ejecución (privacidad y primer arranque sin conexión).
+  GoogleFonts.config.allowRuntimeFetching = false;
+  LicenseRegistry.addLicense(_fontLicenses);
   // Base de datos IANA para resolver el día lógico en la zona del perfil
   // (§12/§35). Es Dart puro y va embebida: no hace red ni I/O.
   initializeTimezones();
-  await initializeFirebase();
   final preferences = await _loadPreferences();
+  final clearCache =
+      preferences?.getBool(clearFirestoreCacheOnStartKey) ?? false;
+  await initializeFirebase(clearCache: clearCache);
+  if (clearCache) await preferences?.remove(clearFirestoreCacheOnStartKey);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(
     ProviderScope(
@@ -40,6 +50,18 @@ Future<void> main() async {
   );
 }
 
+/// Licencias OFL de las fuentes empaquetadas (las exige la licencia).
+Stream<LicenseEntry> _fontLicenses() async* {
+  for (final (family, file) in [
+    ('Inter', 'assets/fonts/Inter-OFL.txt'),
+    ('Playfair Display', 'assets/fonts/PlayfairDisplay-OFL.txt'),
+  ]) {
+    yield LicenseEntryWithLineBreaks([
+      family,
+    ], await rootBundle.loadString(file));
+  }
+}
+
 /// Preferencias locales (animación de bienvenida, tema…). Se leen antes del
 /// primer frame para que el tema elegido no parpadee al arrancar.
 Future<SharedPreferences?> _loadPreferences() async {
@@ -54,11 +76,33 @@ Future<SharedPreferences?> _loadPreferences() async {
   }
 }
 
-class HabitsApp extends ConsumerWidget {
+class HabitsApp extends ConsumerStatefulWidget {
   const HabitsApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HabitsApp> createState() => _HabitsAppState();
+}
+
+class _HabitsAppState extends ConsumerState<HabitsApp> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    // Al volver de segundo plano puede ser otro día o haber otros permisos.
+    _lifecycle = AppLifecycleListener(
+      onResume: () => ref.read(systemStateTickProvider.notifier).bump(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(goRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
     // Mantiene vivo el control del icono para revertirlo si caduca Premium.

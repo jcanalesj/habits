@@ -186,10 +186,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get registerSubtitle => 'Empieza hoy tu mejor versión.';
 
   @override
-  String get nicknameLabel => 'Nickname';
+  String get nicknameLabel => 'Apodo';
 
   @override
-  String get nicknameHint => 'Elige un nickname';
+  String get nicknameHint => 'Elige un apodo';
 
   @override
   String get emailLabel => 'Correo electrónico';
@@ -231,7 +231,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get signInAction => 'Inicia sesión';
 
   @override
-  String get nicknameRequired => 'Introduce un nickname';
+  String get nicknameRequired => 'Introduce un apodo';
 
   @override
   String get registerInvalidEmail => 'Introduce un correo válido';
@@ -1035,8 +1035,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Podrás volver a entrar con tu correo y contraseña.';
 
   @override
-  String get nicknameTooLong =>
-      'El nickname no puede superar los 40 caracteres';
+  String get nicknameTooLong => 'El apodo no puede superar los 40 caracteres';
 
   @override
   String get authErrorInvalidCredentials => 'Correo o contraseña incorrectos.';
@@ -1403,6 +1402,341 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorSaveFailed => 'No se ha podido guardar. Inténtalo de nuevo.';
+
+  @override
+  String get a11yShowPassword => 'Mostrar contraseña';
+
+  @override
+  String get a11yHidePassword => 'Ocultar contraseña';
+
+  @override
+  String get a11yPreviousMonth => 'Mes anterior';
+
+  @override
+  String get a11yNextMonth => 'Mes siguiente';
+
+  @override
+  String get a11yDecrease => 'Quitar uno';
+
+  @override
+  String get a11yIncrease => 'Añadir uno';
+
+  @override
+  String get iconWater => 'Agua';
+
+  @override
+  String get iconExercise => 'Ejercicio';
+
+  @override
+  String get iconStrength => 'Fuerza';
+
+  @override
+  String get iconMeditation => 'Meditación';
+
+  @override
+  String get iconRest => 'Descanso';
+
+  @override
+  String get iconReading => 'Lectura';
+
+  @override
+  String get iconWellbeing => 'Bienestar';
+
+  @override
+  String get iconGoal => 'Meta';
+
+  @override
+  String get iconFood => 'Alimentación';
+
+  @override
+  String get iconMedication => 'Medicación';
+
+  @override
+  String get iconPet => 'Mascota';
+
+  @override
+  String get iconDrink => 'Bebida';
+
+  @override
+  String get iconGeneral => 'General';
+
+  @override
+  String get progressIconWaterDrop => 'Gota de agua';
+
+  @override
+  String get progressIconStar => 'Estrella';
+
+  @override
+  String get progressIconFruit => 'Fruta';
+
+  @override
+  String get progressIconPill => 'Pastilla';
+
+  @override
+  String get progressIconPaw => 'Huella';
+
+  @override
+  String get progressIconBrush => 'Cepillo';
+
+  @override
+  String get cityLondon => 'Londres';
+
+  @override
+  String get cityNewYork => 'Nueva York';
+
+  @override
+  String get cityMexicoCity => 'Ciudad de México';
+
+  @override
+  String get cityTokyo => 'Tokio';
+
+  @override
+  String get weightConsentTitle => 'Tus datos de salud';
+
+  @override
+  String get weightConsentBody =>
+      'Para mostrar tu evolución y estimar tus calorías guardaremos en tu cuenta tu peso, edad, altura, sexo y nivel de actividad. Solo se usan para esto, no se comparten y puedes borrarlos cuando quieras (o eliminar tu cuenta).';
+
+  @override
+  String get weightConsentAccept => 'Acepto';
+
+  @override
+  String get weightConsentDecline => 'Ahora no';
+
+  @override
+  String get weightConsentPrivacy => 'Leer la política de privacidad';
+
+  @override
+  String get pageNotFound => 'Esta pantalla no existe.';
+
+  @override
+  String get goHome => 'Ir al inicio';
+
+  @override
+  String get signOutConfirmTitle => '¿Cerrar sesión?';
+
+  @override
+  String get signOutConfirmBody =>
+      'Tus datos se quedan guardados en tu cuenta. Los recordatorios dejarán de llegar a este dispositivo hasta que vuelvas a entrar.';
+
+  @override
+  String get paywallTitle => 'Constanza Premium';
+
+  @override
+  String get paywallSubtitle =>
+      'Todo lo que necesitas para no romper la racha.';
+
+  @override
+  String get paywallMonthly => 'Mensual';
+
+  @override
+  String get paywallAnnual => 'Anual';
+
+  @override
+  String get paywallLifetime => 'Para siempre';
+
+  @override
+  String get paywallOtherPlan => 'Plan Premium';
+
+  @override
+  String paywallPerMonth(String price) {
+    return '$price al mes';
+  }
+
+  @override
+  String paywallPerYear(String price) {
+    return '$price al año';
+  }
+
+  @override
+  String paywallOneTime(String price) {
+    return '$price, pago único';
+  }
+
+  @override
+  String paywallTrialDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días gratis',
+      one: '1 día gratis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String paywallTrialWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count semanas gratis',
+      one: '1 semana gratis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String paywallTrialMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count meses gratis',
+      one: '1 mes gratis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String paywallTrialYears(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count años gratis',
+      one: '1 año gratis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get paywallContinue => 'Continuar';
+
+  @override
+  String get paywallRestore => 'Restaurar compras';
+
+  @override
+  String get paywallRestoreNothing =>
+      'No hemos encontrado compras anteriores con esta cuenta de la tienda.';
+
+  @override
+  String get paywallLegal =>
+      'La suscripción se renueva automáticamente al mismo precio salvo que la canceles al menos 24 horas antes de que termine el periodo. Puedes gestionarla o cancelarla en los ajustes de tu cuenta de la App Store o de Google Play.';
+
+  @override
+  String get paywallUnavailable =>
+      'Las compras no están disponibles en este momento. Inténtalo más tarde.';
+
+  @override
+  String get paywallPurchaseFailed =>
+      'No se ha podido completar la compra. No se te ha cobrado nada.';
+
+  @override
+  String get paywallWelcome =>
+      '¡Ya eres Premium! Gracias por apoyar Constanza.';
+
+  @override
+  String get paywallActive => 'Tu suscripción Premium está activa.';
+
+  @override
+  String get paywallManage => 'Gestionar suscripción';
+
+  @override
+  String get premiumCustomization => 'Hazla tuya';
+
+  @override
+  String get premiumCustomizationBody =>
+      'Tema oscuro, iconos, avatares y mensajes propios.';
+
+  @override
+  String get profilePremium => 'Constanza Premium';
+
+  @override
+  String get profilePremiumSubtitleFree => 'Descubre los planes';
+
+  @override
+  String get profilePremiumSubtitleActive => 'Suscripción activa';
+
+  @override
+  String get profileChangePassword => 'Cambiar contraseña';
+
+  @override
+  String get profileChangePasswordSubtitle =>
+      'Confirma la actual y elige una nueva';
+
+  @override
+  String get profileDeleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get profileDeleteAccountSubtitle =>
+      'Borra tu cuenta y todos tus datos';
+
+  @override
+  String get profilePrivacyPolicy => 'Política de privacidad';
+
+  @override
+  String get profilePrivacyPolicySubtitle => 'Qué datos guardamos y para qué';
+
+  @override
+  String get profileTerms => 'Términos y condiciones';
+
+  @override
+  String get profileTermsSubtitle => 'Condiciones de uso de Constanza';
+
+  @override
+  String get profileLegal => 'Legal';
+
+  @override
+  String get currentPasswordLabel => 'Contraseña actual';
+
+  @override
+  String get newPasswordLabel => 'Nueva contraseña';
+
+  @override
+  String get passwordChanged => 'Contraseña actualizada';
+
+  @override
+  String get deleteAccountTitle => '¿Eliminar tu cuenta?';
+
+  @override
+  String get deleteAccountBody =>
+      'Se borrarán para siempre tu cuenta, tus hábitos, tu historial, tus rachas, tus comodines y tus datos de peso. No se puede deshacer.';
+
+  @override
+  String get deleteAccountSubscriptionNote =>
+      'Si tienes una suscripción Premium, cancélala también en la App Store o en Google Play: borrar la cuenta no la cancela.';
+
+  @override
+  String get deleteAccountPasswordHint =>
+      'Escribe tu contraseña para confirmar';
+
+  @override
+  String get deleteAccountConfirm => 'Eliminar definitivamente';
+
+  @override
+  String get accountDeleted => 'Tu cuenta se ha eliminado';
+
+  @override
+  String get linkOpenFailed => 'No se ha podido abrir el enlace';
+
+  @override
+  String get save => 'Guardar';
+
+  @override
+  String get habitCalendarsEmpty =>
+      'Aún no tienes hábitos. Crea el primero y aquí verás sus calendarios.';
+
+  @override
+  String get weightDeleteEntry => 'Borrar medición';
+
+  @override
+  String get weightDeleteConfirmTitle => '¿Borrar esta medición?';
+
+  @override
+  String get weightDeleteConfirmBody =>
+      'Se eliminará de tu historial y de la gráfica. No se puede deshacer.';
+
+  @override
+  String get weightEntryDeleted => 'Medición borrada';
+
+  @override
+  String get errorLoadFailed =>
+      'No hemos podido cargar tus datos. Revisa tu conexión e inténtalo de nuevo.';
+
+  @override
+  String get errorActionFailed =>
+      'No se ha podido completar. Revisa tu conexión e inténtalo de nuevo.';
+
+  @override
+  String get retry => 'Reintentar';
 
   @override
   String get noHabitsYetLong =>

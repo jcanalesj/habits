@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
+import 'package:habits/env.dart';
 import 'package:habits/features/auth/1_domain/domain.dart';
 import 'package:habits/features/auth/2_presentation/controllers/login_controller.dart';
 import 'package:habits/features/auth/2_presentation/l10n/auth_failure_l10n.dart';
@@ -218,25 +219,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     isLoading: state.isSubmitting,
                                     onPressed: _submit,
                                   ),
-                                  const SizedBox(height: 14),
-                                  LabeledDivider(label: l10n.orContinueWith),
-                                  const SizedBox(height: 12),
-                                  Wrap(
-                                    alignment: WrapAlignment.center,
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.center,
-                                    children: [
-                                      SocialLoginButton(
-                                        provider: SocialProvider.google,
-                                        onPressed: _showComingSoon,
-                                      ),
-                                      const SizedBox(width: 16),
-                                      SocialLoginButton(
-                                        provider: SocialProvider.apple,
-                                        onPressed: _showComingSoon,
-                                      ),
-                                    ],
-                                  ),
+                                  if (Env.socialLoginEnabled) ...[
+                                    const SizedBox(height: 14),
+                                    LabeledDivider(label: l10n.orContinueWith),
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      alignment: WrapAlignment.center,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      children: [
+                                        SocialLoginButton(
+                                          provider: SocialProvider.google,
+                                          onPressed: _showComingSoon,
+                                        ),
+                                        const SizedBox(width: 16),
+                                        SocialLoginButton(
+                                          provider: SocialProvider.apple,
+                                          onPressed: _showComingSoon,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                   const SizedBox(height: 10),
                                   Wrap(
                                     alignment: WrapAlignment.center,

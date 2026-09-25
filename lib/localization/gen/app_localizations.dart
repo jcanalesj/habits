@@ -2558,6 +2558,564 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save. Please try again.'**
   String get errorSaveFailed;
 
+  /// No description provided for @a11yShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get a11yShowPassword;
+
+  /// No description provided for @a11yHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get a11yHidePassword;
+
+  /// No description provided for @a11yPreviousMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get a11yPreviousMonth;
+
+  /// No description provided for @a11yNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get a11yNextMonth;
+
+  /// No description provided for @a11yDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease'**
+  String get a11yDecrease;
+
+  /// No description provided for @a11yIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase'**
+  String get a11yIncrease;
+
+  /// No description provided for @iconWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get iconWater;
+
+  /// No description provided for @iconExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get iconExercise;
+
+  /// No description provided for @iconStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength'**
+  String get iconStrength;
+
+  /// No description provided for @iconMeditation.
+  ///
+  /// In en, this message translates to:
+  /// **'Meditation'**
+  String get iconMeditation;
+
+  /// No description provided for @iconRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get iconRest;
+
+  /// No description provided for @iconReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get iconReading;
+
+  /// No description provided for @iconWellbeing.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellbeing'**
+  String get iconWellbeing;
+
+  /// No description provided for @iconGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get iconGoal;
+
+  /// No description provided for @iconFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get iconFood;
+
+  /// No description provided for @iconMedication.
+  ///
+  /// In en, this message translates to:
+  /// **'Medication'**
+  String get iconMedication;
+
+  /// No description provided for @iconPet.
+  ///
+  /// In en, this message translates to:
+  /// **'Pet'**
+  String get iconPet;
+
+  /// No description provided for @iconDrink.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink'**
+  String get iconDrink;
+
+  /// No description provided for @iconGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get iconGeneral;
+
+  /// No description provided for @progressIconWaterDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Water drop'**
+  String get progressIconWaterDrop;
+
+  /// No description provided for @progressIconStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Star'**
+  String get progressIconStar;
+
+  /// No description provided for @progressIconFruit.
+  ///
+  /// In en, this message translates to:
+  /// **'Fruit'**
+  String get progressIconFruit;
+
+  /// No description provided for @progressIconPill.
+  ///
+  /// In en, this message translates to:
+  /// **'Pill'**
+  String get progressIconPill;
+
+  /// No description provided for @progressIconPaw.
+  ///
+  /// In en, this message translates to:
+  /// **'Paw print'**
+  String get progressIconPaw;
+
+  /// No description provided for @progressIconBrush.
+  ///
+  /// In en, this message translates to:
+  /// **'Brush'**
+  String get progressIconBrush;
+
+  /// No description provided for @cityLondon.
+  ///
+  /// In en, this message translates to:
+  /// **'London'**
+  String get cityLondon;
+
+  /// No description provided for @cityNewYork.
+  ///
+  /// In en, this message translates to:
+  /// **'New York'**
+  String get cityNewYork;
+
+  /// No description provided for @cityMexicoCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Mexico City'**
+  String get cityMexicoCity;
+
+  /// No description provided for @cityTokyo.
+  ///
+  /// In en, this message translates to:
+  /// **'Tokyo'**
+  String get cityTokyo;
+
+  /// No description provided for @weightConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your health data'**
+  String get weightConsentTitle;
+
+  /// No description provided for @weightConsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To show your progress and estimate your calories we\'ll store your weight, age, height, sex and activity level in your account. They\'re only used for this, never shared, and you can delete them at any time (or delete your account).'**
+  String get weightConsentBody;
+
+  /// No description provided for @weightConsentAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree'**
+  String get weightConsentAccept;
+
+  /// No description provided for @weightConsentDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get weightConsentDecline;
+
+  /// No description provided for @weightConsentPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the privacy policy'**
+  String get weightConsentPrivacy;
+
+  /// No description provided for @pageNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This screen doesn\'t exist.'**
+  String get pageNotFound;
+
+  /// No description provided for @goHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go home'**
+  String get goHome;
+
+  /// No description provided for @signOutConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out?'**
+  String get signOutConfirmTitle;
+
+  /// No description provided for @signOutConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data stays in your account. Reminders will stop on this device until you sign in again.'**
+  String get signOutConfirmBody;
+
+  /// No description provided for @paywallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza Premium'**
+  String get paywallTitle;
+
+  /// No description provided for @paywallSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you need to keep your streak going.'**
+  String get paywallSubtitle;
+
+  /// No description provided for @paywallMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get paywallMonthly;
+
+  /// No description provided for @paywallAnnual.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get paywallAnnual;
+
+  /// No description provided for @paywallLifetime.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifetime'**
+  String get paywallLifetime;
+
+  /// No description provided for @paywallOtherPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium plan'**
+  String get paywallOtherPlan;
+
+  /// No description provided for @paywallPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} per month'**
+  String paywallPerMonth(String price);
+
+  /// No description provided for @paywallPerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} per year'**
+  String paywallPerYear(String price);
+
+  /// No description provided for @paywallOneTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{price}, one-time payment'**
+  String paywallOneTime(String price);
+
+  /// No description provided for @paywallTrialDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day free} other{{count} days free}}'**
+  String paywallTrialDays(int count);
+
+  /// No description provided for @paywallTrialWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 week free} other{{count} weeks free}}'**
+  String paywallTrialWeeks(int count);
+
+  /// No description provided for @paywallTrialMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 month free} other{{count} months free}}'**
+  String paywallTrialMonths(int count);
+
+  /// No description provided for @paywallTrialYears.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 year free} other{{count} years free}}'**
+  String paywallTrialYears(int count);
+
+  /// No description provided for @paywallContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get paywallContinue;
+
+  /// No description provided for @paywallRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get paywallRestore;
+
+  /// No description provided for @paywallRestoreNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find previous purchases for this store account.'**
+  String get paywallRestoreNothing;
+
+  /// No description provided for @paywallLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription renews automatically at the same price unless you cancel it at least 24 hours before the end of the period. You can manage or cancel it in your App Store or Google Play account settings.'**
+  String get paywallLegal;
+
+  /// No description provided for @paywallUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases aren\'t available right now. Please try again later.'**
+  String get paywallUnavailable;
+
+  /// No description provided for @paywallPurchaseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase couldn\'t be completed. You haven\'t been charged.'**
+  String get paywallPurchaseFailed;
+
+  /// No description provided for @paywallWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re Premium! Thanks for supporting Constanza.'**
+  String get paywallWelcome;
+
+  /// No description provided for @paywallActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Premium subscription is active.'**
+  String get paywallActive;
+
+  /// No description provided for @paywallManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription'**
+  String get paywallManage;
+
+  /// No description provided for @premiumCustomization.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it yours'**
+  String get premiumCustomization;
+
+  /// No description provided for @premiumCustomizationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark theme, icons, avatars and your own messages.'**
+  String get premiumCustomizationBody;
+
+  /// No description provided for @profilePremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza Premium'**
+  String get profilePremium;
+
+  /// No description provided for @profilePremiumSubtitleFree.
+  ///
+  /// In en, this message translates to:
+  /// **'See the plans'**
+  String get profilePremiumSubtitleFree;
+
+  /// No description provided for @profilePremiumSubtitleActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active subscription'**
+  String get profilePremiumSubtitleActive;
+
+  /// No description provided for @profileChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get profileChangePassword;
+
+  /// No description provided for @profileChangePasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your current one and pick a new one'**
+  String get profileChangePasswordSubtitle;
+
+  /// No description provided for @profileDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get profileDeleteAccount;
+
+  /// No description provided for @profileDeleteAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account and all your data'**
+  String get profileDeleteAccountSubtitle;
+
+  /// No description provided for @profilePrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get profilePrivacyPolicy;
+
+  /// No description provided for @profilePrivacyPolicySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What data we keep and why'**
+  String get profilePrivacyPolicySubtitle;
+
+  /// No description provided for @profileTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms and conditions'**
+  String get profileTerms;
+
+  /// No description provided for @profileTermsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of use for Constanza'**
+  String get profileTermsSubtitle;
+
+  /// No description provided for @profileLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get profileLegal;
+
+  /// No description provided for @currentPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get currentPasswordLabel;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPasswordLabel;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated'**
+  String get passwordChanged;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account, habits, history, streaks, wildcards and weight data will be deleted forever. This can\'t be undone.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountSubscriptionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'If you have a Premium subscription, cancel it in the App Store or Google Play too: deleting your account doesn\'t cancel it.'**
+  String get deleteAccountSubscriptionNote;
+
+  /// No description provided for @deleteAccountPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password to confirm'**
+  String get deleteAccountPasswordHint;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted'**
+  String get accountDeleted;
+
+  /// No description provided for @linkOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the link'**
+  String get linkOpenFailed;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @habitCalendarsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any habits yet. Create your first one to see its calendar here.'**
+  String get habitCalendarsEmpty;
+
+  /// No description provided for @weightDeleteEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete measurement'**
+  String get weightDeleteEntry;
+
+  /// No description provided for @weightDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this measurement?'**
+  String get weightDeleteConfirmTitle;
+
+  /// No description provided for @weightDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It will be removed from your history and chart. This can\'t be undone.'**
+  String get weightDeleteConfirmBody;
+
+  /// No description provided for @weightEntryDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurement deleted'**
+  String get weightEntryDeleted;
+
+  /// No description provided for @errorLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your data. Check your connection and try again.'**
+  String get errorLoadFailed;
+
+  /// No description provided for @errorActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t complete that. Check your connection and try again.'**
+  String get errorActionFailed;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get retry;
+
   /// No description provided for @noHabitsYetLong.
   ///
   /// In en, this message translates to:

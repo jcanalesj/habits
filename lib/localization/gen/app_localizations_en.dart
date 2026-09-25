@@ -1402,6 +1402,340 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorSaveFailed => 'Couldn\'t save. Please try again.';
 
   @override
+  String get a11yShowPassword => 'Show password';
+
+  @override
+  String get a11yHidePassword => 'Hide password';
+
+  @override
+  String get a11yPreviousMonth => 'Previous month';
+
+  @override
+  String get a11yNextMonth => 'Next month';
+
+  @override
+  String get a11yDecrease => 'Decrease';
+
+  @override
+  String get a11yIncrease => 'Increase';
+
+  @override
+  String get iconWater => 'Water';
+
+  @override
+  String get iconExercise => 'Exercise';
+
+  @override
+  String get iconStrength => 'Strength';
+
+  @override
+  String get iconMeditation => 'Meditation';
+
+  @override
+  String get iconRest => 'Rest';
+
+  @override
+  String get iconReading => 'Reading';
+
+  @override
+  String get iconWellbeing => 'Wellbeing';
+
+  @override
+  String get iconGoal => 'Goal';
+
+  @override
+  String get iconFood => 'Food';
+
+  @override
+  String get iconMedication => 'Medication';
+
+  @override
+  String get iconPet => 'Pet';
+
+  @override
+  String get iconDrink => 'Drink';
+
+  @override
+  String get iconGeneral => 'General';
+
+  @override
+  String get progressIconWaterDrop => 'Water drop';
+
+  @override
+  String get progressIconStar => 'Star';
+
+  @override
+  String get progressIconFruit => 'Fruit';
+
+  @override
+  String get progressIconPill => 'Pill';
+
+  @override
+  String get progressIconPaw => 'Paw print';
+
+  @override
+  String get progressIconBrush => 'Brush';
+
+  @override
+  String get cityLondon => 'London';
+
+  @override
+  String get cityNewYork => 'New York';
+
+  @override
+  String get cityMexicoCity => 'Mexico City';
+
+  @override
+  String get cityTokyo => 'Tokyo';
+
+  @override
+  String get weightConsentTitle => 'Your health data';
+
+  @override
+  String get weightConsentBody =>
+      'To show your progress and estimate your calories we\'ll store your weight, age, height, sex and activity level in your account. They\'re only used for this, never shared, and you can delete them at any time (or delete your account).';
+
+  @override
+  String get weightConsentAccept => 'I agree';
+
+  @override
+  String get weightConsentDecline => 'Not now';
+
+  @override
+  String get weightConsentPrivacy => 'Read the privacy policy';
+
+  @override
+  String get pageNotFound => 'This screen doesn\'t exist.';
+
+  @override
+  String get goHome => 'Go home';
+
+  @override
+  String get signOutConfirmTitle => 'Sign out?';
+
+  @override
+  String get signOutConfirmBody =>
+      'Your data stays in your account. Reminders will stop on this device until you sign in again.';
+
+  @override
+  String get paywallTitle => 'Constanza Premium';
+
+  @override
+  String get paywallSubtitle =>
+      'Everything you need to keep your streak going.';
+
+  @override
+  String get paywallMonthly => 'Monthly';
+
+  @override
+  String get paywallAnnual => 'Yearly';
+
+  @override
+  String get paywallLifetime => 'Lifetime';
+
+  @override
+  String get paywallOtherPlan => 'Premium plan';
+
+  @override
+  String paywallPerMonth(String price) {
+    return '$price per month';
+  }
+
+  @override
+  String paywallPerYear(String price) {
+    return '$price per year';
+  }
+
+  @override
+  String paywallOneTime(String price) {
+    return '$price, one-time payment';
+  }
+
+  @override
+  String paywallTrialDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days free',
+      one: '1 day free',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String paywallTrialWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count weeks free',
+      one: '1 week free',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String paywallTrialMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count months free',
+      one: '1 month free',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String paywallTrialYears(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years free',
+      one: '1 year free',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get paywallContinue => 'Continue';
+
+  @override
+  String get paywallRestore => 'Restore purchases';
+
+  @override
+  String get paywallRestoreNothing =>
+      'We couldn\'t find previous purchases for this store account.';
+
+  @override
+  String get paywallLegal =>
+      'Your subscription renews automatically at the same price unless you cancel it at least 24 hours before the end of the period. You can manage or cancel it in your App Store or Google Play account settings.';
+
+  @override
+  String get paywallUnavailable =>
+      'Purchases aren\'t available right now. Please try again later.';
+
+  @override
+  String get paywallPurchaseFailed =>
+      'The purchase couldn\'t be completed. You haven\'t been charged.';
+
+  @override
+  String get paywallWelcome =>
+      'You\'re Premium! Thanks for supporting Constanza.';
+
+  @override
+  String get paywallActive => 'Your Premium subscription is active.';
+
+  @override
+  String get paywallManage => 'Manage subscription';
+
+  @override
+  String get premiumCustomization => 'Make it yours';
+
+  @override
+  String get premiumCustomizationBody =>
+      'Dark theme, icons, avatars and your own messages.';
+
+  @override
+  String get profilePremium => 'Constanza Premium';
+
+  @override
+  String get profilePremiumSubtitleFree => 'See the plans';
+
+  @override
+  String get profilePremiumSubtitleActive => 'Active subscription';
+
+  @override
+  String get profileChangePassword => 'Change password';
+
+  @override
+  String get profileChangePasswordSubtitle =>
+      'Confirm your current one and pick a new one';
+
+  @override
+  String get profileDeleteAccount => 'Delete account';
+
+  @override
+  String get profileDeleteAccountSubtitle =>
+      'Delete your account and all your data';
+
+  @override
+  String get profilePrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get profilePrivacyPolicySubtitle => 'What data we keep and why';
+
+  @override
+  String get profileTerms => 'Terms and conditions';
+
+  @override
+  String get profileTermsSubtitle => 'Terms of use for Constanza';
+
+  @override
+  String get profileLegal => 'Legal';
+
+  @override
+  String get currentPasswordLabel => 'Current password';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get passwordChanged => 'Password updated';
+
+  @override
+  String get deleteAccountTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'Your account, habits, history, streaks, wildcards and weight data will be deleted forever. This can\'t be undone.';
+
+  @override
+  String get deleteAccountSubscriptionNote =>
+      'If you have a Premium subscription, cancel it in the App Store or Google Play too: deleting your account doesn\'t cancel it.';
+
+  @override
+  String get deleteAccountPasswordHint => 'Enter your password to confirm';
+
+  @override
+  String get deleteAccountConfirm => 'Delete permanently';
+
+  @override
+  String get accountDeleted => 'Your account has been deleted';
+
+  @override
+  String get linkOpenFailed => 'Couldn\'t open the link';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get habitCalendarsEmpty =>
+      'You don\'t have any habits yet. Create your first one to see its calendar here.';
+
+  @override
+  String get weightDeleteEntry => 'Delete measurement';
+
+  @override
+  String get weightDeleteConfirmTitle => 'Delete this measurement?';
+
+  @override
+  String get weightDeleteConfirmBody =>
+      'It will be removed from your history and chart. This can\'t be undone.';
+
+  @override
+  String get weightEntryDeleted => 'Measurement deleted';
+
+  @override
+  String get errorLoadFailed =>
+      'We couldn\'t load your data. Check your connection and try again.';
+
+  @override
+  String get errorActionFailed =>
+      'Couldn\'t complete that. Check your connection and try again.';
+
+  @override
+  String get retry => 'Try again';
+
+  @override
   String get noHabitsYetLong =>
       'You don\'t have any habits yet.\nCreate your first one and start your streak.';
 

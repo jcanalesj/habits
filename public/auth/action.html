@@ -215,9 +215,15 @@
       function render(badge, title, body, emailLine) {
         el.badge.textContent = badge;
         el.title.textContent = title;
-        el.body.innerHTML = emailLine
-          ? `${body} <span class="email">${emailLine}</span>`
-          : body;
+        // Sin innerHTML: el email viene de fuera y no debe interpretarse
+        // como HTML.
+        el.body.textContent = body;
+        if (emailLine) {
+          const email = document.createElement("span");
+          email.className = "email";
+          email.textContent = emailLine;
+          el.body.append(" ", email);
+        }
       }
 
       function showMessage(text) {

@@ -47,3 +47,11 @@ app.*.map.json
 
 # Firebase emulator logs
 *-debug.log
+
+# Firma de Android (nunca en el repo)
+/android/key.properties
+*.jks
+*.keystore
+
+# Caché de despliegue de Firebase Hosting
+.firebase/

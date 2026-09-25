@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:habits/features/auth/0_entity/entity.dart';
@@ -8,6 +9,9 @@ import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/habits/3_data/data.dart';
+import 'package:habits/features/premium/1_domain/purchases_repository.dart';
+import 'package:habits/features/premium/2_presentation/premium_providers.dart';
+import 'package:habits/features/premium/3_data/in_memory_purchases_repository.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
 import 'package:habits/theme/app_theme.dart';
 
@@ -56,14 +60,30 @@ class AuthTestEnv {
   final InMemoryHabitsRepository habits;
   final InMemoryWildcardsRepository wildcards;
 
+  /// Tienda simulada: "Ver planes" → pantalla de planes → compra.
+  final purchases = InMemoryPurchasesRepository();
+
+  /// Notificaciones simuladas (permiso concedido por defecto).
+  final notifications = InMemoryNotificationsRepository();
+
+  /// Reloj fijo en [testInstant]; los tests de cambio de día lo mueven.
+  final clock = FixedClock(testInstant);
+
+  /// Sustituye a [purchases] (p. ej. una tienda no disponible).
+  PurchasesRepository? purchasesOverride;
+
   List<Override> get overrides => [
+    purchasesRepositoryProvider.overrideWithValue(
+      purchasesOverride ?? purchases,
+    ),
     authRepositoryProvider.overrideWithValue(auth),
     userProfileRepositoryProvider.overrideWithValue(profiles),
     deviceInfoRepositoryProvider.overrideWithValue(device),
     habitsRepositoryProvider.overrideWithValue(habits),
     wildcardsRepositoryProvider.overrideWithValue(wildcards),
+    notificationsRepositoryProvider.overrideWithValue(notifications),
     // Reloj y zona fijos: el "día lógico" de los tests es determinista.
-    clockProvider.overrideWithValue(FixedClock(testInstant)),
+    clockProvider.overrideWithValue(clock),
     profileTimezoneProvider.overrideWith((ref) => Stream.value(testTimezone)),
   ];
 }
@@ -75,7 +95,7 @@ Widget localizedApp(
   ThemeMode themeMode = ThemeMode.light,
 }) {
   return ProviderScope(
-    overrides: overrides,
+    overrides: withoutForcedPremium(overrides),
     child: MaterialApp(
       locale: const Locale('es'),
       theme: AppTheme.light,
@@ -87,3 +107,27 @@ Widget localizedApp(
     ),
   );
 }
+
+/// Con la pantalla de planes abierta, compra el plan preseleccionado.
+Future<void> buyPremiumOnPaywall(WidgetTester tester) async {
+  final button = find.byKey(const ValueKey('paywall-continue'));
+  await tester.scrollUntilVisible(
+    button,
+    200,
+    scrollable: find
+        .descendant(
+          of: find.byKey(const ValueKey('paywall-page')),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  await tester.tap(button);
+  await tester.pumpAndSettle();
+}
+
+/// Los tests prueban el flujo real de compra: apagan el Premium forzado de
+/// depuración (`Env.forcePremium`). Úsalo también con `ProviderContainer`.
+List<Override> withoutForcedPremium(List<Override> overrides) => [
+  forcePremiumProvider.overrideWithValue(false),
+  ...overrides,
+];
