@@ -6,6 +6,11 @@ abstract class WeightRepository {
   Stream<double?> watchGoal();
   Stream<WeightProfile?> watchProfile();
   Future<void> addEntry(double kilograms, DateTime recordedAt);
-  Future<void> updateGoal(double? kilograms);
+  Future<void> deleteEntry(String entryId);
+  Future<void> updateGoal(double kilograms);
   Future<void> saveProfile(WeightProfile profile);
+
+  /// Alta del plan: perfil y primera medición en una sola escritura, para
+  /// no dejar un perfil sin medición si la segunda falla.
+  Future<void> completeOnboarding(WeightProfile profile, DateTime recordedAt);
 }

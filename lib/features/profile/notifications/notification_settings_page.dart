@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habits/app_lifecycle.dart';
+import 'package:habits/components/app_error_view.dart';
 import 'package:habits/components/app_notice.dart';
 import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/components/habit_icon_catalog.dart';
 import 'package:habits/components/reminder_time_picker.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
+import 'package:habits/features/habits/2_presentation/notifications/reminder_permission.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/features/profile/premium/premium_gate.dart';
@@ -48,6 +51,8 @@ class _NotificationSettingsPageState
     );
     if (selected == null) return;
     await _save(habit, habit.copyWith(reminderTime: _serialize(selected)));
+    if (!mounted) return;
+    await ensureReminderPermission(context, ref);
   }
 
   Future<void> _requestPermission() async {
@@ -55,7 +60,9 @@ class _NotificationSettingsPageState
     final result = await ref
         .read(notificationsRepositoryProvider)
         .requestPermission();
-    ref.invalidate(notificationPermissionProvider);
+    // Refresca el permiso mostrado y hace que la Home reprograme los avisos:
+    // sin esto, concederlo no programaba nada hasta el siguiente cambio.
+    ref.read(systemStateTickProvider.notifier).bump();
     if (!mounted) return;
     if (result == NotificationPermission.denied) {
       // Android e iOS solo preguntan una vez: a partir de ahí hay que ir a
@@ -120,7 +127,10 @@ class _NotificationSettingsPageState
       ),
       body: switch (habitsAsync) {
         AsyncData(:final value) => _body(value),
-        AsyncError() => Center(child: Text(context.l10n.errorSaveFailed)),
+        AsyncError(:final error) => AppErrorView(
+          error: error,
+          onRetry: () => ref.invalidate(activeHabitsProvider),
+        ),
         _ => const Center(child: CircularProgressIndicator()),
       },
     );

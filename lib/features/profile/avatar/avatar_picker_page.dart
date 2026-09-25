@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habits/components/app_notice.dart';
 import 'package:habits/components/cat_mascot.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/features/profile/avatar/avatar.dart';
@@ -157,6 +158,7 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
       if (!allowed || !mounted) return;
     }
     if (_saving || avatar.id == _selectedId) return;
+    final previousId = _selectedId;
     setState(() {
       _selectedId = avatar.id;
       _saving = true;
@@ -164,6 +166,15 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
     HapticFeedback.selectionClick();
     try {
       await selectAvatar(ref, avatar.id);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _selectedId = previousId);
+        AppNotice.show(
+          context,
+          message: context.l10n.errorSaveFailed,
+          type: AppNoticeType.error,
+        );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

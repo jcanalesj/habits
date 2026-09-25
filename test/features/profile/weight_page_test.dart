@@ -52,6 +52,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // Antes de pedir datos de salud, consentimiento explícito.
+    expect(find.byKey(const ValueKey('weight-consent-dialog')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('weight-consent-accept')));
     await tester.pumpAndSettle();
     expect(find.text('¿Cuál es tu objetivo?'), findsOneWidget);
 
@@ -152,5 +155,23 @@ void main() {
       find.byType(TextField).hitTestable(),
     );
     expect(currentField.controller?.text, '71.8');
+  });
+
+  testWidgets('sin consentimiento no se piden datos de salud', (tester) async {
+    final repository = InMemoryWeightRepository();
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(
+      localizedApp(
+        const WeightPage(),
+        overrides: [weightRepositoryProvider.overrideWithValue(repository)],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('weight-consent-decline')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¿Cuál es tu objetivo?'), findsNothing);
+    expect(repository.profile, isNull);
   });
 }

@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habits/legal_links.dart';
 import 'package:habits/components/app_notice.dart';
 import 'package:habits/features/profile/weight/weight_entry.dart';
 import 'package:habits/features/profile/weight/weight_onboarding_dialog.dart';
@@ -116,20 +117,103 @@ class _WeightPageState extends ConsumerState<WeightPage> {
     }
   }
 
+  Future<void> _deleteEntry(WeightEntry entry) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: context.palette.scrim,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.weightDeleteConfirmTitle),
+        content: Text(l10n.weightDeleteConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            key: const ValueKey('confirm-delete-weight'),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await ref.read(weightRepositoryProvider).deleteEntry(entry.id);
+      if (!mounted) return;
+      AppNotice.show(context, message: l10n.weightEntryDeleted);
+    } catch (_) {
+      if (!mounted) return;
+      AppNotice.show(
+        context,
+        message: l10n.errorSaveFailed,
+        type: AppNoticeType.error,
+      );
+    }
+  }
+
+  Future<bool> _askHealthConsent() async {
+    final l10n = context.l10n;
+    final accepted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: context.palette.scrim,
+      builder: (context) => AlertDialog(
+        key: const ValueKey('weight-consent-dialog'),
+        title: Text(l10n.weightConsentTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.weightConsentBody),
+            TextButton(
+              style: TextButton.styleFrom(padding: EdgeInsets.zero),
+              onPressed: () =>
+                  openExternalLink(context, LegalLinks.privacyPolicy),
+              child: Text(l10n.weightConsentPrivacy),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey('weight-consent-decline'),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.weightConsentDecline),
+          ),
+          FilledButton(
+            key: const ValueKey('weight-consent-accept'),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.weightConsentAccept),
+          ),
+        ],
+      ),
+    );
+    return accepted ?? false;
+  }
+
   Future<void> _showOnboarding() async {
     if (_onboardingPrompted || !mounted) return;
     _onboardingPrompted = true;
+    // Datos de salud (RGPD art. 9): consentimiento explícito antes de
+    // pedir nada. Sin él no se guarda ningún dato y se sale de la sección.
+    final consented = await _askHealthConsent();
+    if (!mounted) return;
+    if (!consented) {
+      Navigator.of(context).maybePop();
+      return;
+    }
     final profile = await showDialog<WeightProfile>(
       context: context,
       barrierDismissible: false,
       builder: (context) => const WeightOnboardingDialog(),
     );
     if (profile == null || !mounted) return;
-    await _save(() async {
-      final repository = ref.read(weightRepositoryProvider);
-      await repository.saveProfile(profile);
-      await repository.addEntry(profile.currentKg, DateTime.now());
-    });
+    await _save(
+      () => ref
+          .read(weightRepositoryProvider)
+          .completeOnboarding(profile, DateTime.now()),
+    );
   }
 
   @override
@@ -239,6 +323,7 @@ class _WeightPageState extends ConsumerState<WeightPage> {
                 _HistoryCard(
                   entries: _showAllHistory ? entries : entries.take(3).toList(),
                   format: _weight,
+                  onDelete: _deleteEntry,
                 ),
               ],
             ),
@@ -944,9 +1029,14 @@ class _WeightChartPainter extends CustomPainter {
 }
 
 class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.entries, required this.format});
+  const _HistoryCard({
+    required this.entries,
+    required this.format,
+    required this.onDelete,
+  });
   final List<WeightEntry> entries;
   final String Function(double) format;
+  final ValueChanged<WeightEntry> onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -983,6 +1073,16 @@ class _HistoryCard extends StatelessWidget {
                 DateFormat.yMMMd(
                   Localizations.localeOf(context).languageCode,
                 ).format(entries[index].recordedAt),
+              ),
+              trailing: IconButton(
+                key: ValueKey('delete-weight-${entries[index].id}'),
+                tooltip: context.l10n.weightDeleteEntry,
+                icon: Icon(
+                  PhosphorIconsBold.trash,
+                  color: palette.textSecondary,
+                  size: 20,
+                ),
+                onPressed: () => onDelete(entries[index]),
               ),
             ),
             if (index != entries.length - 1)

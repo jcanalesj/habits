@@ -45,7 +45,22 @@ class InMemoryWeightRepository implements WeightRepository {
   }
 
   @override
-  Future<void> updateGoal(double? kilograms) async {
+  Future<void> deleteEntry(String entryId) async {
+    entries.removeWhere((entry) => entry.id == entryId);
+    _entriesController.add(List.unmodifiable(entries));
+  }
+
+  @override
+  Future<void> completeOnboarding(
+    WeightProfile value,
+    DateTime recordedAt,
+  ) async {
+    await saveProfile(value);
+    await addEntry(value.currentKg, recordedAt);
+  }
+
+  @override
+  Future<void> updateGoal(double kilograms) async {
     goal = kilograms;
     _goalController.add(goal);
   }

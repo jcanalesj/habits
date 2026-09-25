@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habits/components/app_notice.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
@@ -21,14 +22,23 @@ typedef _ZoneOption = ({String city, String id, String flag});
 
 const _zones = <_ZoneOption>[
   (city: 'Madrid', id: 'Europe/Madrid', flag: '🇪🇸'),
-  (city: 'Londres', id: 'Europe/London', flag: '🇬🇧'),
-  (city: 'Nueva York', id: 'America/New_York', flag: '🇺🇸'),
-  (city: 'Ciudad de México', id: 'America/Mexico_City', flag: '🇲🇽'),
+  (city: 'London', id: 'Europe/London', flag: '🇬🇧'),
+  (city: 'New York', id: 'America/New_York', flag: '🇺🇸'),
+  (city: 'Mexico City', id: 'America/Mexico_City', flag: '🇲🇽'),
   (city: 'Bogotá', id: 'America/Bogota', flag: '🇨🇴'),
   (city: 'Buenos Aires', id: 'America/Argentina/Buenos_Aires', flag: '🇦🇷'),
-  (city: 'Tokio', id: 'Asia/Tokyo', flag: '🇯🇵'),
+  (city: 'Tokyo', id: 'Asia/Tokyo', flag: '🇯🇵'),
   (city: 'UTC', id: 'UTC', flag: '🌍'),
 ];
+
+/// Nombre de la ciudad en el idioma del usuario.
+String _cityName(_ZoneOption zone, AppLocalizations l10n) => switch (zone.id) {
+  'Europe/London' => l10n.cityLondon,
+  'America/New_York' => l10n.cityNewYork,
+  'America/Mexico_City' => l10n.cityMexicoCity,
+  'Asia/Tokyo' => l10n.cityTokyo,
+  _ => zone.city,
+};
 
 class TimezonePage extends ConsumerStatefulWidget {
   const TimezonePage({super.key});
@@ -75,6 +85,8 @@ class _TimezonePageState extends ConsumerState<TimezonePage> {
     required bool automatic,
   }) async {
     if (_saving) return;
+    final previousTimezone = _timezoneOverride;
+    final previousAutomatic = _automaticOverride;
     setState(() {
       _saving = true;
       _timezoneOverride = timezone;
@@ -94,6 +106,20 @@ class _TimezonePageState extends ConsumerState<TimezonePage> {
             );
         ref.invalidate(profileTimezoneProvider);
         ref.invalidate(timezoneAutomaticProvider);
+      }
+    } catch (_) {
+      // Sin guardar, la pantalla no puede enseñar la zona nueva como si lo
+      // estuviera.
+      if (mounted) {
+        setState(() {
+          _timezoneOverride = previousTimezone;
+          _automaticOverride = previousAutomatic;
+        });
+        AppNotice.show(
+          context,
+          message: context.l10n.errorSaveFailed,
+          type: AppNoticeType.error,
+        );
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -155,7 +181,7 @@ class _TimezonePageState extends ConsumerState<TimezonePage> {
         .where(
           (zone) =>
               query.isEmpty ||
-              zone.city.toLowerCase().contains(query) ||
+              _cityName(zone, context.l10n).toLowerCase().contains(query) ||
               zone.id.toLowerCase().contains(query),
         )
         .toList();
@@ -634,7 +660,7 @@ class _ManualCard extends StatelessWidget {
                       contentPadding: EdgeInsets.zero,
                       leading: _FlagBox(zone.flag, small: true),
                       title: Text(
-                        zone.city,
+                        _cityName(zone, context.l10n),
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                       subtitle: Text('${zone.id}  ·  ${offsetFor(zone.id)}'),
