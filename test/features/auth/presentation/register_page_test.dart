@@ -82,7 +82,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Crea tu cuenta'), findsOneWidget);
-    expect(find.text('Nickname'), findsOneWidget);
+    expect(find.text('Apodo'), findsOneWidget);
     expect(find.text('Correo electrónico'), findsOneWidget);
     expect(find.text('Contraseña'), findsOneWidget);
     expect(find.text('Confirma tu contraseña'), findsOneWidget);
@@ -102,7 +102,7 @@ void main() {
     await tester.tap(find.text('Registrarme'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Introduce un nickname'), findsOneWidget);
+    expect(find.text('Introduce un apodo'), findsOneWidget);
     expect(find.text('Introduce un correo válido'), findsOneWidget);
     expect(
       find.text('La contraseña debe tener al menos 8 caracteres'),

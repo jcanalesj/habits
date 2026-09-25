@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/domain.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
+import 'package:habits/session_cleanup.dart';
 
 /// Estado de sesión de la app, alimentado por el stream del repositorio
 /// (`authStateChanges`/`userChanges` en Firebase). Es la única fuente de
@@ -16,21 +17,42 @@ class AuthController extends StreamNotifier<AppUser?> {
   void setUser(AppUser? user) => state = AsyncData(user);
 
   Future<SignOutResult> signOut() async {
+    final cleanup = ref.read(sessionCleanupProvider);
+    await cleanup.beforeSignOut();
     final result = await ref.read(signOutUsecaseProvider).execute();
     if (!ref.mounted) return result;
-    if (result is SignOutSuccess) state = const AsyncData(null);
+    if (result is SignOutSuccess) {
+      state = const AsyncData(null);
+      await cleanup.afterSignOut();
+    }
+    return result;
+  }
+
+  /// Borra la cuenta. Deja el dispositivo limpio igual que al cerrar sesión.
+  Future<AccountActionResult> deleteAccount(String password) async {
+    final cleanup = ref.read(sessionCleanupProvider);
+    final result = await ref
+        .read(deleteAccountUsecaseProvider)
+        .execute(password: password);
+    if (result is! AccountActionSuccess) return result;
+    await cleanup.beforeSignOut();
+    if (!ref.mounted) return result;
+    state = const AsyncData(null);
+    await cleanup.afterSignOut();
     return result;
   }
 
   Future<void> updateDisplayName(String displayName) async {
     final user = state.value;
     if (user == null) return;
-    final updated = await ref
-        .read(authRepositoryProvider)
-        .updateDisplayName(displayName);
+    // Primero el perfil: si falla, Auth no se toca y los dos siguen
+    // coincidiendo.
     await ref
         .read(userProfileRepositoryProvider)
         .updateDisplayName(user.id, displayName);
+    final updated = await ref
+        .read(authRepositoryProvider)
+        .updateDisplayName(displayName);
     if (ref.mounted) state = AsyncData(updated);
   }
 }

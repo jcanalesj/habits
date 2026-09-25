@@ -137,6 +137,40 @@ class InMemoryAuthRepository implements AuthRepository {
     passwordResetEmailsSent.add(email);
   }
 
+  /// Cuentas borradas con [deleteAccount].
+  final List<String> deletedAccounts = [];
+
+  @override
+  Future<void> reauthenticate({required String password}) async {
+    await _delay();
+    final user = _current;
+    if (user == null) throw const AuthException(AuthFailure.noSession);
+    if (_accounts[user.email]?.password != password) {
+      throw const AuthException(AuthFailure.invalidCredentials);
+    }
+  }
+
+  @override
+  Future<void> updatePassword({required String newPassword}) async {
+    await _delay();
+    final user = _current;
+    if (user == null) throw const AuthException(AuthFailure.noSession);
+    if (newPassword.length < 6) {
+      throw const AuthException(AuthFailure.weakPassword);
+    }
+    _accounts[user.email] = _Account(user, newPassword);
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    await _delay();
+    final user = _current;
+    if (user == null) throw const AuthException(AuthFailure.noSession);
+    _accounts.remove(user.email);
+    deletedAccounts.add(user.email);
+    emit(null);
+  }
+
   Future<void> _delay() =>
       latency == Duration.zero ? Future.value() : Future.delayed(latency);
 }

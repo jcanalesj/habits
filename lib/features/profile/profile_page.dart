@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habits/features/premium/2_presentation/paywall_page.dart';
+import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/profile/account/account_dialogs.dart';
+import 'package:habits/legal_links.dart';
 import 'package:habits/components/app_bottom_nav_bar.dart';
 import 'package:habits/components/app_notice.dart';
 import 'package:habits/components/cat_mascot.dart';
@@ -27,7 +31,18 @@ class ProfilePage extends ConsumerWidget {
     );
     final name = editedName?.trim();
     if (name == null || name.isEmpty || name == currentName) return;
-    await ref.read(authControllerProvider.notifier).updateDisplayName(name);
+    try {
+      await ref.read(authControllerProvider.notifier).updateDisplayName(name);
+    } catch (_) {
+      if (context.mounted) {
+        AppNotice.show(
+          context,
+          message: context.l10n.errorSaveFailed,
+          type: AppNoticeType.error,
+        );
+      }
+      return;
+    }
     if (context.mounted) _showSaved(context);
   }
 
@@ -144,6 +159,16 @@ class ProfilePage extends ConsumerWidget {
             _SettingsGroup(
               children: [
                 _ProfileLink(
+                  key: const ValueKey('profile-premium'),
+                  icon: PhosphorIconsFill.crown,
+                  color: AppColors.orange,
+                  title: l10n.profilePremium,
+                  subtitle: ref.watch(premiumSubscribedProvider)
+                      ? l10n.profilePremiumSubtitleActive
+                      : l10n.profilePremiumSubtitleFree,
+                  onTap: () => showPaywall(context),
+                ),
+                _ProfileLink(
                   icon: PhosphorIconsBold.clock,
                   color: AppColors.lilac,
                   title: l10n.profileTimezone,
@@ -168,7 +193,52 @@ class ProfilePage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 26),
+            _SectionLabel(l10n.profileLegal),
+            const SizedBox(height: 12),
+            _SettingsGroup(
+              children: [
+                _ProfileLink(
+                  icon: PhosphorIconsBold.shieldCheck,
+                  color: AppColors.green,
+                  title: l10n.profilePrivacyPolicy,
+                  subtitle: l10n.profilePrivacyPolicySubtitle,
+                  onTap: () =>
+                      openExternalLink(context, LegalLinks.privacyPolicy),
+                ),
+                _ProfileLink(
+                  icon: PhosphorIconsBold.fileText,
+                  color: AppColors.blue,
+                  title: l10n.profileTerms,
+                  subtitle: l10n.profileTermsSubtitle,
+                  onTap: () => openExternalLink(context, LegalLinks.terms),
+                  showDivider: false,
+                ),
+              ],
+            ),
+            const SizedBox(height: 26),
             _SectionLabel(l10n.profileAccount),
+            const SizedBox(height: 12),
+            _SettingsGroup(
+              children: [
+                _ProfileLink(
+                  key: const ValueKey('change-password'),
+                  icon: PhosphorIconsBold.lockKey,
+                  color: AppColors.lilac,
+                  title: l10n.profileChangePassword,
+                  subtitle: l10n.profileChangePasswordSubtitle,
+                  onTap: () => showChangePasswordDialog(context),
+                ),
+                _ProfileLink(
+                  key: const ValueKey('delete-account'),
+                  icon: PhosphorIconsBold.trash,
+                  color: AppColors.pink,
+                  title: l10n.profileDeleteAccount,
+                  subtitle: l10n.profileDeleteAccountSubtitle,
+                  onTap: () => showDeleteAccountDialog(context),
+                  showDivider: false,
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(16),
@@ -659,6 +729,7 @@ class _SettingsGroup extends StatelessWidget {
 
 class _ProfileLink extends StatelessWidget {
   const _ProfileLink({
+    super.key,
     required this.icon,
     required this.color,
     required this.title,

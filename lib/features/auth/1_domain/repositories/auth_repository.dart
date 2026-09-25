@@ -34,4 +34,16 @@ abstract class AuthRepository {
   Future<AppUser?> reloadUser();
 
   Future<void> sendPasswordResetEmail({required String email});
+
+  /// Confirma la contraseña del usuario con sesión. Las operaciones
+  /// sensibles (cambiar contraseña, borrar la cuenta) exigen un inicio de
+  /// sesión reciente.
+  Future<void> reauthenticate({required String password});
+
+  /// Cambia la contraseña. Llamar justo después de [reauthenticate].
+  Future<void> updatePassword({required String newPassword});
+
+  /// Borra la cuenta y TODOS sus datos en el servidor y cierra la sesión.
+  /// Llamar justo después de [reauthenticate].
+  Future<void> deleteAccount();
 }

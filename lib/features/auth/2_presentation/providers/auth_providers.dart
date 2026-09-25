@@ -64,3 +64,11 @@ final ensureUserProfileUsecaseProvider = Provider<EnsureUserProfileUsecase>((
     requireEmailVerification: ref.watch(requireEmailVerificationProvider),
   );
 });
+
+final changePasswordUsecaseProvider = Provider<ChangePasswordUsecase>((ref) {
+  return ChangePasswordUsecase(ref.watch(authRepositoryProvider));
+});
+
+final deleteAccountUsecaseProvider = Provider<DeleteAccountUsecase>((ref) {
+  return DeleteAccountUsecase(ref.watch(authRepositoryProvider));
+});

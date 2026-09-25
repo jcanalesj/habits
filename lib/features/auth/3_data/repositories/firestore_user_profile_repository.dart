@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:habits/firestore_write.dart';
 import 'package:flutter/material.dart' show ThemeMode;
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/repositories/user_profile_repository.dart';
@@ -107,47 +108,52 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
         final subscription = snapshot.data()?['subscription'];
         if (subscription is! Map) return false;
         final status = subscription['status'];
-        return status == 'premium' || status == 'active';
+        if (status != 'premium' && status != 'active') return false;
+        // Red de seguridad por si se perdiera el webhook de caducidad.
+        final expiresAt = subscription['expiresAt'];
+        return expiresAt is! Timestamp ||
+            expiresAt.toDate().isAfter(DateTime.now());
       });
 
   @override
-  Future<void> updateDisplayName(String userId, String displayName) =>
-      _userRef(userId).update({
-        'displayName': displayName,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-  @override
-  Future<void> updateTimezone(String userId, String timezone) => _userRef(
+  Future<void> updateDisplayName(String userId, String displayName) => _update(
     userId,
-  ).update({'timezone': timezone, 'updatedAt': FieldValue.serverTimestamp()});
+    {'displayName': displayName, 'updatedAt': FieldValue.serverTimestamp()},
+  );
+
+  @override
+  Future<void> updateTimezone(String userId, String timezone) => _update(
+    userId,
+    {'timezone': timezone, 'updatedAt': FieldValue.serverTimestamp()},
+  );
 
   @override
   Future<void> updateTimezoneSettings(
     String userId, {
     required String timezone,
     required bool automatic,
-  }) => _userRef(userId).update({
+  }) => _update(userId, {
     'timezone': timezone,
     'timezoneAutomatic': automatic,
     'updatedAt': FieldValue.serverTimestamp(),
   });
 
   @override
-  Future<void> updateAvatarId(String userId, String avatarId) => _userRef(
+  Future<void> updateAvatarId(String userId, String avatarId) => _update(
     userId,
-  ).update({'avatarId': avatarId, 'updatedAt': FieldValue.serverTimestamp()});
+    {'avatarId': avatarId, 'updatedAt': FieldValue.serverTimestamp()},
+  );
 
   @override
   Future<void> updateWelcomeAnimationEnabled(String userId, bool enabled) =>
-      _userRef(userId).update({
+      _update(userId, {
         'welcomeAnimationEnabled': enabled,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
   @override
   Future<void> updateThemeMode(String userId, ThemeMode mode) =>
-      _userRef(userId).update({
+      _update(userId, {
         'themeMode': ThemeModeCodec.encode(mode),
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -156,8 +162,12 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
   Future<void> updateCustomMotivationMessages(
     String userId,
     List<String> messages,
-  ) => _userRef(userId).update({
+  ) => _update(userId, {
     'customMotivationMessages': messages,
     'updatedAt': FieldValue.serverTimestamp(),
   });
+
+  /// Actualiza el perfil sin bloquear sin conexión (ver [awaitWrite]).
+  Future<void> _update(String userId, Map<String, Object?> data) =>
+      awaitWrite(_userRef(userId).update(data));
 }

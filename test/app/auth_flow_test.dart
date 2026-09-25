@@ -106,6 +106,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Cerrar sesión'));
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('sign-out-dialog')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('confirm-sign-out')));
+    await tester.pumpAndSettle();
     expect(find.text('Inicia sesión'), findsOneWidget);
     expect(env.auth.currentUser, isNull);
 

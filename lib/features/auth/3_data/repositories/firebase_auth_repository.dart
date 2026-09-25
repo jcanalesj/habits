@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/exceptions/auth_exception.dart';
@@ -11,10 +12,15 @@ import 'package:habits/features/auth/3_data/mappers/auth_failure_mapper.dart';
 /// `authStateChanges()`, también emite cuando el usuario se recarga (por
 /// ejemplo al confirmar la verificación del email).
 class FirebaseAuthRepository implements AuthRepository {
-  FirebaseAuthRepository({FirebaseAuth? auth})
-    : _auth = auth ?? FirebaseAuth.instance;
+  FirebaseAuthRepository({FirebaseAuth? auth, FirebaseFunctions? functions})
+    : _auth = auth ?? FirebaseAuth.instance,
+      _functions = functions;
 
   final FirebaseAuth _auth;
+  final FirebaseFunctions? _functions;
+
+  /// Región de las Cloud Functions (junto a Firestore, eur3).
+  static const functionsRegion = 'europe-west1';
 
   @override
   Stream<AppUser?> watchUser() => _auth.userChanges().map(appUserFromFirebase);
@@ -102,6 +108,49 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<void> sendPasswordResetEmail({required String email}) {
     return _guard(() => _auth.sendPasswordResetEmail(email: email));
   }
+
+  @override
+  Future<void> reauthenticate({required String password}) => _guard(() async {
+    final user = _auth.currentUser;
+    final email = user?.email;
+    if (user == null || email == null) {
+      throw const AuthException(AuthFailure.noSession);
+    }
+    await user.reauthenticateWithCredential(
+      EmailAuthProvider.credential(email: email, password: password),
+    );
+  });
+
+  @override
+  Future<void> updatePassword({required String newPassword}) =>
+      _guard(() async {
+        final user = _auth.currentUser;
+        if (user == null) throw const AuthException(AuthFailure.noSession);
+        await user.updatePassword(newPassword);
+      });
+
+  @override
+  Future<void> deleteAccount() => _guard(() async {
+    if (_auth.currentUser == null) {
+      throw const AuthException(AuthFailure.noSession);
+    }
+    // El borrado lo hace una Cloud Function: las reglas impiden al cliente
+    // borrar sus datos, y así datos y cuenta se van juntos.
+    final functions =
+        _functions ?? FirebaseFunctions.instanceFor(region: functionsRegion);
+    try {
+      await functions.httpsCallable('deleteAccount').call<void>();
+    } on FirebaseFunctionsException catch (e) {
+      throw AuthException(switch (e.code) {
+        'failed-precondition' => AuthFailure.requiresRecentLogin,
+        'unauthenticated' => AuthFailure.noSession,
+        'unavailable' || 'deadline-exceeded' => AuthFailure.network,
+        _ => AuthFailure.unknown,
+      }, message: e.message);
+    }
+    // La cuenta ya no existe en el servidor; se cierra la sesión local.
+    await _auth.signOut();
+  });
 
   AppUser _requireUser(User? user) {
     final appUser = appUserFromFirebase(user);

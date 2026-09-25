@@ -64,7 +64,9 @@ class ForgotPasswordController extends Notifier<ForgotPasswordState> {
   }
 }
 
+/// autoDispose: al salir de la pantalla se olvida el "enlace enviado", así
+/// que al volver se puede pedir otro enlace u otro correo.
 final forgotPasswordControllerProvider =
-    NotifierProvider<ForgotPasswordController, ForgotPasswordState>(
+    NotifierProvider.autoDispose<ForgotPasswordController, ForgotPasswordState>(
       ForgotPasswordController.new,
     );

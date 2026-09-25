@@ -1,6 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habits/legal_links.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/1_domain/domain.dart';
@@ -470,7 +472,7 @@ class _RegisterFieldState extends State<_RegisterField> {
   }
 }
 
-class _TermsRow extends StatelessWidget {
+class _TermsRow extends StatefulWidget {
   const _TermsRow({
     required this.value,
     required this.onChanged,
@@ -480,6 +482,27 @@ class _TermsRow extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
   final String? errorText;
+
+  @override
+  State<_TermsRow> createState() => _TermsRowState();
+}
+
+class _TermsRowState extends State<_TermsRow> {
+  late final _termsTap = TapGestureRecognizer()
+    ..onTap = () => openExternalLink(context, LegalLinks.terms);
+  late final _privacyTap = TapGestureRecognizer()
+    ..onTap = () => openExternalLink(context, LegalLinks.privacyPolicy);
+
+  bool get value => widget.value;
+  ValueChanged<bool> get onChanged => widget.onChanged;
+  String? get errorText => widget.errorText;
+
+  @override
+  void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -520,9 +543,14 @@ class _TermsRow extends StatelessWidget {
                         TextSpan(
                           text: l10n.termsAndConditions,
                           style: linkStyle,
+                          recognizer: _termsTap,
                         ),
                         TextSpan(text: l10n.privacyJoiner),
-                        TextSpan(text: l10n.privacyPolicy, style: linkStyle),
+                        TextSpan(
+                          text: l10n.privacyPolicy,
+                          style: linkStyle,
+                          recognizer: _privacyTap,
+                        ),
                       ],
                     ),
                   ),

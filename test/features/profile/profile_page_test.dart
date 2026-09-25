@@ -30,14 +30,52 @@ void main() {
     expect(find.text('Gestión'), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.text('Cerrar sesión'),
+      find.text('Zona horaria'),
       250,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Zona horaria'), findsOneWidget);
     expect(find.textContaining('Europe/Madrid'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Cerrar sesión'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Política de privacidad'), findsOneWidget);
+    expect(find.text('Cambiar contraseña'), findsOneWidget);
+    expect(find.text('Eliminar cuenta'), findsOneWidget);
     expect(find.text('Cerrar sesión'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('eliminar cuenta pide la contraseña y borra la cuenta', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    await tester.pumpWidget(
+      localizedApp(const ProfilePage(), overrides: env.overrides),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('delete-account')),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const ValueKey('delete-account')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('delete-account-dialog')), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('delete-account-password')),
+      'password',
+    );
+    await tester.tap(find.byKey(const ValueKey('confirm-delete-account')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('delete-account-dialog')), findsNothing);
+    expect(env.auth.currentUser, isNull);
   });
 
   testWidgets('permite editar el nombre del perfil', (tester) async {

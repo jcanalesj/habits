@@ -4,6 +4,7 @@ export 'repositories/device_info_repository.dart';
 export 'repositories/user_profile_repository.dart';
 export 'services/email_validator.dart';
 export 'services/predefined_ambitos.dart';
+export 'usecases/account_security_usecases.dart';
 export 'usecases/check_email_verified_usecase.dart';
 export 'usecases/ensure_user_profile_usecase.dart';
 export 'usecases/send_email_verification_usecase.dart';
