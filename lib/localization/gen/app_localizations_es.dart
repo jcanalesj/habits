@@ -1662,7 +1662,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profilePremiumSubtitleFree => 'Descubre los planes';
 
   @override
-  String get profilePremiumSubtitleActive => 'Suscripción activa';
+  String get profilePremiumSubtitleActive => 'ACTIVADA';
+
+  @override
+  String get profilePremiumBadgeLabel => 'Cuenta Premium';
 
   @override
   String get profileChangePassword => 'Cambiar contraseña';
@@ -1698,6 +1701,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get newPasswordLabel => 'Nueva contraseña';
+
+  @override
+  String get changePasswordTitle => 'Cambia tu contraseña';
+
+  @override
+  String get changePasswordHelper =>
+      'Elige una contraseña segura que puedas recordar.';
+
+  @override
+  String get changePasswordCatImageLabel =>
+      'Gato de Constanza protegiendo tu cuenta';
+
+  @override
+  String get savePassword => 'Guardar contraseña';
+
+  @override
+  String get showPassword => 'Mostrar contraseña';
+
+  @override
+  String get hidePassword => 'Ocultar contraseña';
 
   @override
   String get passwordChanged => 'Contraseña actualizada';

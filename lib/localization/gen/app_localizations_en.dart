@@ -1660,7 +1660,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profilePremiumSubtitleFree => 'See the plans';
 
   @override
-  String get profilePremiumSubtitleActive => 'Active subscription';
+  String get profilePremiumSubtitleActive => 'ACTIVE';
+
+  @override
+  String get profilePremiumBadgeLabel => 'Premium account';
 
   @override
   String get profileChangePassword => 'Change password';
@@ -1696,6 +1699,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newPasswordLabel => 'New password';
+
+  @override
+  String get changePasswordTitle => 'Change your password';
+
+  @override
+  String get changePasswordHelper =>
+      'Choose a secure password you can remember.';
+
+  @override
+  String get changePasswordCatImageLabel =>
+      'Constanza cat protecting your account';
+
+  @override
+  String get savePassword => 'Save password';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
 
   @override
   String get passwordChanged => 'Password updated';

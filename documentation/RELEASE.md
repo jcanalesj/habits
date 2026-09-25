@@ -28,6 +28,13 @@ consolas, claves y textos legales. Cada paso indica qué hallazgo de
    verificación (A5):
    - `lib/env.dart` → `requireEmailVerification = true`;
    - `firestore.rules` → descomentar `request.auth.token.email_verified`.
+   - **Remitente con dominio propio**: sin él los correos salen desde
+     `noreply@<proyecto>.firebaseapp.com` y acaban en spam (comprobado en dev
+     el 25/09/2026). Consola → Authentication → Templates → "Personalizar
+     dominio": añadir los registros DNS (TXT de SPF/verificación y CNAME de
+     DKIM) que indique Firebase, esperar la verificación (hasta 48 h) y poner
+     como remitente "Constanza <noreply@<dominio-prod>>" con un asunto claro.
+     Gratis en Spark.
 5. Desplegar:
    ```bash
    firebase deploy --only firestore:rules,firestore:indexes,functions,hosting -P prod

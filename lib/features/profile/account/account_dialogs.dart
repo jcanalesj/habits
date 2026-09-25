@@ -43,6 +43,8 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
   final _current = TextEditingController();
   final _next = TextEditingController();
   bool _busy = false;
+  bool _obscureCurrent = true;
+  bool _obscureNext = true;
   String? _error;
 
   @override
@@ -55,6 +57,10 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
   Future<void> _submit() async {
     if (_busy || _current.text.isEmpty || _next.text.isEmpty) return;
     final l10n = context.l10n;
+    if (_next.text.length < 6) {
+      setState(() => _error = l10n.passwordTooShort);
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -77,50 +83,229 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return AlertDialog(
+    final palette = context.palette;
+    final textTheme = Theme.of(context).textTheme;
+    final canSubmit =
+        !_busy && _current.text.isNotEmpty && _next.text.length >= 6;
+
+    return Dialog(
       key: const ValueKey('change-password-dialog'),
-      title: Text(l10n.profileChangePassword),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            key: const ValueKey('current-password'),
-            controller: _current,
-            obscureText: true,
-            autofillHints: const [AutofillHints.password],
-            decoration: InputDecoration(labelText: l10n.currentPasswordLabel),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440),
+        child: Material(
+          color: palette.dialogSurface,
+          borderRadius: BorderRadius.circular(32),
+          clipBehavior: Clip.antiAlias,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
+            child: AutofillGroup(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/cat.png',
+                        width: 152,
+                        height: 106,
+                        fit: BoxFit.contain,
+                        semanticLabel: l10n.changePasswordCatImageLabel,
+                      ),
+                      Positioned(
+                        right: -5,
+                        top: 4,
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: palette.primarySoft,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: palette.surface,
+                              width: 3,
+                            ),
+                          ),
+                          child: Icon(
+                            PhosphorIconsBold.lockKey,
+                            color: palette.primary,
+                            size: 21,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    l10n.changePasswordTitle,
+                    textAlign: TextAlign.center,
+                    style: textTheme.headlineSmall?.copyWith(
+                      color: palette.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.changePasswordHelper,
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: palette.textSecondary,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  _PasswordDialogField(
+                    fieldKey: const ValueKey('current-password'),
+                    controller: _current,
+                    label: l10n.currentPasswordLabel,
+                    obscureText: _obscureCurrent,
+                    autofillHints: const [AutofillHints.password],
+                    enabled: !_busy,
+                    onChanged: (_) => setState(() => _error = null),
+                    onToggleVisibility: () =>
+                        setState(() => _obscureCurrent = !_obscureCurrent),
+                  ),
+                  const SizedBox(height: 12),
+                  _PasswordDialogField(
+                    fieldKey: const ValueKey('new-password'),
+                    controller: _next,
+                    label: l10n.newPasswordLabel,
+                    obscureText: _obscureNext,
+                    autofillHints: const [AutofillHints.newPassword],
+                    enabled: !_busy,
+                    textInputAction: TextInputAction.done,
+                    onChanged: (_) => setState(() => _error = null),
+                    onSubmitted: (_) => canSubmit ? _submit() : null,
+                    onToggleVisibility: () =>
+                        setState(() => _obscureNext = !_obscureNext),
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: .08),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        _error!,
+                        textAlign: TextAlign.center,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: FilledButton.icon(
+                      key: const ValueKey('confirm-change-password'),
+                      onPressed: canSubmit ? _submit : null,
+                      icon: _busy
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(PhosphorIconsBold.shieldCheck),
+                      label: Text(l10n.savePassword),
+                      style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: _busy
+                        ? null
+                        : () => Navigator.pop(context, false),
+                    child: Text(l10n.cancel),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
-          TextField(
-            key: const ValueKey('new-password'),
-            controller: _next,
-            obscureText: true,
-            autofillHints: const [AutofillHints.newPassword],
-            decoration: InputDecoration(labelText: l10n.newPasswordLabel),
-            onSubmitted: (_) => _submit(),
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: Colors.redAccent)),
-          ],
-        ],
+        ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _busy ? null : () => Navigator.pop(context, false),
-          child: Text(l10n.cancel),
+    );
+  }
+}
+
+class _PasswordDialogField extends StatelessWidget {
+  const _PasswordDialogField({
+    required this.fieldKey,
+    required this.controller,
+    required this.label,
+    required this.obscureText,
+    required this.autofillHints,
+    required this.enabled,
+    required this.onChanged,
+    required this.onToggleVisibility,
+    this.textInputAction = TextInputAction.next,
+    this.onSubmitted,
+  });
+
+  final Key fieldKey;
+  final TextEditingController controller;
+  final String label;
+  final bool obscureText;
+  final Iterable<String> autofillHints;
+  final bool enabled;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onToggleVisibility;
+  final TextInputAction textInputAction;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final l10n = context.l10n;
+    return TextField(
+      key: fieldKey,
+      controller: controller,
+      enabled: enabled,
+      obscureText: obscureText,
+      autofillHints: autofillHints,
+      textInputAction: textInputAction,
+      onChanged: onChanged,
+      onSubmitted: onSubmitted,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(PhosphorIconsBold.lock, color: palette.primary),
+        suffixIcon: IconButton(
+          onPressed: enabled ? onToggleVisibility : null,
+          tooltip: obscureText ? l10n.showPassword : l10n.hidePassword,
+          icon: Icon(
+            obscureText ? PhosphorIconsBold.eye : PhosphorIconsBold.eyeSlash,
+          ),
         ),
-        FilledButton(
-          key: const ValueKey('confirm-change-password'),
-          onPressed: _busy ? null : _submit,
-          child: _busy
-              ? const SizedBox.square(
-                  dimension: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(l10n.save),
+        filled: true,
+        fillColor: palette.surfaceMuted,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: palette.border),
         ),
-      ],
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: palette.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: palette.primary, width: 2),
+        ),
+      ),
     );
   }
 }

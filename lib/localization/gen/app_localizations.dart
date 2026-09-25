@@ -2987,8 +2987,14 @@ abstract class AppLocalizations {
   /// No description provided for @profilePremiumSubtitleActive.
   ///
   /// In en, this message translates to:
-  /// **'Active subscription'**
+  /// **'ACTIVE'**
   String get profilePremiumSubtitleActive;
+
+  /// No description provided for @profilePremiumBadgeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium account'**
+  String get profilePremiumBadgeLabel;
 
   /// No description provided for @profileChangePassword.
   ///
@@ -3055,6 +3061,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New password'**
   String get newPasswordLabel;
+
+  /// No description provided for @changePasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your password'**
+  String get changePasswordTitle;
+
+  /// No description provided for @changePasswordHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a secure password you can remember.'**
+  String get changePasswordHelper;
+
+  /// No description provided for @changePasswordCatImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza cat protecting your account'**
+  String get changePasswordCatImageLabel;
+
+  /// No description provided for @savePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Save password'**
+  String get savePassword;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
 
   /// No description provided for @passwordChanged.
   ///

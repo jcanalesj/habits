@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
+import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/features/profile/profile_page.dart';
 
 import '../../helpers/auth_test_helpers.dart';
@@ -19,6 +20,8 @@ void main() {
     expect(find.text('alex@example.com'), findsOneWidget);
     expect(find.text('Cuenta verificada'), findsNothing);
     expect(find.text('Cambiar foto'), findsOneWidget);
+    expect(find.byKey(const ValueKey('profile-premium-crown')), findsNothing);
+    expect(find.byKey(const ValueKey('premium-active-tag')), findsNothing);
     expect(find.text('Salud'), findsOneWidget);
     expect(find.text('Peso y objetivos'), findsOneWidget);
 
@@ -49,6 +52,31 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('muestra una corona sobre el avatar si la cuenta es Premium', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    await tester.pumpWidget(
+      localizedApp(
+        const ProfilePage(),
+        overrides: [
+          ...env.overrides,
+          premiumSubscribedProvider.overrideWithValue(true),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('profile-premium-crown')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('profile-premium')),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.byKey(const ValueKey('premium-active-tag')), findsOneWidget);
+    expect(find.text('ACTIVADA'), findsOneWidget);
+  });
+
   testWidgets('confirma el cierre de sesión en el diálogo rediseñado', (
     tester,
   ) async {
@@ -77,6 +105,54 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('confirm-sign-out')));
     await tester.pumpAndSettle();
     expect(env.auth.currentUser, isNull);
+  });
+
+  testWidgets('cambia la contraseña con el diálogo personalizado', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    await tester.pumpWidget(
+      localizedApp(const ProfilePage(), overrides: env.overrides),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('change-password')),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const ValueKey('change-password')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('change-password-dialog')),
+      findsOneWidget,
+    );
+    expect(find.text('Cambia tu contraseña'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Gato de Constanza protegiendo tu cuenta'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey('current-password')),
+      'password',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('new-password')),
+      'nueva123',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('confirm-change-password')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('change-password-dialog')), findsNothing);
+    await env.auth.signOut();
+    final signedIn = await env.auth.signIn(
+      email: verifiedUser.email,
+      password: 'nueva123',
+    );
+    expect(signedIn.id, verifiedUser.id);
   });
 
   testWidgets('eliminar cuenta pide la contraseña y borra la cuenta', (

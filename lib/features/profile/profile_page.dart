@@ -60,6 +60,7 @@ class ProfilePage extends ConsumerWidget {
     final summary = ref.watch(homeControllerProvider).value;
     final timezone = ref.watch(profileTimezoneProvider).value ?? 'UTC';
     final name = ref.watch(userNameProvider);
+    final isPremium = ref.watch(premiumSubscribedProvider);
     final l10n = context.l10n;
     final palette = context.palette;
     final bottomClearance =
@@ -75,6 +76,7 @@ class ProfilePage extends ConsumerWidget {
             _ProfileHero(
               name: name,
               email: user?.email ?? '',
+              isPremium: isPremium,
               onEdit: () => _editProfile(context, ref, name),
               onAvatarTap: () => context.push('/profile/avatar'),
             ),
@@ -166,6 +168,11 @@ class ProfilePage extends ConsumerWidget {
                   subtitle: ref.watch(premiumSubscribedProvider)
                       ? l10n.profilePremiumSubtitleActive
                       : l10n.profilePremiumSubtitleFree,
+                  subtitleWidget: isPremium
+                      ? _PremiumActiveTag(
+                          label: l10n.profilePremiumSubtitleActive,
+                        )
+                      : null,
                   onTap: () => showPaywall(context),
                 ),
                 _ProfileLink(
@@ -489,12 +496,14 @@ class _ProfileHero extends StatelessWidget {
   const _ProfileHero({
     required this.name,
     required this.email,
+    required this.isPremium,
     required this.onEdit,
     required this.onAvatarTap,
   });
 
   final String name;
   final String email;
+  final bool isPremium;
   final VoidCallback onEdit;
   final VoidCallback onAvatarTap;
 
@@ -528,6 +537,26 @@ class _ProfileHero extends StatelessWidget {
                   ),
                   child: const UserAvatar(size: 132),
                 ),
+                if (isPremium)
+                  Positioned(
+                    left: 9,
+                    top: -11,
+                    child: Semantics(
+                      label: l10n.profilePremiumBadgeLabel,
+                      image: true,
+                      child: Transform.rotate(
+                        angle: -.16,
+                        child: Image.asset(
+                          'assets/images/corona.png',
+                          key: const ValueKey('profile-premium-crown'),
+                          width: 58,
+                          height: 46,
+                          fit: BoxFit.contain,
+                          excludeFromSemantics: true,
+                        ),
+                      ),
+                    ),
+                  ),
                 Positioned(
                   right: -2,
                   bottom: 5,
@@ -735,6 +764,7 @@ class _ProfileLink extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.subtitleWidget,
     this.showDivider = true,
   });
   final IconData icon;
@@ -742,6 +772,7 @@ class _ProfileLink extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final Widget? subtitleWidget;
   final bool showDivider;
 
   @override
@@ -768,12 +799,14 @@ class _ProfileLink extends StatelessWidget {
             title,
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
-          subtitle: Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: palette.textSecondary),
-          ),
+          subtitle:
+              subtitleWidget ??
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: palette.textSecondary),
+              ),
           trailing: Icon(
             PhosphorIconsBold.caretRight,
             color: palette.textSecondary,
@@ -782,6 +815,52 @@ class _ProfileLink extends StatelessWidget {
         ),
         if (showDivider) const Divider(height: 1, indent: 70, endIndent: 16),
       ],
+    );
+  }
+}
+
+class _PremiumActiveTag extends StatelessWidget {
+  const _PremiumActiveTag({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        key: const ValueKey('premium-active-tag'),
+        margin: const EdgeInsets.only(top: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: palette.tint(AppColors.green, palette.isDark ? .22 : .13),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: AppColors.green.withValues(alpha: palette.isDark ? .55 : .3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              PhosphorIconsFill.checkCircle,
+              color: AppColors.green,
+              size: 15,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.green,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: .7,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
