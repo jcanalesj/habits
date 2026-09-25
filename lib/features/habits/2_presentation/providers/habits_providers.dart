@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habits/app_lifecycle.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
@@ -37,10 +40,24 @@ final logicalCalendarProvider = Provider.autoDispose<LogicalCalendar>((ref) {
 });
 
 /// Día lógico de hoy en la zona del perfil.
+///
+/// Se recalcula solo: con un temporizador hasta la medianoche lógica y cada
+/// vez que la app vuelve de segundo plano (el temporizador no corre con la
+/// app suspendida). Sin esto, una app abierta a las 22:00 y retomada al día
+/// siguiente seguiría registrando en el día anterior.
 final todayProvider = Provider.autoDispose<LogicalDate>((ref) {
-  return ref
-      .watch(logicalCalendarProvider)
-      .dateOf(ref.watch(clockProvider).nowUtc());
+  ref.watch(systemStateTickProvider);
+  final calendar = ref.watch(logicalCalendarProvider);
+  final now = ref.watch(clockProvider).nowUtc();
+  final today = calendar.dateOf(now);
+
+  final untilTomorrow = calendar.startOfDayUtc(today.next).difference(now);
+  final timer = Timer(
+    untilTomorrow + const Duration(seconds: 1),
+    ref.invalidateSelf,
+  );
+  ref.onDispose(timer.cancel);
+  return today;
 });
 
 final periodicityResolverProvider = Provider.autoDispose<PeriodicityResolver>(
@@ -171,6 +188,18 @@ final ambitosProvider = StreamProvider.autoDispose<List<Ambito>>((ref) {
   return ref.watch(habitsRepositoryProvider).watchAmbitos();
 });
 
+/// Registros de un rango de días (estadísticas, calendarios).
+///
+/// Como provider con clave `(from, to)` el listener de Firestore sobrevive a
+/// los rebuilds: con un `StreamBuilder` creado en `build`, cada emisión de la
+/// Home abría un listener nuevo y volvía a enseñar el spinner.
+final logsBetweenProvider = StreamProvider.autoDispose
+    .family<List<HabitLog>, ({LogicalDate from, LogicalDate to})>((ref, range) {
+      return ref
+          .watch(habitsRepositoryProvider)
+          .watchLogsBetween(range.from, range.to);
+    });
+
 /// Hábitos activos, para la pestaña "Hábitos".
 final activeHabitsProvider = StreamProvider.autoDispose<List<Habit>>((ref) {
   return ref.watch(habitsRepositoryProvider).watchActiveHabits();
@@ -199,6 +228,8 @@ final syncRemindersUsecaseProvider = Provider<SyncRemindersUsecase>((ref) {
 /// Permiso actual del sistema para notificar.
 final notificationPermissionProvider =
     FutureProvider.autoDispose<NotificationPermission>((ref) {
+      // Se puede cambiar desde los Ajustes del sistema con la app en pausa.
+      ref.watch(systemStateTickProvider);
       return ref.watch(notificationsRepositoryProvider).currentPermission();
     });
 

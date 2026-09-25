@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habits/features/habits/2_presentation/notifications/reminder_permission.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
@@ -168,6 +169,8 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
           : await _create(today, l10n);
       if (!ok || !mounted) return;
       _notify(widget.isEditing ? l10n.habitSaved : l10n.habitCreated);
+      if (_reminderText != null) await ensureReminderPermission(context, ref);
+      if (!mounted) return;
       Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -203,7 +206,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
       case CreateHabitSuccess():
         return true;
       case CreateHabitValidationFailed(:final errors):
-        setState(() => _errors = errors);
+        if (mounted) setState(() => _errors = errors);
         return false;
       case CreateHabitFailed():
         _notify(l10n.errorSaveFailed, type: AppNoticeType.error);
@@ -215,13 +218,33 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     final original = _loaded;
     if (original == null) return false;
 
-    // Los campos simples van por UpdateHabitUsecase; el objetivo tiene su
-    // propio usecase porque implica calcular la fecha efectiva y respetar el
-    // periodo en curso.
+    // El objetivo se calcula con su propio usecase (fecha efectiva, respetar
+    // el periodo en curso) pero se guarda junto con el resto de campos en
+    // UNA escritura: si falla, no queda un guardado a medias.
+    List<PeriodicityEntry>? timeline;
+    if (_periodicity != _originalPeriodicity) {
+      final planned = ref
+          .read(changeHabitPeriodicityUsecaseProvider)
+          .plan(habit: original, next: _periodicity, today: today);
+      switch (planned) {
+        case ChangePeriodicityScheduled(:final habit):
+          timeline = habit.periodicityTimeline;
+        case ChangePeriodicityUnchanged():
+          break;
+        case ChangePeriodicityInvalid(:final errors):
+          if (mounted) setState(() => _errors = errors);
+          return false;
+        case ChangePeriodicityFailed():
+          _notify(l10n.errorSaveFailed, type: AppNoticeType.error);
+          return false;
+      }
+    }
+
     final result = await ref
         .read(updateHabitUsecaseProvider)
         .execute(
           original: original,
+          timeline: timeline,
           updated: original.copyWith(
             // La identidad del hábito no se edita: cambiar nombre o ámbito
             // equivale a crear un hábito distinto.
@@ -242,27 +265,13 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
         );
     switch (result) {
       case UpdateHabitValidationFailed(:final errors):
-        setState(() => _errors = errors);
+        if (mounted) setState(() => _errors = errors);
         return false;
       case UpdateHabitFailed():
         _notify(l10n.errorSaveFailed, type: AppNoticeType.error);
         return false;
-      case UpdateHabitSuccess(:final habit):
-        if (_periodicity == _originalPeriodicity) return true;
-        final change = await ref
-            .read(changeHabitPeriodicityUsecaseProvider)
-            .execute(habit: habit, next: _periodicity, today: today);
-        switch (change) {
-          case ChangePeriodicityScheduled():
-          case ChangePeriodicityUnchanged():
-            return true;
-          case ChangePeriodicityInvalid(:final errors):
-            setState(() => _errors = errors);
-            return false;
-          case ChangePeriodicityFailed():
-            _notify(l10n.errorSaveFailed, type: AppNoticeType.error);
-            return false;
-        }
+      case UpdateHabitSuccess():
+        return true;
     }
   }
 
@@ -308,10 +317,13 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
             );
           }
           _prefillFrom(value, today);
-        case AsyncError():
+        case AsyncError(:final error):
           return _Scaffold(
             title: l10n.editHabitTitle,
-            child: Center(child: Text(l10n.errorSaveFailed)),
+            child: AppErrorView(
+              error: error,
+              onRetry: () => ref.invalidate(habitByIdProvider(widget.habitId!)),
+            ),
           );
         case _:
           return _Scaffold(
@@ -460,6 +472,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                         onPressed: _targetCount > 2
                             ? () => setState(() => _targetCount--)
                             : null,
+                        tooltip: context.l10n.a11yDecrease,
                         icon: const Icon(Icons.remove_rounded),
                       ),
                       SizedBox(
@@ -475,6 +488,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                         onPressed: _targetCount < 999
                             ? () => setState(() => _targetCount++)
                             : null,
+                        tooltip: context.l10n.a11yIncrease,
                         icon: const Icon(Icons.add_rounded),
                       ),
                     ],

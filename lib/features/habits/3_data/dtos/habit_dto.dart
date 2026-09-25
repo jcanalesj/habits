@@ -66,7 +66,7 @@ class HabitDto {
       colorValue: (data[FirestoreFields.colorValue] as num?)?.toInt() ?? 0,
       ambitoId: data[FirestoreFields.ambitoId] as String? ?? '',
       periodicidad: normalizePeriodicidad(data[FirestoreFields.periodicidad]),
-      cambiosPeriodicidad: _readTimeline(data),
+      cambiosPeriodicidad: readTimeline(data),
       recordatorioHora: data[FirestoreFields.recordatorioHora] as String?,
       recordatorioMensaje: data[FirestoreFields.recordatorioMensaje] as String?,
       orden: (data[FirestoreFields.orden] as num?)?.toInt() ?? 0,
@@ -101,13 +101,19 @@ class HabitDto {
     return {FirestoreFields.tipo: 'daily', FirestoreFields.veces: 1};
   }
 
-  static List<Map<String, dynamic>> _readTimeline(Map<String, dynamic> data) {
+  /// Línea temporal en el formato actual, venga del esquema que venga.
+  static List<Map<String, dynamic>> readTimeline(Map<String, dynamic> data) {
     final raw =
         data[FirestoreFields.cambiosPeriodicidad] ??
         data[FirestoreFields.legacyHistorialPeriodicidad];
     if (raw is! List) return const [];
+    // Una entrada sin fecha válida no se puede ubicar en el tiempo: se
+    // descarta (el mapper tampoco la usaría).
+    bool hasValidDate(Map entry) => RegExp(
+      r'^\d{4}-\d{2}-\d{2}$',
+    ).hasMatch('${entry[FirestoreFields.desde]}');
     return [
-      for (final entry in raw.whereType<Map>())
+      for (final entry in raw.whereType<Map>().where(hasValidDate))
         () {
           final map = Map<String, dynamic>.from(entry);
           final periodicity = normalizePeriodicidad(

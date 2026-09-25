@@ -16,11 +16,13 @@ Widget _appUnderTest({
   WildcardBalance? wildcards,
 }) {
   return ProviderScope(
-    overrides: AuthTestEnv(
-      initialUser: verifiedUser,
-      seededHabits: seeded,
-      wildcards: wildcards,
-    ).overrides,
+    overrides: withoutForcedPremium(
+      AuthTestEnv(
+        initialUser: verifiedUser,
+        seededHabits: seeded,
+        wildcards: wildcards,
+      ).overrides,
+    ),
     child: MaterialApp(
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -380,12 +382,12 @@ void main() {
     final env = AuthTestEnv(initialUser: verifiedUser, seededHabits: true);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
+        overrides: withoutForcedPremium([
           ...env.overrides,
           remoteWelcomeAnimationEnabledProvider.overrideWith(
             (ref) => Stream.value(false),
           ),
-        ],
+        ]),
         child: MaterialApp(
           locale: const Locale('es'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -404,7 +406,7 @@ void main() {
     final env = AuthTestEnv(initialUser: verifiedUser, seededHabits: true);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
+        overrides: withoutForcedPremium([
           ...env.overrides,
           remoteWelcomeAnimationEnabledProvider.overrideWith(
             (ref) => Stream.value(false),
@@ -412,7 +414,7 @@ void main() {
           remoteCustomMotivationMessagesProvider.overrideWith(
             (ref) => Stream.value(const ['Primera frase', 'Segunda frase']),
           ),
-        ],
+        ]),
         child: const MaterialApp(
           locale: Locale('es'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,

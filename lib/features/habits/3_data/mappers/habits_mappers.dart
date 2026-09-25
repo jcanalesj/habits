@@ -42,27 +42,42 @@ abstract final class HabitsMappers {
     final createdAt = dto.createdAt ?? DateTime.now();
     final initial = periodicityFromMap(dto.periodicidad);
 
-    // La línea temporal siempre arranca con la configuración inicial, cuyo
-    // `since` es el día de creación del hábito. Así `configAt()` tiene
-    // respuesta para cualquier fecha, sin casos especiales.
-    final createdDay = LogicalDate(
-      createdAt.year,
-      createdAt.month,
-      createdAt.day,
-    );
-    final timeline = <PeriodicityEntry>[
-      PeriodicityEntry(periodicity: initial, since: createdDay),
-    ];
-    for (final change in dto.cambiosPeriodicidad) {
+    // Cambios posteriores, en orden de `desde`. El índice desempata para
+    // que la ordenación sea estable (`List.sort` no lo es).
+    final changes = <(int, PeriodicityEntry)>[];
+    for (final (index, change) in dto.cambiosPeriodicidad.indexed) {
       final since = LogicalDate.tryParse(
         change[FirestoreFields.desde] as String?,
       );
       if (since == null) continue;
-      timeline.add(
+      changes.add((
+        index,
         PeriodicityEntry(periodicity: periodicityFromMap(change), since: since),
-      );
+      ));
     }
-    timeline.sort((a, b) => a.since.compareTo(b.since));
+    changes.sort((a, b) {
+      final bySince = a.$2.since.compareTo(b.$2.since);
+      return bySince != 0 ? bySince : a.$1.compareTo(b.$1);
+    });
+
+    // La línea temporal siempre arranca con la configuración inicial, así
+    // `configAt()` tiene respuesta para cualquier fecha. Su `since` es el
+    // día de creación, pero `createdAt` se resuelve en la zona del
+    // dispositivo (o es "ahora" si la escritura aún no se ha confirmado), así
+    // que se acota al primer cambio: la configuración inicial va SIEMPRE
+    // primero.
+    var initialSince = LogicalDate(
+      createdAt.year,
+      createdAt.month,
+      createdAt.day,
+    );
+    if (changes.isNotEmpty && changes.first.$2.since.isBefore(initialSince)) {
+      initialSince = changes.first.$2.since;
+    }
+    final timeline = <PeriodicityEntry>[
+      PeriodicityEntry(periodicity: initial, since: initialSince),
+      for (final (_, entry) in changes) entry,
+    ];
 
     return Habit(
       id: dto.id,

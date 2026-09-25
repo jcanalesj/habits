@@ -14,8 +14,9 @@ import 'package:habits/features/habits/0_entity/logical_date.dart';
 ///  - **respetar el objetivo**: si un hábito es "3 veces por semana" y ya
 ///    van 3, no tiene sentido dar la lata el resto de la semana.
 abstract final class ReminderScheduler {
-  /// Días por delante que se programan. Se reprograma al abrir la app y con
-  /// cada cambio, así que no hace falta mirar muy lejos.
+  /// Días por delante que se programan uno a uno. Se reprograma al abrir la
+  /// app y con cada cambio, así que no hace falta mirar muy lejos: más allá
+  /// del horizonte cada hábito tiene un aviso diario de respaldo.
   static const horizonDays = 7;
 
   /// Tope de notificaciones pendientes.
@@ -26,6 +27,12 @@ abstract final class ReminderScheduler {
   static const maxScheduled = 56;
 
   /// Recordatorios a programar, ordenados por fecha y hora.
+  ///
+  /// Incluye, por cada hábito con hora, un aviso de respaldo
+  /// ([HabitReminder.repeatsDaily]) que empieza donde acaban sus ocurrencias
+  /// concretas: al final del horizonte o, si el tope de iOS ha recortado la
+  /// lista, en el primer día que se ha quedado fuera. Así nadie se queda sin
+  /// recordatorios por no abrir la app en una semana.
   ///
   /// [completedDays] son los días que ya tienen registro, por hábito: se usa
   /// tanto para saltar hoy como para contar el progreso del periodo.
@@ -42,6 +49,7 @@ abstract final class ReminderScheduler {
     int maxScheduled = maxScheduled,
   }) {
     final reminders = <HabitReminder>[];
+    final fallbacks = <HabitReminder>[];
 
     for (final habit in habits) {
       if (habit.isDeleted) continue;
@@ -72,12 +80,56 @@ abstract final class ReminderScheduler {
           ),
         );
       }
+
+      fallbacks.add(
+        HabitReminder(
+          habitId: habit.id,
+          habitName: habit.name,
+          date: today.addDays(horizonDays),
+          hour: hour,
+          minute: minute,
+          customMessage: habit.reminderMessage,
+          repeatsDaily: true,
+        ),
+      );
     }
 
+    // Los respaldos tienen sitio reservado: son los que cubren el futuro.
+    final keptFallbacks = fallbacks.length <= maxScheduled
+        ? fallbacks
+        : fallbacks.sublist(0, maxScheduled);
+    final capacity = maxScheduled - keptFallbacks.length;
+
     reminders.sort();
-    return reminders.length <= maxScheduled
+    final kept = reminders.length <= capacity
         ? reminders
-        : reminders.sublist(0, maxScheduled);
+        : reminders.sublist(0, capacity);
+    final dropped = reminders.length <= capacity
+        ? const <HabitReminder>[]
+        : reminders.sublist(capacity);
+
+    // Si el tope ha dejado fuera ocurrencias, el respaldo del hábito empieza
+    // en la primera que se ha perdido para no dejar huecos.
+    final firstDropped = <String, LogicalDate>{};
+    for (final reminder in dropped) {
+      firstDropped.putIfAbsent(reminder.habitId, () => reminder.date);
+    }
+
+    return [
+      ...kept,
+      for (final fallback in keptFallbacks)
+        firstDropped[fallback.habitId] == null
+            ? fallback
+            : HabitReminder(
+                habitId: fallback.habitId,
+                habitName: fallback.habitName,
+                date: firstDropped[fallback.habitId]!,
+                hour: fallback.hour,
+                minute: fallback.minute,
+                customMessage: fallback.customMessage,
+                repeatsDaily: true,
+              ),
+    ]..sort();
   }
 
   /// "HH:mm" -> (hora, minuto). Null si falta o no es válido.

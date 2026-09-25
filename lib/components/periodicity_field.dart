@@ -83,6 +83,7 @@ class PeriodicityField extends StatelessWidget {
                         ),
                       )
                     : null,
+                tooltip: context.l10n.a11yDecrease,
                 icon: const Icon(Icons.remove_rounded),
               ),
               SizedBox(
@@ -103,6 +104,7 @@ class PeriodicityField extends StatelessWidget {
                         ),
                       )
                     : null,
+                tooltip: context.l10n.a11yIncrease,
                 icon: const Icon(Icons.add_rounded),
               ),
             ],

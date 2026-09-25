@@ -48,7 +48,6 @@ class HabitsListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
     final summaryAsync = ref.watch(homeControllerProvider);
 
     return Scaffold(
@@ -67,11 +66,9 @@ class HabitsListPage extends ConsumerWidget {
             summary: value,
             standalone: standalone,
           ),
-          AsyncError(:final error) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(l10n.somethingWentWrong('$error')),
-            ),
+          AsyncError(:final error) => AppErrorView(
+            error: error,
+            onRetry: () => ref.invalidate(homeControllerProvider),
           ),
           _ => const Center(child: CircularProgressIndicator()),
         },
@@ -147,9 +144,9 @@ class _PremiumHabitLimitDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _PremiumBenefit(
-                      icon: PhosphorIconsBold.chartBar,
-                      title: l10n.premiumAdvancedStats,
-                      subtitle: l10n.premiumAdvancedStatsBody,
+                      icon: PhosphorIconsBold.palette,
+                      title: l10n.premiumCustomization,
+                      subtitle: l10n.premiumCustomizationBody,
                     ),
                     const SizedBox(height: 16),
                     _PremiumBenefit(
@@ -373,13 +370,21 @@ class _Content extends ConsumerWidget {
             ],
             today: summary.today,
             onEdit: (habit) => _openEditor(context, habit),
-            onReorder: (oldIndex, newIndex) => ref
-                .read(homeControllerProvider.notifier)
-                .reorderHabitsInAmbito(
-                  visibleAmbitos[index].id,
-                  oldIndex,
-                  newIndex,
-                ),
+            onReorder: (oldIndex, newIndex) async {
+              final saved = await ref
+                  .read(homeControllerProvider.notifier)
+                  .reorderHabitsInAmbito(
+                    visibleAmbitos[index].id,
+                    oldIndex,
+                    newIndex,
+                  );
+              if (saved || !context.mounted) return;
+              AppNotice.show(
+                context,
+                message: context.l10n.errorActionFailed,
+                type: AppNoticeType.error,
+              );
+            },
           ),
           const SizedBox(height: 20),
         ],

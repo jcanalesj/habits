@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:habits/firestore_write.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/exceptions/habits_exception.dart';
 import 'package:habits/features/habits/1_domain/repositories/habits_repository.dart';
@@ -226,37 +227,82 @@ class FirestoreHabitsRepository implements HabitsRepository {
           order: now.millisecondsSinceEpoch,
           createdAt: now,
         );
-        await ref.set({
-          ...HabitsMappers.habitToDto(habit).toEditableMap(),
-          FirestoreFields.deletedAt: null,
-          FirestoreFields.createdAt: FieldValue.serverTimestamp(),
-          FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
-        });
+        await awaitWrite(
+          ref.set({
+            ...HabitsMappers.habitToDto(habit).toEditableMap(),
+            FirestoreFields.deletedAt: null,
+            FirestoreFields.createdAt: FieldValue.serverTimestamp(),
+            FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+          }),
+        );
         return habit;
       });
 
   @override
   Future<void> updateHabit(Habit habit) => _guard(() async {
-    await _habitosRaw.doc(habit.id).update({
-      ...HabitsMappers.habitToDto(habit).toEditableMap(),
-      FirestoreFields.deletedAt: habit.deletedAt == null
-          ? null
-          : Timestamp.fromDate(habit.deletedAt!),
-      FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
-      // Migración perezosa: cada hábito se deshace de los campos del modelo
-      // antiguo (descansos, recuperación, historial con el nombre viejo) la
-      // primera vez que se edita. Sin migración masiva ni borrado de datos.
-      ..._legacyFieldDeletions(),
+    await awaitWrite(
+      _habitosRaw.doc(habit.id).update({
+        ...HabitsMappers.habitToDto(habit).toEditableMap(),
+        // `deletedAt` NO se envía: borrar tiene su propio método y la copia
+        // que se edita puede ser antigua. Enviarla resucitaría un hábito
+        // borrado mientras tanto desde otro dispositivo.
+        FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+        // Migración perezosa: cada hábito se deshace de los campos del
+        // modelo antiguo (descansos, recuperación, historial con el nombre
+        // viejo) la primera vez que se edita. Sin migración masiva ni
+        // borrado de datos.
+        ..._legacyFieldDeletions(),
+      }),
+    );
+  });
+
+  @override
+  Future<void> reorderHabits(Map<String, int> orderById) => _guard(() async {
+    if (orderById.isEmpty) return;
+    // Un solo batch: o se aplica el orden entero o nada, sin dejar dos
+    // hábitos con el mismo `orden`.
+    final batch = _db.batch();
+    orderById.forEach((habitId, order) {
+      batch.update(_habitosRaw.doc(habitId), {
+        FirestoreFields.orden: order,
+        FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+      });
     });
+    await awaitWrite(batch.commit());
   });
 
   @override
   Future<void> softDeleteHabit(String habitId) => _guard(() async {
-    await _habitosRaw.doc(habitId).update({
-      FirestoreFields.deletedAt: FieldValue.serverTimestamp(),
-      FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
-    });
+    final ref = _habitosRaw.doc(habitId);
+    final data = await _getDocOrNull(ref);
+    await awaitWrite(
+      ref.update({
+        FirestoreFields.deletedAt: FieldValue.serverTimestamp(),
+        FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+        ..._legacyMigration(data),
+      }),
+    );
   });
+
+  /// Un update se valida contra el documento COMPLETO resultante, así que un
+  /// hábito con el formato anterior a la fase 5 (`periodicidad` como texto,
+  /// sin `cambiosPeriodicidad`) no se podría borrar ni mover de ámbito con
+  /// una escritura parcial. Estos campos lo dejan en el formato actual.
+  static Map<String, dynamic> _legacyMigration(Map<String, dynamic>? data) {
+    if (data == null) return const {};
+    final isLegacy =
+        data[FirestoreFields.periodicidad] is! Map ||
+        data[FirestoreFields.cambiosPeriodicidad] is! List ||
+        FirestoreFields.legacyHabitFields.any(data.containsKey);
+    if (!isLegacy) return const {};
+    return {
+      FirestoreFields.periodicidad: HabitDto.normalizePeriodicidad(
+        data[FirestoreFields.periodicidad],
+      ),
+      FirestoreFields.cambiosPeriodicidad: HabitDto.readTimeline(data),
+      ..._legacyFieldDeletions(),
+    };
+  }
 
   static Map<String, dynamic> _legacyFieldDeletions() => {
     for (final field in FirestoreFields.legacyHabitFields)
@@ -278,21 +324,25 @@ class FirestoreHabitsRepository implements HabitsRepository {
       order: now.millisecondsSinceEpoch,
       createdAt: now,
     );
-    await ref.set({
-      ...HabitsMappers.ambitoToDto(ambito).toEditableMap(),
-      FirestoreFields.esPredefinido: false,
-      FirestoreFields.createdAt: FieldValue.serverTimestamp(),
-      FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
-    });
+    await awaitWrite(
+      ref.set({
+        ...HabitsMappers.ambitoToDto(ambito).toEditableMap(),
+        FirestoreFields.esPredefinido: false,
+        FirestoreFields.createdAt: FieldValue.serverTimestamp(),
+        FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+      }),
+    );
     return ambito;
   });
 
   @override
   Future<void> updateAmbito(Ambito ambito) => _guard(() async {
-    await _ambitosRaw.doc(ambito.id).update({
-      ...HabitsMappers.ambitoToDto(ambito).toEditableMap(),
-      FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
-    });
+    await awaitWrite(
+      _ambitosRaw.doc(ambito.id).update({
+        ...HabitsMappers.ambitoToDto(ambito).toEditableMap(),
+        FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+      }),
+    );
   });
 
   @override
@@ -310,10 +360,11 @@ class FirestoreHabitsRepository implements HabitsRepository {
       batch.update(doc.reference, {
         FirestoreFields.ambitoId: Ambito.generalId,
         FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+        ..._legacyMigration(doc.data()),
       });
     }
     batch.delete(_ambitosRaw.doc(ambitoId));
-    await batch.commit();
+    await awaitWrite(batch.commit());
   });
 
   // -------------------------------------------------------------- registros
@@ -330,23 +381,33 @@ class FirestoreHabitsRepository implements HabitsRepository {
     if (!completed) {
       // Desmarcar algo no marcado no hace nada (las reglas rechazarían un
       // delete sobre un documento inexistente).
-      if (existing != null) await ref.delete();
+      if (existing != null) await awaitWrite(ref.delete());
       return;
     }
-    // Ya marcado: idempotente, sin escritura.
-    if (existing != null) return;
+    if (existing != null) {
+      final count = (existing[FirestoreFields.completedCount] as num?) ?? 1;
+      final target = (existing[FirestoreFields.targetCount] as num?) ?? 1;
+      // Ya marcado: idempotente, sin escritura.
+      if (count >= target) return;
+      // Progreso parcial de cuando el hábito era de repeticiones y ha pasado
+      // a simple a mitad de día: las reglas no dejan actualizarlo (el
+      // objetivo histórico es inmutable), así que se sustituye.
+      await awaitWrite(ref.delete());
+    }
 
-    await ref.set({
-      FirestoreFields.habitoId: habitId,
-      FirestoreFields.dia: date.key,
-      FirestoreFields.tipo: FirestoreFields.tipoCompleted,
-      FirestoreFields.completedCount: 1,
-      FirestoreFields.targetCount: 1,
-      // Se guarda la zona con la que se resolvió el día, para poder auditar
-      // cómo se decidió. No se usa para reinterpretar el día después (§13).
-      FirestoreFields.tz: _timezone ?? _now().timeZoneName,
-      FirestoreFields.createdAt: FieldValue.serverTimestamp(),
-    });
+    await awaitWrite(
+      ref.set({
+        FirestoreFields.habitoId: habitId,
+        FirestoreFields.dia: date.key,
+        FirestoreFields.tipo: FirestoreFields.tipoCompleted,
+        FirestoreFields.completedCount: 1,
+        FirestoreFields.targetCount: 1,
+        // Se guarda la zona con la que se resolvió el día, para poder auditar
+        // cómo se decidió. No se usa para reinterpretar el día después (§13).
+        FirestoreFields.tz: _timezone ?? _now().timeZoneName,
+        FirestoreFields.createdAt: FieldValue.serverTimestamp(),
+      }),
+    );
   });
 
   @override
@@ -360,18 +421,20 @@ class FirestoreHabitsRepository implements HabitsRepository {
     final safeTarget = targetCount.clamp(1, 999);
     final safeCount = completedCount.clamp(0, safeTarget);
     if (safeCount == 0) {
-      if (await _getDocOrNull(ref) != null) await ref.delete();
+      if (await _getDocOrNull(ref) != null) await awaitWrite(ref.delete());
       return;
     }
-    await ref.set({
-      FirestoreFields.habitoId: habitId,
-      FirestoreFields.dia: date.key,
-      FirestoreFields.tipo: FirestoreFields.tipoCompleted,
-      FirestoreFields.completedCount: safeCount,
-      FirestoreFields.targetCount: safeTarget,
-      FirestoreFields.tz: _timezone ?? _now().timeZoneName,
-      FirestoreFields.createdAt: FieldValue.serverTimestamp(),
-    });
+    await awaitWrite(
+      ref.set({
+        FirestoreFields.habitoId: habitId,
+        FirestoreFields.dia: date.key,
+        FirestoreFields.tipo: FirestoreFields.tipoCompleted,
+        FirestoreFields.completedCount: safeCount,
+        FirestoreFields.targetCount: safeTarget,
+        FirestoreFields.tz: _timezone ?? _now().timeZoneName,
+        FirestoreFields.createdAt: FieldValue.serverTimestamp(),
+      }),
+    );
   });
 
   // ---------------------------------------------------------------- helpers

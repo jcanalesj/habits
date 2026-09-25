@@ -258,6 +258,23 @@ void main() {
   });
 
   group('WatchHomeSummaryUsecase', () {
+    test('la semana que empieza en diciembre incluye esos días', () async {
+      // Jueves 1 de enero: la semana empezó el lunes 29 de diciembre.
+      const newYear = LogicalDate(2026, 1, 1);
+      const monday = LogicalDate(2025, 12, 29);
+      final habit =
+          (await homeSummary().execute(today: today).first).habits.first;
+      await repository.setHabitCompletion(
+        habitId: habit.id,
+        date: monday,
+        completed: true,
+      );
+
+      final summary = await homeSummary().execute(today: newYear).first;
+
+      expect(summary.isCompletedOn(habit.id, monday), isTrue);
+    });
+
     test(
       'calcula la racha en vivo y decide completado por registros',
       () async {

@@ -61,8 +61,11 @@ abstract class HabitsRepository {
   Future<Habit> createHabit(HabitDraft draft, {required LogicalDate today});
 
   /// Actualiza los campos editables de [habit] (incluida su línea temporal
-  /// de periodicidad y `deletedAt`).
+  /// de periodicidad). No toca `deletedAt`: borrar es [softDeleteHabit].
   Future<void> updateHabit(Habit habit);
+
+  /// Cambia el `orden` de varios hábitos de forma atómica.
+  Future<void> reorderHabits(Map<String, int> orderById);
 
   /// Soft delete: marca `deletedAt`. Los registros históricos se conservan.
   Future<void> softDeleteHabit(String habitId);

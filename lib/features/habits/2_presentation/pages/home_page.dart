@@ -32,10 +32,17 @@ class HomePage extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         bottom: false,
+        // La animación de bienvenida y los mensajes son cosméticos: si su
+        // stream falla se usan los valores por defecto en vez de bloquear la
+        // Home entera.
         child: switch ((
           summaryAsync,
-          welcomeEnabledAsync,
-          customMessagesAsync,
+          welcomeEnabledAsync.hasError
+              ? const AsyncData(true)
+              : welcomeEnabledAsync,
+          customMessagesAsync.hasError
+              ? const AsyncData(<String>[])
+              : customMessagesAsync,
         )) {
           (
             AsyncData(value: final value),
@@ -52,13 +59,9 @@ class HomePage extends ConsumerWidget {
                 DateTime.now().hour,
               ),
             ),
-          (AsyncError(error: final error), _, _) ||
-          (_, AsyncError(error: final error), _) ||
-          (_, _, AsyncError(error: final error)) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(context.l10n.somethingWentWrong('$error')),
-            ),
+          (AsyncError(error: final error), _, _) => AppErrorView(
+            error: error,
+            onRetry: () => ref.invalidate(homeControllerProvider),
           ),
           _ => const Center(child: CircularProgressIndicator()),
         },
@@ -202,7 +205,11 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     final wasCompleted = summary.isCompletedOn(habitId, summary.today);
     final completesTheDay = !wasCompleted && _pending.length == 1;
     final result = await controller.toggleToday(habitId);
-    if (!context.mounted || result is! ToggleHabitCompletionSuccess) return;
+    if (!context.mounted || result == null) return;
+    if (result is! ToggleHabitCompletionSuccess) {
+      _notifyActionFailed(context);
+      return;
+    }
 
     // Desmarcar es una corrección, no un logro: solo celebramos al completar.
     if (wasCompleted) return;
@@ -212,6 +219,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       allDone: completesTheDay,
     );
   }
+
+  void _notifyActionFailed(BuildContext context) => AppNotice.show(
+    context,
+    message: context.l10n.errorActionFailed,
+    type: AppNoticeType.error,
+  );
 
   Future<void> _setRepetitionCount(
     BuildContext context,
@@ -228,7 +241,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     final completesHabit = previous < target && count >= target;
     final completesTheDay = completesHabit && _pending.length == 1;
     final saved = await controller.setTodayCount(habit.id, count);
-    if (!saved || !context.mounted || !completesHabit) return;
+    if (!context.mounted || saved == null) return;
+    if (!saved) {
+      _notifyActionFailed(context);
+      return;
+    }
+    if (!completesHabit) return;
     HabitCelebration.show(
       context,
       message: _nextCelebrationMessage(allDone: completesTheDay),

@@ -35,9 +35,13 @@ class UpdateHabitUsecase {
 
   final HabitsRepository _repository;
 
+  /// [timeline] permite guardar a la vez un cambio de periodicidad ya
+  /// calculado con [ChangeHabitPeriodicityUsecase.plan], en una sola
+  /// escritura: o se guarda todo o nada.
   Future<UpdateHabitResult> execute({
     required Habit original,
     required Habit updated,
+    List<PeriodicityEntry>? timeline,
   }) async {
     if (original.isDeleted) {
       return UpdateHabitFailed(HabitsFailure.habitDeleted);
@@ -63,7 +67,7 @@ class UpdateHabitUsecase {
       deletedAt: original.deletedAt,
       name: updated.name.trim(),
       emoji: updated.emoji.trim(),
-      periodicityTimeline: original.periodicityTimeline,
+      periodicityTimeline: timeline ?? original.periodicityTimeline,
       reminderMessage: updated.reminderMessage?.trim().isEmpty ?? true
           ? null
           : updated.reminderMessage!.trim(),

@@ -52,6 +52,14 @@ class LogicalCalendar {
   tz.TZDateTime instantAt(LogicalDate date, int hour, int minute) =>
       tz.TZDateTime(_location, date.year, date.month, date.day, hour, minute);
 
+  /// Minutos de reloj de pared (hora*60 + minuto) de [instant] en esta
+  /// zona. No es lo mismo que el tiempo transcurrido desde medianoche: el
+  /// día del cambio de hora dura 23 o 25 horas.
+  int minutesOfDay(DateTime instant) {
+    final local = tz.TZDateTime.from(instant.toUtc(), _location);
+    return local.hour * 60 + local.minute;
+  }
+
   /// Lunes de la semana de [date]. La semana va de lunes 00:00 a domingo
   /// 23:59:59 en la zona del perfil (§9).
   LogicalDate startOfWeek(LogicalDate date) =>

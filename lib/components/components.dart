@@ -3,6 +3,7 @@
 library;
 
 export 'app_bottom_nav_bar.dart';
+export 'app_error_view.dart';
 export 'app_notice.dart';
 export 'auth_background.dart';
 export 'auth_header.dart';
@@ -21,7 +22,6 @@ export 'periodicity_field.dart';
 export 'periodicity_label.dart';
 export 'progress_icon_picker.dart';
 export 'reminder_time_picker.dart';
-export 'placeholder_content.dart';
 export 'section_header.dart';
 export 'social_login_button.dart';
 export 'splash_loading_indicator.dart';

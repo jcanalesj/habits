@@ -1,3 +1,4 @@
+import 'package:habits/localization/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -138,7 +139,7 @@ class ProgressIconPicker extends StatelessWidget {
           Semantics(
             button: true,
             selected: selectedId == option.id,
-            label: option.label,
+            label: option.localizedLabel(context.l10n),
             child: InkWell(
               key: ValueKey('progress-icon-${option.id}'),
               onTap: () => onSelected(option.id),
@@ -165,4 +166,17 @@ class ProgressIconPicker extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Nombre accesible del icono de progreso en el idioma del usuario.
+extension ProgressIconDefinitionL10n on ProgressIconDefinition {
+  String localizedLabel(AppLocalizations l10n) => switch (id) {
+    'water_drop' => l10n.progressIconWaterDrop,
+    'star' => l10n.progressIconStar,
+    'fruit' => l10n.progressIconFruit,
+    'pill' => l10n.progressIconPill,
+    'paw' => l10n.progressIconPaw,
+    'brush' => l10n.progressIconBrush,
+    _ => label,
+  };
 }

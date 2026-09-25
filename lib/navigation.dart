@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/features/auth/0_entity/entity.dart';
@@ -18,6 +18,7 @@ import 'package:habits/features/habits/2_presentation/routes/routes.dart'
     as habits_routes;
 import 'package:habits/features/splash/2_presentation/routes/routes.dart'
     as splash_routes;
+import 'package:habits/localization/l10n.dart';
 import 'package:habits/widgets/app_shell.dart';
 
 const _splashPath = '/';
@@ -76,6 +77,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       requireEmailVerification: ref.read(requireEmailVerificationProvider),
       justRegistered: ref.read(justRegisteredProvider),
     ),
+    // Enlace o ruta desconocida: pantalla propia, localizada, en vez de la
+    // página por defecto de go_router.
+    errorBuilder: (context, state) => const _NotFoundPage(),
     routes: [
       ...splashRoutes,
       ...authRoutes,
@@ -150,3 +154,30 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+class _NotFoundPage extends StatelessWidget {
+  const _NotFoundPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.pageNotFound, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => context.go('/home'),
+                child: Text(l10n.goHome),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

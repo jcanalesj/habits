@@ -13,10 +13,9 @@ void main() {
 
   Widget appWith({bool seeded = true, bool standalone = false}) {
     return ProviderScope(
-      overrides: AuthTestEnv(
-        initialUser: verifiedUser,
-        seededHabits: seeded,
-      ).overrides,
+      overrides: withoutForcedPremium(
+        AuthTestEnv(initialUser: verifiedUser, seededHabits: seeded).overrides,
+      ),
       child: MaterialApp(
         locale: const Locale('es'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -99,7 +98,7 @@ void main() {
     expect(find.text('Desbloquea más hábitos con Premium'), findsOneWidget);
     expect(find.textContaining('límite de 5 hábitos'), findsOneWidget);
     expect(find.text('Hábitos ilimitados'), findsOneWidget);
-    expect(find.text('Estadísticas avanzadas'), findsOneWidget);
+    expect(find.text('Hazla tuya'), findsOneWidget);
     expect(find.text('Nuevas funcionalidades'), findsOneWidget);
     expect(find.text('Ahora no'), findsOneWidget);
     expect(find.text('Ver planes Premium'), findsOneWidget);

@@ -40,9 +40,13 @@ class WatchHomeSummaryUsecase {
     final monday = _calendar.startOfWeek(day);
     final sunday = _calendar.endOfWeek(day);
     // Los objetivos mensuales y anuales necesitan los registros de todo su
-    // periodo, no solo los de la semana.
-    final periodStart = _calendar.startOfYear(day);
-    final periodEnd = _calendar.endOfYear(day);
+    // periodo, no solo los de la semana. La semana en curso puede salirse
+    // del año (lunes 29 de diciembre con hoy 1 de enero): se amplía el
+    // rango para no perder esos días.
+    final startOfYear = _calendar.startOfYear(day);
+    final endOfYear = _calendar.endOfYear(day);
+    final periodStart = monday.isBefore(startOfYear) ? monday : startOfYear;
+    final periodEnd = sunday.isAfter(endOfYear) ? sunday : endOfYear;
 
     return combineLatestN(
       [

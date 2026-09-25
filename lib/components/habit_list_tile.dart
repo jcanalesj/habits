@@ -558,6 +558,7 @@ class _RepetitionProgress extends StatelessWidget {
                 onPressed: safeCount > 0 && onChanged != null
                     ? () => onChanged!(safeCount - 1)
                     : null,
+                tooltip: context.l10n.a11yDecrease,
                 icon: const Icon(Icons.remove_rounded),
               ),
               const SizedBox(width: 6),
@@ -566,6 +567,7 @@ class _RepetitionProgress extends StatelessWidget {
                 onPressed: safeCount < target && onChanged != null
                     ? () => onChanged!(safeCount + 1)
                     : null,
+                tooltip: context.l10n.a11yIncrease,
                 icon: const Icon(Icons.add_rounded),
               ),
             ],

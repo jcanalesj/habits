@@ -159,6 +159,11 @@ class LocalNotificationsRepository implements NotificationsRepository {
         // calendarios. Para un recordatorio de hábito, unos minutos de
         // margen son irrelevantes y evitan pedir ese permiso.
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        // El respaldo se repite cada día a la misma hora hasta la próxima
+        // sincronización.
+        matchDateTimeComponents: reminder.repeatsDaily
+            ? DateTimeComponents.time
+            : null,
         payload: reminder.habitId,
       );
     }

@@ -18,7 +18,8 @@ class EnsureMonthlyWildcardGrantUsecase {
   final WildcardsRepository _wildcards;
 
   /// [today] se usa solo para obtener el año/mes actual; la concesión no
-  /// depende del día.
+  /// depende del día. Debe ser el día en UTC: las reglas validan el mes con
+  /// el reloj del servidor.
   Future<WildcardBalance?> execute(LogicalDate today) async {
     try {
       return await _wildcards.ensureGranted(today.yearMonth);

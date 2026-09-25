@@ -56,8 +56,9 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
         bottom: false,
         child: switch (summaryAsync) {
           AsyncData(:final value) => _buildContent(context, value),
-          AsyncError(:final error) => Center(
-            child: Text(context.l10n.somethingWentWrong('$error')),
+          AsyncError(:final error) => AppErrorView(
+            error: error,
+            onRetry: () => ref.invalidate(homeControllerProvider),
           ),
           _ => const Center(child: CircularProgressIndicator()),
         },
@@ -70,13 +71,13 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
     final lastDay = DateTime.utc(month.year, month.month + 1, 0).day;
     final from = month;
     final to = LogicalDate(month.year, month.month, lastDay);
-    final logs = ref.watch(habitsRepositoryProvider).watchLogsBetween(from, to);
+    final range = (from: from, to: to);
+    final logsAsync = ref.watch(logsBetweenProvider(range));
     final palette = context.palette;
 
-    return StreamBuilder<List<HabitLog>>(
-      stream: logs,
-      builder: (context, snapshot) {
-        final monthLogs = snapshot.data;
+    return Builder(
+      builder: (context) {
+        final monthLogs = logsAsync.value;
         return ListView(
           padding: EdgeInsets.fromLTRB(
             20,
@@ -120,8 +121,22 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
               notCompleted: context.l10n.habitCalendarsNotCompleted,
             ),
             const SizedBox(height: 18),
-            if (monthLogs == null)
+            if (monthLogs == null && logsAsync.hasError)
+              AppErrorView(
+                error: logsAsync.error,
+                onRetry: () => ref.invalidate(logsBetweenProvider(range)),
+              )
+            else if (monthLogs == null)
               const Center(child: CircularProgressIndicator())
+            else if (summary.habits.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                child: Text(
+                  context.l10n.habitCalendarsEmpty,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: palette.textSecondary),
+                ),
+              )
             else
               for (final habit in summary.habits) ...[
                 _HabitMonthCard(
@@ -168,6 +183,7 @@ class _MonthSelector extends StatelessWidget {
           IconButton(
             key: const ValueKey('previous-calendar-month'),
             onPressed: onPrevious,
+            tooltip: context.l10n.a11yPreviousMonth,
             icon: const Icon(PhosphorIconsBold.caretLeft),
           ),
           Expanded(
@@ -182,6 +198,7 @@ class _MonthSelector extends StatelessWidget {
           IconButton(
             key: const ValueKey('next-calendar-month'),
             onPressed: onNext,
+            tooltip: context.l10n.a11yNextMonth,
             icon: const Icon(PhosphorIconsBold.caretRight),
           ),
         ],

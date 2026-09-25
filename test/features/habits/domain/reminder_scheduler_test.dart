@@ -28,7 +28,27 @@ Habit habit({
   deletedAt: deletedAt,
 );
 
+/// Solo las ocurrencias concretas (sin los avisos diarios de respaldo).
 List<HabitReminder> schedule({
+  required List<Habit> habits,
+  Map<String, Set<LogicalDate>> completed = const {},
+  int nowMinutes = 8 * 60,
+  bool Function(Habit, LogicalDate)? isGoalMetOn,
+  int horizonDays = ReminderScheduler.horizonDays,
+  int maxScheduled = ReminderScheduler.maxScheduled,
+}) => [
+  for (final reminder in scheduleAll(
+    habits: habits,
+    completed: completed,
+    nowMinutes: nowMinutes,
+    isGoalMetOn: isGoalMetOn,
+    horizonDays: horizonDays,
+    maxScheduled: maxScheduled,
+  ))
+    if (!reminder.repeatsDaily) reminder,
+];
+
+List<HabitReminder> scheduleAll({
   required List<Habit> habits,
   Map<String, Set<LogicalDate>> completed = const {},
   int nowMinutes = 8 * 60,
@@ -150,7 +170,7 @@ void main() {
         for (var i = 0; i < 20; i++) habit(id: 'h$i', name: 'Hábito $i'),
       ];
 
-      final result = schedule(habits: habits);
+      final result = scheduleAll(habits: habits);
 
       expect(result.length, ReminderScheduler.maxScheduled);
       expect(ReminderScheduler.maxScheduled, lessThan(64));
@@ -161,14 +181,64 @@ void main() {
 
       final result = schedule(habits: habits);
 
-      // 20 hábitos x 7 días = 140 candidatos; con tope 56 solo caben los
-      // de los primeros días.
+      // 20 hábitos x 7 días = 140 candidatos; con tope 56 y 20 respaldos
+      // solo caben los de los primeros días.
       expect(result.first.date, hoy);
       expect(result.last.date.isBefore(hoy.addDays(6)), isTrue);
     });
   });
 
+  group('aviso diario de respaldo', () {
+    test('cada hábito con hora tiene uno al final del horizonte', () {
+      final fallbacks = scheduleAll(
+        habits: [habit()],
+      ).where((r) => r.repeatsDaily).toList();
+
+      expect(fallbacks, hasLength(1));
+      expect(fallbacks.single.date, hoy.addDays(ReminderScheduler.horizonDays));
+      expect(fallbacks.single.time, '21:00');
+    });
+
+    test('sin hora no hay respaldo', () {
+      expect(scheduleAll(habits: [habit(reminderTime: null)]), isEmpty);
+    });
+
+    test(
+      'si el tope recorta, el respaldo empieza en el primer día perdido',
+      () {
+        final habits = [for (var i = 0; i < 20; i++) habit(id: 'h$i')];
+
+        final result = scheduleAll(habits: habits);
+        final lastConcrete = result
+            .where((r) => !r.repeatsDaily)
+            .map((r) => r.date)
+            .reduce((a, b) => a.isAfter(b) ? a : b);
+
+        for (final fallback in result.where((r) => r.repeatsDaily)) {
+          expect(fallback.date.isAfter(lastConcrete.previous), isTrue);
+          expect(
+            fallback.date.isBefore(hoy.addDays(ReminderScheduler.horizonDays)),
+            isTrue,
+          );
+        }
+      },
+    );
+
+    test('su id no choca con el de las ocurrencias', () {
+      final result = scheduleAll(habits: [habit()]);
+      final ids = result.map((r) => r.notificationId).toSet();
+
+      expect(ids, hasLength(result.length));
+    });
+  });
+
   group('identidad de cada aviso', () {
+    test('el id no depende de la ejecución (FNV-1a)', () {
+      // Valor fijo: si cambia, los avisos de versiones anteriores dejarían
+      // de poder cancelarse uno a uno.
+      expect(HabitReminder.stableNotificationId('h1|2026-09-13'), 1180458799);
+    });
+
     test('el id es estable: reprogramar no duplica', () {
       final primero = schedule(habits: [habit()]).first;
       final segundo = schedule(habits: [habit()]).first;

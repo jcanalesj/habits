@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habits/components/app_error_view.dart';
 import 'package:habits/components/app_bottom_nav_bar.dart';
 import 'package:habits/components/habit_icon_catalog.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
@@ -67,32 +68,34 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
           AsyncData(:final value) => Builder(
             builder: (context) {
               final (from, to) = _range(value.today);
-              return StreamBuilder<List<HabitLog>>(
-                stream: ref
-                    .watch(habitsRepositoryProvider)
-                    .watchLogsBetween(from, to),
-                initialData: _period == _StatsPeriod.week
-                    ? value.weekLogs
-                    : null,
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return _StatisticsContent(
-                    summary: value,
-                    logs: snapshot.data!,
-                    period: _period,
-                    rangeStart: from,
-                    standalone: widget.standalone,
-                    onPeriodChanged: (period) =>
-                        setState(() => _period = period),
-                  );
-                },
+              final range = (from: from, to: to);
+              final logsAsync = ref.watch(logsBetweenProvider(range));
+              // La semana ya viene en la Home: se enseña sin esperar.
+              final logs =
+                  logsAsync.value ??
+                  (_period == _StatsPeriod.week ? value.weekLogs : null);
+              if (logs == null && logsAsync.hasError) {
+                return AppErrorView(
+                  error: logsAsync.error,
+                  onRetry: () => ref.invalidate(logsBetweenProvider(range)),
+                );
+              }
+              if (logs == null) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return _StatisticsContent(
+                summary: value,
+                logs: logs,
+                period: _period,
+                rangeStart: from,
+                standalone: widget.standalone,
+                onPeriodChanged: (period) => setState(() => _period = period),
               );
             },
           ),
-          AsyncError(:final error) => Center(
-            child: Text(context.l10n.somethingWentWrong('$error')),
+          AsyncError(:final error) => AppErrorView(
+            error: error,
+            onRetry: () => ref.invalidate(homeControllerProvider),
           ),
           _ => const Center(child: CircularProgressIndicator()),
         },

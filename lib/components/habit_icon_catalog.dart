@@ -1,3 +1,4 @@
+import 'package:habits/localization/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -141,7 +142,7 @@ class HabitIcon extends StatelessWidget {
     final definition = HabitIconCatalog.getById(iconId);
     return Semantics(
       image: true,
-      label: definition.label,
+      label: definition.localizedLabel(context.l10n),
       child: SvgPicture.asset(
         definition.assetPath,
         width: size,
@@ -204,4 +205,25 @@ class HabitIconPicker extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Nombre accesible del icono en el idioma del usuario. La etiqueta del
+/// catálogo es solo la de respaldo en español.
+extension HabitIconDefinitionL10n on HabitIconDefinition {
+  String localizedLabel(AppLocalizations l10n) => switch (id) {
+    'water_drop' => l10n.iconWater,
+    'running' => l10n.iconExercise,
+    'dumbbell' => l10n.iconStrength,
+    'meditation' => l10n.iconMeditation,
+    'sleep' => l10n.iconRest,
+    'book' => l10n.iconReading,
+    'heart' => l10n.iconWellbeing,
+    'star' => l10n.iconGoal,
+    'fruit' => l10n.iconFood,
+    'pill' => l10n.iconMedication,
+    'paw' => l10n.iconPet,
+    'cup' => l10n.iconDrink,
+    'check' => l10n.iconGeneral,
+    _ => label,
+  };
 }

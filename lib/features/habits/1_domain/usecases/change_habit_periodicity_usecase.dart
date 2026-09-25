@@ -63,6 +63,25 @@ class ChangeHabitPeriodicityUsecase {
     required Periodicity next,
     required LogicalDate today,
   }) async {
+    final planned = plan(habit: habit, next: next, today: today);
+    if (planned is! ChangePeriodicityScheduled) return planned;
+    try {
+      await _repository.updateHabit(planned.habit);
+      return planned;
+    } on HabitsException catch (e) {
+      return ChangePeriodicityFailed(e.failure);
+    } catch (_) {
+      return ChangePeriodicityFailed(HabitsFailure.unknown);
+    }
+  }
+
+  /// Calcula la nueva línea temporal SIN guardarla, para poder escribirla
+  /// junto con el resto de cambios del hábito en una sola escritura.
+  ChangePeriodicityResult plan({
+    required Habit habit,
+    required Periodicity next,
+    required LogicalDate today,
+  }) {
     if (habit.isDeleted) {
       return ChangePeriodicityFailed(HabitsFailure.habitDeleted);
     }
@@ -92,14 +111,6 @@ class ChangeHabitPeriodicityUsecase {
         PeriodicityEntry(periodicity: next, since: effectiveFrom),
       ],
     );
-
-    try {
-      await _repository.updateHabit(updated);
-      return ChangePeriodicityScheduled(updated, effectiveFrom);
-    } on HabitsException catch (e) {
-      return ChangePeriodicityFailed(e.failure);
-    } catch (_) {
-      return ChangePeriodicityFailed(HabitsFailure.unknown);
-    }
+    return ChangePeriodicityScheduled(updated, effectiveFrom);
   }
 }

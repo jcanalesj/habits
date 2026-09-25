@@ -309,7 +309,18 @@ class InMemoryHabitsRepository implements HabitsRepository {
   Future<void> updateHabit(Habit habit) async {
     final index = _habits.indexWhere((h) => h.id == habit.id);
     if (index < 0) throw const HabitsException(HabitsFailure.habitNotFound);
-    _habits[index] = habit;
+    // Como en Firestore: editar no cambia el estado de borrado.
+    _habits[index] = habit.copyWith(deletedAt: _habits[index].deletedAt);
+    _emitHabits();
+  }
+
+  @override
+  Future<void> reorderHabits(Map<String, int> orderById) async {
+    for (final entry in orderById.entries) {
+      final index = _habits.indexWhere((h) => h.id == entry.key);
+      if (index < 0) throw const HabitsException(HabitsFailure.habitNotFound);
+      _habits[index] = _habits[index].copyWith(order: entry.value);
+    }
     _emitHabits();
   }
 

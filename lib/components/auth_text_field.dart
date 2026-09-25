@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 
 /// Campo de texto de auth: icono en cuadrado lila, fondo blanco
@@ -92,6 +93,9 @@ class _AuthTextFieldState extends State<AuthTextField> {
               ),
               if (widget.obscurable)
                 IconButton(
+                  tooltip: _obscured
+                      ? context.l10n.a11yShowPassword
+                      : context.l10n.a11yHidePassword,
                   onPressed: () => setState(() => _obscured = !_obscured),
                   icon: Icon(
                     _obscured
