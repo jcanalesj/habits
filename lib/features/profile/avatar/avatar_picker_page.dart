@@ -185,7 +185,7 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
     final storedId =
         ref.watch(selectedAvatarIdProvider).value ?? AvatarCatalog.defaultId;
     _selectedId ??= storedId;
-    final hasPremium = ref.watch(premiumSubscribedProvider);
+    final hasPremium = ref.watch(premiumAccessProvider);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,

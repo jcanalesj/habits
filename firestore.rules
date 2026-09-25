@@ -96,19 +96,24 @@ service cloud.firestore {
     function mesActual() {
       return request.time.year() * 12 + request.time.month();
     }
+    // Promoción temporal. Cambiar a false para recuperar los bloqueos
+    // Premium junto con Env.premiumFeaturesFree y PREMIUM_FEATURES_FREE.
+    function premiumFeaturesFree() {
+      return true;
+    }
     // Premium vigente según el perfil (lo escribe solo el backend a partir
     // de RevenueCat). La fecha de caducidad protege frente a un webhook
     // perdido. Cuesta una lectura: evaluarla siempre al FINAL de un `||`.
     function isPremiumUser(uid) {
       let sub = get(/databases/$(database)/documents/users/$(uid)).data.subscription;
-      return sub.status in ['active', 'premium']
+      return premiumFeaturesFree() || (sub.status in ['active', 'premium']
         && (!('expiresAt' in sub) || sub.expiresAt == null
-            || sub.expiresAt > request.time);
+            || sub.expiresAt > request.time));
     }
     function subscriptionIsPremium(sub) {
-      return sub.status in ['active', 'premium']
+      return premiumFeaturesFree() || (sub.status in ['active', 'premium']
         && (!('expiresAt' in sub) || sub.expiresAt == null
-            || sub.expiresAt > request.time);
+            || sub.expiresAt > request.time));
     }
 
     function isHora(value) {
@@ -290,9 +295,10 @@ service cloud.firestore {
         && docId == 'config'
         && validWeightConfig(incoming());
 
-      // Las mediciones son del usuario: puede borrar una errónea (derecho de
-      // rectificación y supresión). El documento de configuración no.
-      allow delete: if isOwner(uid) && docId != 'config';
+      // Todos los datos de salud pertenecen al usuario: puede borrar tanto
+      // mediciones individuales como la configuración completa para empezar
+      // desde cero (derecho de rectificación y supresión).
+      allow delete: if isOwner(uid);
 
       function validWeightConfig(d) {
         return d.keys().hasOnly([

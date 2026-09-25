@@ -7,6 +7,7 @@ abstract class WeightRepository {
   Stream<WeightProfile?> watchProfile();
   Future<void> addEntry(double kilograms, DateTime recordedAt);
   Future<void> deleteEntry(String entryId);
+  Future<void> resetAllData();
   Future<void> updateGoal(double kilograms);
   Future<void> saveProfile(WeightProfile profile);
 

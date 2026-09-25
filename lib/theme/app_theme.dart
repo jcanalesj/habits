@@ -51,6 +51,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.primarySoft,
     required this.onPrimary,
     required this.inputFill,
+    required this.authFieldFill,
     required this.authHeading,
     required this.authBrand,
     required this.authSecondary,
@@ -81,6 +82,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     primarySoft: Color(0xFFF0EAFF),
     onPrimary: Colors.white,
     inputFill: Color(0x0E7C5CE0),
+    authFieldFill: Color(0x1A7C5CE0),
     authHeading: Color(0xFF1D1766),
     authBrand: Color(0xFF352A6E),
     authSecondary: Color(0xFF7373A7),
@@ -113,6 +115,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     primarySoft: Color(0xFF412C70),
     onPrimary: Colors.white,
     inputFill: Color(0x1AA18BF5),
+    authFieldFill: Color(0x2EB794FF),
     authHeading: Color(0xFFEEEAFF),
     authBrand: Color(0xFFD9D0FF),
     authSecondary: Color(0xFFA8A2C4),
@@ -176,6 +179,10 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Relleno de campos de texto.
   final Color inputFill;
 
+  /// Fondo de los campos de login/registro: el mismo tinte lila suave que
+  /// el cuadrado del icono (`tint(primary, .1)`), uniforme en todo el campo.
+  final Color authFieldFill;
+
   // Colores semánticos de autenticación.
   final Color authHeading;
   final Color authBrand;
@@ -212,6 +219,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? primarySoft,
     Color? onPrimary,
     Color? inputFill,
+    Color? authFieldFill,
     Color? authHeading,
     Color? authBrand,
     Color? authSecondary,
@@ -238,6 +246,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     primarySoft: primarySoft ?? this.primarySoft,
     onPrimary: onPrimary ?? this.onPrimary,
     inputFill: inputFill ?? this.inputFill,
+    authFieldFill: authFieldFill ?? this.authFieldFill,
     authHeading: authHeading ?? this.authHeading,
     authBrand: authBrand ?? this.authBrand,
     authSecondary: authSecondary ?? this.authSecondary,
@@ -270,6 +279,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
       primarySoft: mix(primarySoft, other.primarySoft),
       onPrimary: mix(onPrimary, other.onPrimary),
       inputFill: mix(inputFill, other.inputFill),
+      authFieldFill: mix(authFieldFill, other.authFieldFill),
       authHeading: mix(authHeading, other.authHeading),
       authBrand: mix(authBrand, other.authBrand),
       authSecondary: mix(authSecondary, other.authSecondary),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/premium/2_presentation/premium_providers.dart';
 import 'package:habits/local_preferences.dart';
 
 /// Iconos de la app disponibles. El `name` es el identificador que entienden
@@ -94,6 +95,7 @@ class AppIconController extends AsyncNotifier<AppIconOption> {
   /// Sin Premium solo vale el icono
   /// clásico: si había uno Premium puesto, se restaura el de por defecto.
   Future<void> _enforceEntitlement() async {
+    if (ref.read(premiumFeaturesFreeProvider)) return;
     // Sin sesión o con la suscripción aún cargando no se sabe nada: mejor
     // no tocar el icono que quitárselo a quien sí paga.
     if (ref.read(authControllerProvider).value == null) return;

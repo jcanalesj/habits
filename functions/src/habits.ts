@@ -5,12 +5,16 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 /** Hábitos activos que puede tener una cuenta gratuita (igual que la app). */
 export const FREE_HABIT_LIMIT = 5;
 
+/** Promoción temporal; mantener sincronizado con la app y Firestore Rules. */
+export const PREMIUM_FEATURES_FREE = true;
+
 interface Subscription {
   status?: string;
   expiresAt?: Timestamp | null;
 }
 
 export function isPremium(subscription: Subscription | undefined): boolean {
+  if (PREMIUM_FEATURES_FREE) return true;
   if (!subscription) return false;
   if (subscription.status !== "active" && subscription.status !== "premium") {
     return false;

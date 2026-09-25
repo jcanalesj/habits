@@ -12,6 +12,12 @@ import 'package:habits/features/premium/3_data/revenuecat_purchases_repository.d
 /// para que los tests lo apaguen.
 final forcePremiumProvider = Provider<bool>((ref) => Env.forcePremium);
 
+/// Acceso completo temporal, independiente del estado de la suscripción.
+/// Se mantiene como provider para poder desactivarlo en tests de paywall.
+final premiumFeaturesFreeProvider = Provider<bool>(
+  (ref) => Env.premiumFeaturesFree,
+);
+
 /// Tienda de la plataforma. Sin clave para ella, compras no disponibles.
 final purchasesRepositoryProvider = Provider<PurchasesRepository>((ref) {
   if (kIsWeb) return const UnavailablePurchasesRepository();

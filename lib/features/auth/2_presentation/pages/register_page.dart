@@ -409,7 +409,7 @@ class _RegisterFieldState extends State<_RegisterField> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: palette.surface.withValues(alpha: palette.isDark ? 1 : 0.76),
+            color: palette.authFieldFill,
             borderRadius: BorderRadius.circular(AppDimensions.authFieldRadius),
             border: Border.all(color: borderColor),
           ),
@@ -448,6 +448,9 @@ class _RegisterFieldState extends State<_RegisterField> {
                     hintStyle: textTheme.bodyMedium?.copyWith(
                       color: palette.authFieldHint,
                     ),
+                    // El tema global rellena todos los campos de lila;
+                    // aquí el fondo lo pinta el contenedor exterior.
+                    filled: false,
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: const EdgeInsets.only(top: 12, bottom: 3),

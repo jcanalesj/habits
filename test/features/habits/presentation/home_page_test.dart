@@ -6,7 +6,12 @@ import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/pages/home_page.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/profile/weight/in_memory_weight_repository.dart';
+import 'package:habits/features/profile/weight/weight_entry.dart';
+import 'package:habits/features/profile/weight/weight_providers.dart';
+import 'package:habits/local_preferences.dart';
 import 'package:habits/localization/gen/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../helpers/auth_test_helpers.dart';
 
@@ -14,15 +19,28 @@ Widget _appUnderTest({
   required Locale locale,
   bool seeded = true,
   WildcardBalance? wildcards,
+  List<WeightEntry> weightEntries = const [],
+  bool weightConfigured = true,
+  SharedPreferences? preferences,
 }) {
+  final weightRepository = InMemoryWeightRepository()
+    ..entries.addAll(weightEntries);
+  if (weightConfigured && weightRepository.entries.isEmpty) {
+    weightRepository.entries.add(
+      WeightEntry(id: 'default-weight', kilograms: 72, recordedAt: testInstant),
+    );
+  }
   return ProviderScope(
-    overrides: withoutForcedPremium(
-      AuthTestEnv(
+    overrides: withoutForcedPremium([
+      ...AuthTestEnv(
         initialUser: verifiedUser,
         seededHabits: seeded,
         wildcards: wildcards,
       ).overrides,
-    ),
+      weightRepositoryProvider.overrideWithValue(weightRepository),
+      if (preferences != null)
+        sharedPreferencesProvider.overrideWithValue(preferences),
+    ]),
     child: MaterialApp(
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -31,6 +49,16 @@ Widget _appUnderTest({
     ),
   );
 }
+
+InMemoryWeightRepository _configuredWeightRepository() =>
+    InMemoryWeightRepository()
+      ..entries.add(
+        WeightEntry(
+          id: 'default-weight',
+          kilograms: 72,
+          recordedAt: testInstant,
+        ),
+      );
 
 Widget _streakCardAtHour(int hour) => MaterialApp(
   locale: const Locale('es'),
@@ -106,6 +134,76 @@ void main() {
     );
     expect(find.text('Beber agua'), findsOneWidget);
     expect(find.text('Anuales'), findsOneWidget);
+  });
+
+  testWidgets('HomePage muestra el último peso y su variación', (tester) async {
+    await tester.pumpWidget(
+      _appUnderTest(
+        locale: const Locale('es'),
+        weightEntries: [
+          WeightEntry(
+            id: 'latest',
+            kilograms: 71.8,
+            recordedAt: DateTime(2026, 9, 25),
+          ),
+          WeightEntry(
+            id: 'previous',
+            kilograms: 72.4,
+            recordedAt: DateTime(2026, 9, 18),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('home-weight-card')), findsOneWidget);
+    expect(find.text('71,8 kg'), findsOneWidget);
+    expect(find.text('0,6 kg'), findsOneWidget);
+  });
+
+  testWidgets('sin peso muestra la invitación y no muestra la tarjeta', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _appUnderTest(locale: const Locale('es'), weightConfigured: false),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('weight-invitation-dialog')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('home-weight-card')), findsNothing);
+    expect(find.text('Configurar mi peso'), findsOneWidget);
+    expect(find.text('Ahora no'), findsOneWidget);
+    expect(find.text('No volver a mostrar'), findsOneWidget);
+  });
+
+  testWidgets('no volver a mostrar guarda la decisión para ese usuario', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+    await tester.pumpWidget(
+      _appUnderTest(
+        locale: const Locale('es'),
+        weightConfigured: false,
+        preferences: preferences,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('weight-invitation-never')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('weight-invitation-dialog')),
+      findsNothing,
+    );
+    expect(
+      preferences.getBool('weight_invitation_hidden_${verifiedUser.id}'),
+      isTrue,
+    );
   });
 
   testWidgets('Nuevo hábito muestra Premium cuando ya hay 5 hábitos', (
@@ -387,6 +485,9 @@ void main() {
           remoteWelcomeAnimationEnabledProvider.overrideWith(
             (ref) => Stream.value(false),
           ),
+          weightRepositoryProvider.overrideWithValue(
+            _configuredWeightRepository(),
+          ),
         ]),
         child: MaterialApp(
           locale: const Locale('es'),
@@ -413,6 +514,9 @@ void main() {
           ),
           remoteCustomMotivationMessagesProvider.overrideWith(
             (ref) => Stream.value(const ['Primera frase', 'Segunda frase']),
+          ),
+          weightRepositoryProvider.overrideWithValue(
+            _configuredWeightRepository(),
           ),
         ]),
         child: const MaterialApp(

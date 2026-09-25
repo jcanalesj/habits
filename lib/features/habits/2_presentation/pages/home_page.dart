@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
+import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/pages/habits_list_page.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/profile/weight/weight_entry.dart';
+import 'package:habits/features/profile/weight/weight_providers.dart';
+import 'package:habits/local_preferences.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -72,6 +76,8 @@ class HomePage extends ConsumerWidget {
 
 enum _HabitFilter { all, daily, weekly, monthly, yearly }
 
+enum _WeightInvitationAction { start, later, never }
+
 class _HomeContent extends ConsumerStatefulWidget {
   const _HomeContent({
     required this.summary,
@@ -97,6 +103,29 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
   late bool _showColdStartWelcome;
   late final int _welcomeMessageIndex;
   late final String? _customWelcomeMessage;
+
+  Future<void> _showWeightInvitation() async {
+    final userId = ref.read(authControllerProvider).value?.id;
+    if (userId == null) return;
+    final preferences = ref.read(sharedPreferencesProvider);
+    final hiddenKey = weightInvitationHiddenKey(userId);
+    if (preferences?.getBool(hiddenKey) == true) return;
+
+    final action = await showDialog<_WeightInvitationAction>(
+      context: context,
+      barrierColor: context.palette.scrim,
+      builder: (_) => const _WeightInvitationDialog(),
+    );
+    if (!mounted) return;
+    switch (action) {
+      case _WeightInvitationAction.start:
+        context.push('/profile/weight');
+      case _WeightInvitationAction.never:
+        await preferences?.setBool(hiddenKey, true);
+      case _WeightInvitationAction.later || null:
+        break;
+    }
+  }
 
   @override
   void initState() {
@@ -262,10 +291,21 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     final nextReminder = _nextReminderHabit;
     final pending = _pending.where(_matchesFilter).toList();
     final completed = _completed.where(_matchesFilter).toList();
+    final weightEntriesAsync = ref.watch(weightEntriesProvider);
+    final weightEntries = weightEntriesAsync.value ?? const <WeightEntry>[];
     final hasHabits = summary.habits.isNotEmpty;
     final bottomClearance =
         AppBottomNavBar.contentClearance +
         MediaQuery.viewPaddingOf(context).bottom;
+
+    if (!_showColdStartWelcome &&
+        weightEntriesAsync.hasValue &&
+        weightEntries.isEmpty &&
+        ref.read(weightInvitationSessionProvider).take()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showWeightInvitation();
+      });
+    }
 
     final home = ListView(
       padding: EdgeInsets.fromLTRB(20, 12, 20, bottomClearance),
@@ -289,6 +329,13 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
               ? () => _useWildcard(context, ref)
               : null,
         ),
+        if (weightEntries.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          _HomeWeightCard(
+            entries: weightEntries,
+            onTap: () => context.push('/profile/weight'),
+          ),
+        ],
         const SizedBox(height: 24),
         Row(
           children: [
@@ -436,6 +483,235 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       _HabitFilter.monthly => type == PeriodicityType.monthly,
       _HabitFilter.yearly => type == PeriodicityType.yearly,
     };
+  }
+}
+
+class _HomeWeightCard extends StatelessWidget {
+  const _HomeWeightCard({required this.entries, required this.onTap});
+
+  final List<WeightEntry> entries;
+  final VoidCallback onTap;
+
+  String _weight(BuildContext context, double value) {
+    final digits = value == value.roundToDouble() ? 0 : 1;
+    final formatted = value.toStringAsFixed(digits);
+    return Localizations.localeOf(context).languageCode == 'es'
+        ? formatted.replaceFirst('.', ',')
+        : formatted;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final l10n = context.l10n;
+    final current = entries.firstOrNull;
+    final previous = entries.length > 1 ? entries[1] : null;
+    final difference = current == null || previous == null
+        ? null
+        : current.kilograms - previous.kilograms;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: const ValueKey('home-weight-card'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Ink(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: palette.isDark
+                  ? [palette.surface, palette.primarySoft]
+                  : const [Color(0xFFFFFFFF), Color(0xFFF4EFFF)],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: palette.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: palette.tint(palette.primary, .12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  PhosphorIconsBold.scales,
+                  color: palette.primary,
+                  size: 25,
+                ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.weightTitle,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    if (current != null)
+                      Row(
+                        children: [
+                          Text(
+                            '${_weight(context, current.kilograms)} kg',
+                            style: TextStyle(
+                              color: palette.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          if (difference != null) ...[
+                            const SizedBox(width: 8),
+                            _WeightDifference(
+                              value: difference,
+                              formatted: _weight(context, difference.abs()),
+                            ),
+                          ],
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+              Icon(
+                PhosphorIconsBold.caretRight,
+                color: palette.primary,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WeightInvitationDialog extends StatelessWidget {
+  const _WeightInvitationDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
+    return Dialog(
+      key: const ValueKey('weight-invitation-dialog'),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Material(
+          color: palette.dialogSurface,
+          borderRadius: BorderRadius.circular(32),
+          clipBehavior: Clip.antiAlias,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/gatogym.png',
+                  width: 160,
+                  height: 125,
+                  fit: BoxFit.contain,
+                  semanticLabel: l10n.weightInvitationCatLabel,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.weightInvitationTitle,
+                  textAlign: TextAlign.center,
+                  style: textTheme.headlineSmall?.copyWith(
+                    color: palette.textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.weightInvitationBody,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: palette.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: FilledButton.icon(
+                    key: const ValueKey('weight-invitation-start'),
+                    onPressed: () =>
+                        Navigator.pop(context, _WeightInvitationAction.start),
+                    icon: const Icon(PhosphorIconsBold.scales),
+                    label: Text(l10n.weightInvitationStart),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextButton(
+                  key: const ValueKey('weight-invitation-later'),
+                  onPressed: () =>
+                      Navigator.pop(context, _WeightInvitationAction.later),
+                  child: Text(l10n.weightInvitationLater),
+                ),
+                TextButton(
+                  key: const ValueKey('weight-invitation-never'),
+                  onPressed: () =>
+                      Navigator.pop(context, _WeightInvitationAction.never),
+                  style: TextButton.styleFrom(
+                    foregroundColor: palette.textSecondary,
+                  ),
+                  child: Text(l10n.weightInvitationNever),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WeightDifference extends StatelessWidget {
+  const _WeightDifference({required this.value, required this.formatted});
+
+  final double value;
+  final String formatted;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final isDown = value < 0;
+    final color = isDown ? AppColors.green : AppColors.orange;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: palette.tint(color, .12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isDown ? PhosphorIconsBold.arrowDown : PhosphorIconsBold.arrowUp,
+            color: color,
+            size: 13,
+          ),
+          const SizedBox(width: 2),
+          Text(
+            '$formatted kg',
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

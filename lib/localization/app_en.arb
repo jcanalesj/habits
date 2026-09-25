@@ -177,6 +177,17 @@
   "weightEvolution": "Progress",
   "weightHistory": "History",
   "weightRegister": "Log weight",
+  "weightInvitationTitle": "Shall we track your progress?",
+  "weightInvitationBody": "Log your weight and set a goal to follow your progress step by step with Constanza.",
+  "weightInvitationStart": "Set up my weight",
+  "weightInvitationLater": "Not now",
+  "weightInvitationNever": "Don't show again",
+  "weightInvitationCatLabel": "Constanza cat exercising",
+  "weightResetData": "Delete my weight data",
+  "weightResetTitle": "Do you want to start over?",
+  "weightResetBody": "Your measurements, goal and plan data will be deleted. This action can't be undone.",
+  "weightResetConfirm": "Delete and start over",
+  "weightDataDeleted": "Your weight data has been deleted",
   "weightGoalDialog": "What is your target weight?",
   "weightLogDialog": "Log your weight",
   "weightGoalDialogHint": "Set the goal you want to work towards.",
@@ -598,6 +609,7 @@
   "weightConsentAccept": "I agree",
   "weightConsentDecline": "Not now",
   "weightConsentPrivacy": "Read the privacy policy",
+  "weightConsentCatLabel": "Constanza cat protecting your health data",
   "pageNotFound": "This screen doesn't exist.",
   "goHome": "Go home",
   "signOutConfirmTitle": "Leaving already?",
@@ -647,6 +659,37 @@
   "profileTerms": "Terms and conditions",
   "profileTermsSubtitle": "Terms of use for Constanza",
   "profileLegal": "Legal",
+  "profileSupport": "Help us improve",
+  "profileFeedback": "What are you missing?",
+  "profileFeedbackSubtitle": "Tell us the ideas or features you'd like to see",
+  "profileReportProblem": "Something isn't working",
+  "profileReportProblemSubtitle": "Write to us and we'll take a look",
+  "supportFeedbackSubject": "Idea for Constanza",
+  "supportFeedbackBody": "Hi, Constanza team!\n\nWhat I'm missing in the app:\n\n\n— Sent from {platform}",
+  "@supportFeedbackBody": {
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
+  },
+  "supportProblemSubject": "Problem in Constanza",
+  "supportProblemBody": "Hi, Constanza team!\n\nWhat happened:\n\n\nWhat I expected:\n\n\n— Sent from {platform}",
+  "@supportProblemBody": {
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
+  },
+  "supportEmailCopied": "No mail app found. We copied {email} so you can write to us from wherever you like.",
+  "@supportEmailCopied": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "currentPasswordLabel": "Current password",
   "newPasswordLabel": "New password",
   "changePasswordTitle": "Change your password",

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 
-/// Campo de texto de auth: icono en cuadrado lila, fondo blanco
+/// Campo de texto de auth: icono en cuadrado lila, fondo lila suave uniforme
 /// redondeado y toggle de visibilidad opcional para contraseñas.
 class AuthTextField extends StatefulWidget {
   const AuthTextField({
@@ -43,7 +43,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: palette.isDark ? palette.surfaceMuted : palette.surface,
+            color: palette.authFieldFill,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: widget.errorText != null
@@ -84,6 +84,9 @@ class _AuthTextFieldState extends State<AuthTextField> {
                     hintStyle: textTheme.bodyMedium?.copyWith(
                       color: palette.textSecondary,
                     ),
+                    // El tema global rellena todos los campos de lila;
+                    // aquí el fondo lo pinta el contenedor exterior.
+                    filled: false,
                     border: InputBorder.none,
                     contentPadding: widget.errorText == null
                         ? const EdgeInsets.symmetric(vertical: 16)

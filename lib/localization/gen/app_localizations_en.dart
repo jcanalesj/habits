@@ -434,6 +434,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weightRegister => 'Log weight';
 
   @override
+  String get weightInvitationTitle => 'Shall we track your progress?';
+
+  @override
+  String get weightInvitationBody =>
+      'Log your weight and set a goal to follow your progress step by step with Constanza.';
+
+  @override
+  String get weightInvitationStart => 'Set up my weight';
+
+  @override
+  String get weightInvitationLater => 'Not now';
+
+  @override
+  String get weightInvitationNever => 'Don\'t show again';
+
+  @override
+  String get weightInvitationCatLabel => 'Constanza cat exercising';
+
+  @override
+  String get weightResetData => 'Delete my weight data';
+
+  @override
+  String get weightResetTitle => 'Do you want to start over?';
+
+  @override
+  String get weightResetBody =>
+      'Your measurements, goal and plan data will be deleted. This action can\'t be undone.';
+
+  @override
+  String get weightResetConfirm => 'Delete and start over';
+
+  @override
+  String get weightDataDeleted => 'Your weight data has been deleted';
+
+  @override
   String get weightGoalDialog => 'What is your target weight?';
 
   @override
@@ -1521,6 +1556,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weightConsentPrivacy => 'Read the privacy policy';
 
   @override
+  String get weightConsentCatLabel =>
+      'Constanza cat protecting your health data';
+
+  @override
   String get pageNotFound => 'This screen doesn\'t exist.';
 
   @override
@@ -1693,6 +1732,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileLegal => 'Legal';
+
+  @override
+  String get profileSupport => 'Help us improve';
+
+  @override
+  String get profileFeedback => 'What are you missing?';
+
+  @override
+  String get profileFeedbackSubtitle =>
+      'Tell us the ideas or features you\'d like to see';
+
+  @override
+  String get profileReportProblem => 'Something isn\'t working';
+
+  @override
+  String get profileReportProblemSubtitle =>
+      'Write to us and we\'ll take a look';
+
+  @override
+  String get supportFeedbackSubject => 'Idea for Constanza';
+
+  @override
+  String supportFeedbackBody(String platform) {
+    return 'Hi, Constanza team!\n\nWhat I\'m missing in the app:\n\n\n— Sent from $platform';
+  }
+
+  @override
+  String get supportProblemSubject => 'Problem in Constanza';
+
+  @override
+  String supportProblemBody(String platform) {
+    return 'Hi, Constanza team!\n\nWhat happened:\n\n\nWhat I expected:\n\n\n— Sent from $platform';
+  }
+
+  @override
+  String supportEmailCopied(String email) {
+    return 'No mail app found. We copied $email so you can write to us from wherever you like.';
+  }
 
   @override
   String get currentPasswordLabel => 'Current password';

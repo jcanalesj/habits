@@ -4,11 +4,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/features/premium/0_entity/premium_plan.dart';
 import 'package:habits/features/premium/2_presentation/paywall_page.dart';
+import 'package:habits/features/premium/2_presentation/premium_providers.dart';
 import 'package:habits/features/premium/3_data/revenuecat_purchases_repository.dart';
 
 import '../../helpers/auth_test_helpers.dart';
 
 void main() {
+  test('el modo temporal da acceso sin simular una suscripción', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    expect(container.read(premiumFeaturesFreeProvider), isTrue);
+    expect(container.read(premiumAccessProvider), isTrue);
+  });
+
   Future<AuthTestEnv> pumpPaywall(
     WidgetTester tester, {
     AuthTestEnv? env,

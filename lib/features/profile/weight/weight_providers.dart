@@ -23,3 +23,22 @@ final weightGoalProvider = StreamProvider.autoDispose<double?>((ref) {
 final weightProfileProvider = StreamProvider.autoDispose<WeightProfile?>((ref) {
   return ref.watch(weightRepositoryProvider).watchProfile();
 });
+
+final weightInvitationSessionProvider = Provider<WeightInvitationSession>(
+  (ref) => WeightInvitationSession(),
+);
+
+class WeightInvitationSession {
+  bool _pending = true;
+
+  bool take() {
+    if (!_pending) return false;
+    _pending = false;
+    return true;
+  }
+
+  void reset() => _pending = true;
+}
+
+String weightInvitationHiddenKey(String userId) =>
+    'weight_invitation_hidden_$userId';

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habits/features/profile/weight/in_memory_weight_repository.dart';
 import 'package:habits/features/profile/weight/weight_page.dart';
 import 'package:habits/features/profile/weight/weight_profile.dart';
 import 'package:habits/features/profile/weight/weight_providers.dart';
+import 'package:habits/local_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/auth_test_helpers.dart';
 
@@ -192,5 +195,72 @@ void main() {
 
     expect(find.text('¿Cuál es tu objetivo?'), findsNothing);
     expect(repository.profile, isNull);
+  });
+
+  testWidgets('elimina todos los datos y reactiva la invitación', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    final repository = InMemoryWeightRepository();
+    addTearDown(repository.dispose);
+    await repository.addEntry(71.8, DateTime(2026, 9, 10));
+    await repository.saveProfile(
+      const WeightProfile(
+        currentKg: 71.8,
+        goalKg: 68,
+        age: 31,
+        heightCm: 170,
+        sex: CalorieSex.female,
+        activityLevel: ActivityLevel.moderate,
+        goalType: WeightGoalType.lose,
+        recommendedCalories: 1800,
+      ),
+    );
+    SharedPreferences.setMockInitialValues({
+      weightInvitationHiddenKey(verifiedUser.id): true,
+    });
+    final preferences = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(
+      localizedApp(
+        const WeightPage(),
+        overrides: [
+          ...env.overrides,
+          weightRepositoryProvider.overrideWithValue(repository),
+          sharedPreferencesProvider.overrideWithValue(preferences),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(WeightPage)),
+    );
+    container.read(weightInvitationSessionProvider).take();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('reset-weight-data')),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(find.byKey(const ValueKey('reset-weight-data')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('reset-weight-data')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('reset-weight-data-dialog')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('confirm-reset-weight-data')));
+    await tester.pumpAndSettle();
+
+    expect(repository.entries, isEmpty);
+    expect(repository.profile, isNull);
+    expect(repository.goal, isNull);
+    expect(
+      preferences.containsKey(weightInvitationHiddenKey(verifiedUser.id)),
+      isFalse,
+    );
+    expect(container.read(weightInvitationSessionProvider).take(), isTrue);
   });
 }

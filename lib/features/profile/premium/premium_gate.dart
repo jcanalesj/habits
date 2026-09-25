@@ -13,7 +13,7 @@ Future<bool> requestPremiumAccess(
   WidgetRef ref, {
   required WidgetBuilder dialogBuilder,
 }) async {
-  if (ref.read(premiumSubscribedProvider)) return true;
+  if (ref.read(premiumAccessProvider)) return true;
   final wantsPlans = await showDialog<bool>(
     context: context,
     barrierColor: context.palette.scrim,

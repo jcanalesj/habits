@@ -135,6 +135,17 @@
   "weightEvolution": "Evolución",
   "weightHistory": "Historial",
   "weightRegister": "Registrar peso",
+  "weightInvitationTitle": "¿Seguimos tu progreso?",
+  "weightInvitationBody": "Registra tu peso y define un objetivo para ver tu evolución paso a paso con Constanza.",
+  "weightInvitationStart": "Configurar mi peso",
+  "weightInvitationLater": "Ahora no",
+  "weightInvitationNever": "No volver a mostrar",
+  "weightInvitationCatLabel": "Gato de Constanza haciendo ejercicio",
+  "weightResetData": "Eliminar mis datos de peso",
+  "weightResetTitle": "¿Quieres empezar de cero?",
+  "weightResetBody": "Se eliminarán tus mediciones, tu objetivo y los datos de tu plan. Esta acción no se puede deshacer.",
+  "weightResetConfirm": "Eliminar y empezar de cero",
+  "weightDataDeleted": "Tus datos de peso se han eliminado",
   "weightGoalDialog": "¿Cuál es tu peso objetivo?",
   "weightLogDialog": "Registra tu peso",
   "weightGoalDialogHint": "Define la meta hacia la que quieres avanzar.",
@@ -484,6 +495,7 @@
   "weightConsentAccept": "Acepto",
   "weightConsentDecline": "Ahora no",
   "weightConsentPrivacy": "Leer la política de privacidad",
+  "weightConsentCatLabel": "Gato de Constanza protegiendo tus datos de salud",
   "pageNotFound": "Esta pantalla no existe.",
   "goHome": "Ir al inicio",
   "signOutConfirmTitle": "¿Ya te vas?",
@@ -526,6 +538,37 @@
   "profileTerms": "Términos y condiciones",
   "profileTermsSubtitle": "Condiciones de uso de Constanza",
   "profileLegal": "Legal",
+  "profileSupport": "Ayúdanos a mejorar",
+  "profileFeedback": "¿Qué echas de menos?",
+  "profileFeedbackSubtitle": "Cuéntanos ideas o funciones que te gustaría ver",
+  "profileReportProblem": "Algo no funciona",
+  "profileReportProblemSubtitle": "Escríbenos y lo revisamos",
+  "supportFeedbackSubject": "Idea para Constanza",
+  "supportFeedbackBody": "¡Hola, equipo de Constanza!\n\nLo que echo de menos en la app:\n\n\n— Enviado desde {platform}",
+  "@supportFeedbackBody": {
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
+  },
+  "supportProblemSubject": "Problema en Constanza",
+  "supportProblemBody": "¡Hola, equipo de Constanza!\n\nQué ha pasado:\n\n\nQué esperaba:\n\n\n— Enviado desde {platform}",
+  "@supportProblemBody": {
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
+  },
+  "supportEmailCopied": "No hay ninguna app de correo. Hemos copiado {email} para que nos escribas desde donde quieras.",
+  "@supportEmailCopied": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "currentPasswordLabel": "Contraseña actual",
   "newPasswordLabel": "Nueva contraseña",
   "changePasswordTitle": "Cambia tu contraseña",

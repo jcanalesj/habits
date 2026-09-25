@@ -434,6 +434,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String get weightRegister => 'Registrar peso';
 
   @override
+  String get weightInvitationTitle => '¿Seguimos tu progreso?';
+
+  @override
+  String get weightInvitationBody =>
+      'Registra tu peso y define un objetivo para ver tu evolución paso a paso con Constanza.';
+
+  @override
+  String get weightInvitationStart => 'Configurar mi peso';
+
+  @override
+  String get weightInvitationLater => 'Ahora no';
+
+  @override
+  String get weightInvitationNever => 'No volver a mostrar';
+
+  @override
+  String get weightInvitationCatLabel => 'Gato de Constanza haciendo ejercicio';
+
+  @override
+  String get weightResetData => 'Eliminar mis datos de peso';
+
+  @override
+  String get weightResetTitle => '¿Quieres empezar de cero?';
+
+  @override
+  String get weightResetBody =>
+      'Se eliminarán tus mediciones, tu objetivo y los datos de tu plan. Esta acción no se puede deshacer.';
+
+  @override
+  String get weightResetConfirm => 'Eliminar y empezar de cero';
+
+  @override
+  String get weightDataDeleted => 'Tus datos de peso se han eliminado';
+
+  @override
   String get weightGoalDialog => '¿Cuál es tu peso objetivo?';
 
   @override
@@ -1523,6 +1558,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get weightConsentPrivacy => 'Leer la política de privacidad';
 
   @override
+  String get weightConsentCatLabel =>
+      'Gato de Constanza protegiendo tus datos de salud';
+
+  @override
   String get pageNotFound => 'Esta pantalla no existe.';
 
   @override
@@ -1695,6 +1734,43 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileLegal => 'Legal';
+
+  @override
+  String get profileSupport => 'Ayúdanos a mejorar';
+
+  @override
+  String get profileFeedback => '¿Qué echas de menos?';
+
+  @override
+  String get profileFeedbackSubtitle =>
+      'Cuéntanos ideas o funciones que te gustaría ver';
+
+  @override
+  String get profileReportProblem => 'Algo no funciona';
+
+  @override
+  String get profileReportProblemSubtitle => 'Escríbenos y lo revisamos';
+
+  @override
+  String get supportFeedbackSubject => 'Idea para Constanza';
+
+  @override
+  String supportFeedbackBody(String platform) {
+    return '¡Hola, equipo de Constanza!\n\nLo que echo de menos en la app:\n\n\n— Enviado desde $platform';
+  }
+
+  @override
+  String get supportProblemSubject => 'Problema en Constanza';
+
+  @override
+  String supportProblemBody(String platform) {
+    return '¡Hola, equipo de Constanza!\n\nQué ha pasado:\n\n\nQué esperaba:\n\n\n— Enviado desde $platform';
+  }
+
+  @override
+  String supportEmailCopied(String email) {
+    return 'No hay ninguna app de correo. Hemos copiado $email para que nos escribas desde donde quieras.';
+  }
 
   @override
   String get currentPasswordLabel => 'Contraseña actual';

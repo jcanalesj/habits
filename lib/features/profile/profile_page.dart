@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/features/premium/2_presentation/paywall_page.dart';
+import 'package:habits/features/premium/2_presentation/premium_providers.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
 import 'package:habits/features/profile/account/account_dialogs.dart';
 import 'package:habits/legal_links.dart';
+import 'package:habits/support_links.dart';
 import 'package:habits/components/app_bottom_nav_bar.dart';
 import 'package:habits/components/app_notice.dart';
 import 'package:habits/components/cat_mascot.dart';
@@ -61,6 +63,7 @@ class ProfilePage extends ConsumerWidget {
     final timezone = ref.watch(profileTimezoneProvider).value ?? 'UTC';
     final name = ref.watch(userNameProvider);
     final isPremium = ref.watch(premiumSubscribedProvider);
+    final premiumFeaturesFree = ref.watch(premiumFeaturesFreeProvider);
     final l10n = context.l10n;
     final palette = context.palette;
     final bottomClearance =
@@ -160,21 +163,22 @@ class ProfilePage extends ConsumerWidget {
             const SizedBox(height: 12),
             _SettingsGroup(
               children: [
-                _ProfileLink(
-                  key: const ValueKey('profile-premium'),
-                  icon: PhosphorIconsFill.crown,
-                  color: AppColors.orange,
-                  title: l10n.profilePremium,
-                  subtitle: ref.watch(premiumSubscribedProvider)
-                      ? l10n.profilePremiumSubtitleActive
-                      : l10n.profilePremiumSubtitleFree,
-                  subtitleWidget: isPremium
-                      ? _PremiumActiveTag(
-                          label: l10n.profilePremiumSubtitleActive,
-                        )
-                      : null,
-                  onTap: () => showPaywall(context),
-                ),
+                if (!premiumFeaturesFree || isPremium)
+                  _ProfileLink(
+                    key: const ValueKey('profile-premium'),
+                    icon: PhosphorIconsFill.crown,
+                    color: AppColors.orange,
+                    title: l10n.profilePremium,
+                    subtitle: isPremium
+                        ? l10n.profilePremiumSubtitleActive
+                        : l10n.profilePremiumSubtitleFree,
+                    subtitleWidget: isPremium
+                        ? _PremiumActiveTag(
+                            label: l10n.profilePremiumSubtitleActive,
+                          )
+                        : null,
+                    onTap: () => showPaywall(context),
+                  ),
                 _ProfileLink(
                   icon: PhosphorIconsBold.clock,
                   color: AppColors.lilac,
@@ -195,6 +199,44 @@ class ProfilePage extends ConsumerWidget {
                   title: l10n.profileAppearance,
                   subtitle: l10n.profileAppearanceSubtitle,
                   onTap: () => context.push('/profile/appearance'),
+                  showDivider: false,
+                ),
+              ],
+            ),
+            const SizedBox(height: 26),
+            _SectionLabel(l10n.profileSupport),
+            const SizedBox(height: 12),
+            _SettingsGroup(
+              children: [
+                _ProfileLink(
+                  key: const ValueKey('profile-feedback'),
+                  icon: PhosphorIconsBold.lightbulb,
+                  color: AppColors.orange,
+                  title: l10n.profileFeedback,
+                  subtitle: l10n.profileFeedbackSubtitle,
+                  onTap: () => openSupportEmail(
+                    context,
+                    SupportLinks.mailto(
+                      subject: l10n.supportFeedbackSubject,
+                      body: l10n.supportFeedbackBody(
+                        SupportLinks.platformLabel,
+                      ),
+                    ),
+                  ),
+                ),
+                _ProfileLink(
+                  key: const ValueKey('profile-report-problem'),
+                  icon: PhosphorIconsBold.bug,
+                  color: AppColors.pink,
+                  title: l10n.profileReportProblem,
+                  subtitle: l10n.profileReportProblemSubtitle,
+                  onTap: () => openSupportEmail(
+                    context,
+                    SupportLinks.mailto(
+                      subject: l10n.supportProblemSubject,
+                      body: l10n.supportProblemBody(SupportLinks.platformLabel),
+                    ),
+                  ),
                   showDivider: false,
                 ),
               ],

@@ -884,6 +884,72 @@ abstract class AppLocalizations {
   /// **'Log weight'**
   String get weightRegister;
 
+  /// No description provided for @weightInvitationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shall we track your progress?'**
+  String get weightInvitationTitle;
+
+  /// No description provided for @weightInvitationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your weight and set a goal to follow your progress step by step with Constanza.'**
+  String get weightInvitationBody;
+
+  /// No description provided for @weightInvitationStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up my weight'**
+  String get weightInvitationStart;
+
+  /// No description provided for @weightInvitationLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get weightInvitationLater;
+
+  /// No description provided for @weightInvitationNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t show again'**
+  String get weightInvitationNever;
+
+  /// No description provided for @weightInvitationCatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza cat exercising'**
+  String get weightInvitationCatLabel;
+
+  /// No description provided for @weightResetData.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my weight data'**
+  String get weightResetData;
+
+  /// No description provided for @weightResetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to start over?'**
+  String get weightResetTitle;
+
+  /// No description provided for @weightResetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your measurements, goal and plan data will be deleted. This action can\'t be undone.'**
+  String get weightResetBody;
+
+  /// No description provided for @weightResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete and start over'**
+  String get weightResetConfirm;
+
+  /// No description provided for @weightDataDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weight data has been deleted'**
+  String get weightDataDeleted;
+
   /// No description provided for @weightGoalDialog.
   ///
   /// In en, this message translates to:
@@ -2798,6 +2864,12 @@ abstract class AppLocalizations {
   /// **'Read the privacy policy'**
   String get weightConsentPrivacy;
 
+  /// No description provided for @weightConsentCatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza cat protecting your health data'**
+  String get weightConsentCatLabel;
+
   /// No description provided for @pageNotFound.
   ///
   /// In en, this message translates to:
@@ -3049,6 +3121,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Legal'**
   String get profileLegal;
+
+  /// No description provided for @profileSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help us improve'**
+  String get profileSupport;
+
+  /// No description provided for @profileFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you missing?'**
+  String get profileFeedback;
+
+  /// No description provided for @profileFeedbackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us the ideas or features you\'d like to see'**
+  String get profileFeedbackSubtitle;
+
+  /// No description provided for @profileReportProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Something isn\'t working'**
+  String get profileReportProblem;
+
+  /// No description provided for @profileReportProblemSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write to us and we\'ll take a look'**
+  String get profileReportProblemSubtitle;
+
+  /// No description provided for @supportFeedbackSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Idea for Constanza'**
+  String get supportFeedbackSubject;
+
+  /// No description provided for @supportFeedbackBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, Constanza team!\n\nWhat I\'m missing in the app:\n\n\n— Sent from {platform}'**
+  String supportFeedbackBody(String platform);
+
+  /// No description provided for @supportProblemSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem in Constanza'**
+  String get supportProblemSubject;
+
+  /// No description provided for @supportProblemBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, Constanza team!\n\nWhat happened:\n\n\nWhat I expected:\n\n\n— Sent from {platform}'**
+  String supportProblemBody(String platform);
+
+  /// No description provided for @supportEmailCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'No mail app found. We copied {email} so you can write to us from wherever you like.'**
+  String supportEmailCopied(String email);
 
   /// No description provided for @currentPasswordLabel.
   ///

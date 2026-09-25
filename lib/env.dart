@@ -12,6 +12,12 @@ import 'package:flutter/foundation.dart' show kReleaseMode;
 ///             --dart-define=FIREBASE_EMULATOR_HOST=10.0.2.2
 /// ```
 abstract final class Env {
+  /// Promoción temporal: todas las funciones quedan disponibles sin una
+  /// suscripción. No convierte a nadie en suscriptor ni altera RevenueCat.
+  /// Para recuperar los bloqueos Premium basta con cambiarla a `false` y
+  /// hacer lo mismo en `firestore.rules` y `functions/src/habits.ts`.
+  static const premiumFeaturesFree = true;
+
   /// Si es true, Auth y Firestore apuntan a la Firebase Emulator Suite
   /// (puertos definidos en firebase.json) en lugar de a constanza-dev.
   static const useFirebaseEmulator = bool.fromEnvironment(

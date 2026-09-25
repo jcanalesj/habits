@@ -51,6 +51,16 @@ class InMemoryWeightRepository implements WeightRepository {
   }
 
   @override
+  Future<void> resetAllData() async {
+    entries.clear();
+    goal = null;
+    profile = null;
+    _entriesController.add(const []);
+    _goalController.add(null);
+    _profileController.add(null);
+  }
+
+  @override
   Future<void> completeOnboarding(
     WeightProfile value,
     DateTime recordedAt,

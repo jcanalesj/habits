@@ -4,12 +4,14 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habits/legal_links.dart';
 import 'package:habits/components/app_notice.dart';
+import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
 import 'package:habits/features/profile/weight/weight_entry.dart';
 import 'package:habits/features/profile/weight/weight_onboarding_dialog.dart';
 import 'package:habits/features/profile/weight/weight_profile.dart';
 import 'package:habits/features/profile/weight/weight_providers.dart';
+import 'package:habits/legal_links.dart';
+import 'package:habits/local_preferences.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:intl/intl.dart';
@@ -154,41 +156,49 @@ class _WeightPageState extends ConsumerState<WeightPage> {
     }
   }
 
+  Future<void> _resetWeightData() async {
+    if (_saving) return;
+    final userId = ref.read(authRepositoryProvider).currentUser?.id;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: context.palette.scrim,
+      builder: (_) => const _ResetWeightDataDialog(),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _saving = true);
+    try {
+      await ref.read(weightRepositoryProvider).resetAllData();
+      if (userId != null) {
+        await ref
+            .read(sharedPreferencesProvider)
+            ?.remove(weightInvitationHiddenKey(userId));
+      }
+      ref.read(weightInvitationSessionProvider).reset();
+      if (!mounted) return;
+      AppNotice.show(
+        context,
+        message: context.l10n.weightDataDeleted,
+        type: AppNoticeType.success,
+      );
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      AppNotice.show(
+        context,
+        message: context.l10n.errorSaveFailed,
+        type: AppNoticeType.error,
+      );
+    }
+  }
+
   Future<bool> _askHealthConsent() async {
-    final l10n = context.l10n;
     final accepted = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       barrierColor: context.palette.scrim,
-      builder: (context) => AlertDialog(
-        key: const ValueKey('weight-consent-dialog'),
-        title: Text(l10n.weightConsentTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.weightConsentBody),
-            TextButton(
-              style: TextButton.styleFrom(padding: EdgeInsets.zero),
-              onPressed: () =>
-                  openExternalLink(context, LegalLinks.privacyPolicy),
-              child: Text(l10n.weightConsentPrivacy),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            key: const ValueKey('weight-consent-decline'),
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.weightConsentDecline),
-          ),
-          FilledButton(
-            key: const ValueKey('weight-consent-accept'),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.weightConsentAccept),
-          ),
-        ],
-      ),
+      builder: (context) => const _WeightConsentDialog(),
     );
     return accepted ?? false;
   }
@@ -362,8 +372,251 @@ class _WeightPageState extends ConsumerState<WeightPage> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  key: const ValueKey('reset-weight-data'),
+                  onPressed: _saving ? null : _resetWeightData,
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFFFF5A67),
+                  ),
+                  icon: const Icon(PhosphorIconsBold.trash, size: 18),
+                  label: Text(
+                    context.l10n.weightResetData,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
               ],
             ),
+    );
+  }
+}
+
+class _WeightConsentDialog extends StatelessWidget {
+  const _WeightConsentDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final l10n = context.l10n;
+    return Dialog(
+      key: const ValueKey('weight-consent-dialog'),
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Material(
+          color: palette.dialogSurface,
+          borderRadius: BorderRadius.circular(32),
+          clipBehavior: Clip.antiAlias,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/cat.png',
+                      width: 148,
+                      height: 104,
+                      fit: BoxFit.contain,
+                      semanticLabel: l10n.weightConsentCatLabel,
+                    ),
+                    Positioned(
+                      right: -4,
+                      bottom: 4,
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: palette.primarySoft,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: palette.surface, width: 3),
+                        ),
+                        child: Icon(
+                          PhosphorIconsBold.shieldCheck,
+                          color: palette.primary,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  l10n.weightConsentTitle,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: palette.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: palette.surfaceMuted,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: palette.border),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        PhosphorIconsBold.lockKey,
+                        color: palette.primary,
+                        size: 21,
+                      ),
+                      const SizedBox(width: 11),
+                      Expanded(
+                        child: Text(
+                          l10n.weightConsentBody,
+                          style: TextStyle(
+                            color: palette.isDark
+                                ? palette.textPrimary.withValues(alpha: .84)
+                                : palette.textSecondary,
+                            height: 1.42,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () =>
+                      openExternalLink(context, LegalLinks.privacyPolicy),
+                  icon: const Icon(PhosphorIconsBold.arrowSquareOut, size: 17),
+                  label: Text(l10n.weightConsentPrivacy),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: FilledButton.icon(
+                    key: const ValueKey('weight-consent-accept'),
+                    onPressed: () => Navigator.pop(context, true),
+                    icon: const Icon(PhosphorIconsBold.checkCircle),
+                    label: Text(l10n.weightConsentAccept),
+                    style: FilledButton.styleFrom(
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextButton(
+                  key: const ValueKey('weight-consent-decline'),
+                  onPressed: () => Navigator.pop(context, false),
+                  style: TextButton.styleFrom(
+                    foregroundColor: palette.textSecondary,
+                    textStyle: const TextStyle(fontWeight: FontWeight.w400),
+                  ),
+                  child: Text(l10n.weightConsentDecline),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResetWeightDataDialog extends StatelessWidget {
+  const _ResetWeightDataDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final l10n = context.l10n;
+    const danger = Color(0xFFFF5A67);
+    return Dialog(
+      key: const ValueKey('reset-weight-data-dialog'),
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Material(
+          color: palette.dialogSurface,
+          borderRadius: BorderRadius.circular(30),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/gatotriste.png',
+                  width: 142,
+                  height: 116,
+                  fit: BoxFit.contain,
+                  semanticLabel: l10n.sadCatImageLabel,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  l10n.weightResetTitle,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.weightResetBody,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: palette.isDark
+                        ? palette.textPrimary.withValues(alpha: .82)
+                        : palette.textSecondary,
+                    height: 1.45,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: FilledButton.icon(
+                    key: const ValueKey('confirm-reset-weight-data'),
+                    onPressed: () => Navigator.pop(context, true),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: danger,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: danger.withValues(alpha: .45),
+                      disabledForegroundColor: Colors.white70,
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    icon: const Icon(PhosphorIconsBold.trash),
+                    label: Text(l10n.weightResetConfirm),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: TextButton.styleFrom(
+                    foregroundColor: palette.isDark
+                        ? palette.primaryDeep
+                        : palette.primary,
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  child: Text(l10n.cancel),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

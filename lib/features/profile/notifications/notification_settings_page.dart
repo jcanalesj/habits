@@ -139,7 +139,7 @@ class _NotificationSettingsPageState
   Widget _body(List<Habit> habits) {
     final l10n = context.l10n;
     final palette = context.palette;
-    final isPremium = ref.watch(premiumSubscribedProvider);
+    final isPremium = ref.watch(premiumAccessProvider);
     final enabledCount = habits
         .where((habit) => habit.reminderTime != null)
         .length;

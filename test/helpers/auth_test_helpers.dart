@@ -129,5 +129,6 @@ Future<void> buyPremiumOnPaywall(WidgetTester tester) async {
 /// depuración (`Env.forcePremium`). Úsalo también con `ProviderContainer`.
 List<Override> withoutForcedPremium(List<Override> overrides) => [
   forcePremiumProvider.overrideWithValue(false),
+  premiumFeaturesFreeProvider.overrideWithValue(false),
   ...overrides,
 ];

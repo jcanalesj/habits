@@ -99,9 +99,14 @@ final premiumSubscribedProvider = Provider<bool>(
   (ref) => ref.watch(isPremiumProvider).value ?? false,
 );
 
-/// Alias histórico de [premiumSubscribedProvider]: sin acceso de prueba,
-/// tener acceso y estar suscrito son lo mismo.
-final premiumAccessProvider = premiumSubscribedProvider;
+/// Acceso a funciones avanzadas. Durante la promoción temporal es gratuito,
+/// pero [premiumSubscribedProvider] sigue representando únicamente una
+/// suscripción real para no mostrar coronas ni estados falsos.
+final premiumAccessProvider = Provider<bool>(
+  (ref) =>
+      ref.watch(premiumFeaturesFreeProvider) ||
+      ref.watch(premiumSubscribedProvider),
+);
 
 class CustomMotivationMessagesController extends Notifier<List<String>> {
   StreamSubscription<List<String>>? _remoteSubscription;

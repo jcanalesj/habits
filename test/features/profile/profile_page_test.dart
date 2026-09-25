@@ -41,6 +41,15 @@ void main() {
     expect(find.textContaining('Europe/Madrid'), findsOneWidget);
 
     await tester.scrollUntilVisible(
+      find.text('Ayúdanos a mejorar'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Ayúdanos a mejorar'), findsOneWidget);
+    expect(find.text('¿Qué echas de menos?'), findsOneWidget);
+    expect(find.text('Algo no funciona'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
       find.text('Cerrar sesión'),
       250,
       scrollable: find.byType(Scrollable).first,

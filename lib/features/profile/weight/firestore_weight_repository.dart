@@ -78,6 +78,18 @@ class FirestoreWeightRepository implements WeightRepository {
   }
 
   @override
+  Future<void> resetAllData() async {
+    final documents = await _collection.get();
+    for (var offset = 0; offset < documents.docs.length; offset += 400) {
+      final batch = _db.batch();
+      for (final document in documents.docs.skip(offset).take(400)) {
+        batch.delete(document.reference);
+      }
+      await awaitWrite(batch.commit());
+    }
+  }
+
+  @override
   Future<void> updateGoal(double kilograms) => awaitWrite(
     _collection.doc(_configId).set({
       'tipo': 'config',
