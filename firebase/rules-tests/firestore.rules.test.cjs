@@ -119,6 +119,8 @@ const saldo = (over = {}) => ({
   await check('perfil: modo de zona automático válido', true, () => updateDoc(U(alice), { timezoneAutomatic: true, updatedAt: ts() }));
   await check('perfil: modo de zona no booleano falla', false, () => updateDoc(U(alice), { timezoneAutomatic: 'sí', updatedAt: ts() }));
   await check('perfil: update avatar válido', true, () => updateDoc(U(alice), { avatarId: 'friendly', updatedAt: ts() }));
+  await check('perfil: update avatar Hazel válido', true, () => updateDoc(U(alice), { avatarId: 'hazel', updatedAt: ts() }));
+  await check('perfil: update avatar Cookie válido', true, () => updateDoc(U(alice), { avatarId: 'cookie', updatedAt: ts() }));
   await check('perfil: avatar desconocido falla', false, () => updateDoc(U(alice), { avatarId: 'avatar-inventado', updatedAt: ts() }));
   await check('perfil: lastActiveAt serverTimestamp', true, () => updateDoc(U(alice), { lastActiveAt: ts(), updatedAt: ts() }));
   await check('perfil: update posterior sin tocar lastActiveAt', true, () => updateDoc(U(alice), { locale: 'en', updatedAt: ts() }));
@@ -416,7 +418,7 @@ const saldo = (over = {}) => ({
       subscription: { status: 'active', expiresAt: Timestamp.fromMillis(Date.now() + 30 * 86400000) },
     });
   });
-  await check('gratis: no puede poner el tema oscuro', false,
+  await check('gratis: puede poner el tema oscuro', true,
     () => updateDoc(doc(gina, 'users', 'gina'), { themeMode: 'dark', updatedAt: ts() }));
   await check('gratis: sí puede poner el tema claro', true,
     () => updateDoc(doc(gina, 'users', 'gina'), { themeMode: 'light', updatedAt: ts() }));

@@ -728,6 +728,54 @@ abstract class AppLocalizations {
   /// **'Weight'**
   String get weightTitle;
 
+  /// No description provided for @weightEncouragementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re doing great!'**
+  String get weightEncouragementTitle;
+
+  /// No description provided for @weightEncouragementBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every small step counts 💜'**
+  String get weightEncouragementBody;
+
+  /// No description provided for @weightSinceLast.
+  ///
+  /// In en, this message translates to:
+  /// **'since last time'**
+  String get weightSinceLast;
+
+  /// No description provided for @weightRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get weightRemaining;
+
+  /// No description provided for @weightEvolutionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress over time'**
+  String get weightEvolutionSubtitle;
+
+  /// No description provided for @weightDailyCaloriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily calories'**
+  String get weightDailyCaloriesTitle;
+
+  /// No description provided for @weightForYourGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'For your goal'**
+  String get weightForYourGoal;
+
+  /// No description provided for @weightToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get weightToday;
+
   /// No description provided for @weightHeroTitle.
   ///
   /// In en, this message translates to:
@@ -901,6 +949,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your personal plan'**
   String get weightOnboardingTitle;
+
+  /// No description provided for @gymCatImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza\'s workout cat'**
+  String get gymCatImageLabel;
 
   /// No description provided for @weightOnboardingStep.
   ///
@@ -1441,24 +1495,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Easier on the eyes at night'**
   String get appearanceDarkThemeHint;
-
-  /// No description provided for @premiumDarkThemeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Discover Constanza at night'**
-  String get premiumDarkThemeTitle;
-
-  /// No description provided for @premiumDarkThemeBody.
-  ///
-  /// In en, this message translates to:
-  /// **'A more immersive look, with vivid colors and less glare to support you at the end of the day too.'**
-  String get premiumDarkThemeBody;
-
-  /// No description provided for @premiumDarkThemePreviewLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Preview of Constanza in dark mode'**
-  String get premiumDarkThemePreviewLabel;
 
   /// No description provided for @appearanceAppIcon.
   ///
@@ -2777,7 +2813,7 @@ abstract class AppLocalizations {
   /// No description provided for @signOutConfirmTitle.
   ///
   /// In en, this message translates to:
-  /// **'Sign out?'**
+  /// **'Leaving already?'**
   String get signOutConfirmTitle;
 
   /// No description provided for @signOutConfirmBody.
@@ -2785,6 +2821,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your data stays in your account. Reminders will stop on this device until you sign in again.'**
   String get signOutConfirmBody;
+
+  /// No description provided for @sadCatImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza\'s sad cat'**
+  String get sadCatImageLabel;
 
   /// No description provided for @paywallTitle.
   ///
@@ -3023,7 +3065,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteAccountTitle.
   ///
   /// In en, this message translates to:
-  /// **'Delete your account?'**
+  /// **'Do you really want to delete your account?'**
   String get deleteAccountTitle;
 
   /// No description provided for @deleteAccountBody.

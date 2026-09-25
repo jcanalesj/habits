@@ -347,6 +347,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weightTitle => 'Weight';
 
   @override
+  String get weightEncouragementTitle => 'You\'re doing great!';
+
+  @override
+  String get weightEncouragementBody => 'Every small step counts 💜';
+
+  @override
+  String get weightSinceLast => 'since last time';
+
+  @override
+  String get weightRemaining => 'Remaining';
+
+  @override
+  String get weightEvolutionSubtitle => 'Your progress over time';
+
+  @override
+  String get weightDailyCaloriesTitle => 'Daily calories';
+
+  @override
+  String get weightForYourGoal => 'For your goal';
+
+  @override
+  String get weightToday => 'Today';
+
+  @override
   String get weightHeroTitle => 'Your progress, step by step';
 
   @override
@@ -445,6 +469,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weightOnboardingTitle => 'Your personal plan';
+
+  @override
+  String get gymCatImageLabel => 'Constanza\'s workout cat';
 
   @override
   String weightOnboardingStep(int current, int total) {
@@ -737,17 +764,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appearanceDarkThemeHint => 'Easier on the eyes at night';
-
-  @override
-  String get premiumDarkThemeTitle => 'Discover Constanza at night';
-
-  @override
-  String get premiumDarkThemeBody =>
-      'A more immersive look, with vivid colors and less glare to support you at the end of the day too.';
-
-  @override
-  String get premiumDarkThemePreviewLabel =>
-      'Preview of Constanza in dark mode';
 
   @override
   String get appearanceAppIcon => 'App icon';
@@ -1511,11 +1527,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goHome => 'Go home';
 
   @override
-  String get signOutConfirmTitle => 'Sign out?';
+  String get signOutConfirmTitle => 'Leaving already?';
 
   @override
   String get signOutConfirmBody =>
       'Your data stays in your account. Reminders will stop on this device until you sign in again.';
+
+  @override
+  String get sadCatImageLabel => 'Constanza\'s sad cat';
 
   @override
   String get paywallTitle => 'Constanza Premium';
@@ -1682,7 +1701,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordChanged => 'Password updated';
 
   @override
-  String get deleteAccountTitle => 'Delete your account?';
+  String get deleteAccountTitle => 'Do you really want to delete your account?';
 
   @override
   String get deleteAccountBody =>

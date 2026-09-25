@@ -403,16 +403,43 @@ class _QuestionStep extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 26, 24, 16),
       child: Column(
         children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: palette.primarySoft,
-              borderRadius: BorderRadius.circular(26),
-            ),
-            child: Icon(icon, color: palette.primary, size: 34),
+          Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.bottomRight,
+            children: [
+              Image.asset(
+                'assets/images/gatogym.png',
+                key: const ValueKey('weight-gym-cat'),
+                width: 142,
+                height: 116,
+                fit: BoxFit.contain,
+                semanticLabel: context.l10n.gymCatImageLabel,
+              ),
+              Positioned(
+                right: -2,
+                bottom: 2,
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: palette.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: palette.background, width: 4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: palette.primary.withValues(alpha: .24),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: palette.onPrimary, size: 21),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
           Text(
             title,
             textAlign: TextAlign.center,
@@ -631,8 +658,15 @@ class _ResultStep extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
       child: Column(
         children: [
-          const Text('✨', style: TextStyle(fontSize: 68)),
-          const SizedBox(height: 14),
+          Image.asset(
+            'assets/images/gatogym.png',
+            key: const ValueKey('weight-result-gym-cat'),
+            width: 164,
+            height: 132,
+            fit: BoxFit.contain,
+            semanticLabel: context.l10n.gymCatImageLabel,
+          ),
+          const SizedBox(height: 10),
           Text(
             context.l10n.weightResultTitle,
             textAlign: TextAlign.center,

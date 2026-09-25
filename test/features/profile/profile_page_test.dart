@@ -49,6 +49,36 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('confirma el cierre de sesión en el diálogo rediseñado', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    await tester.pumpWidget(
+      localizedApp(const ProfilePage(), overrides: env.overrides),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Cerrar sesión'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Cerrar sesión'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('sign-out-dialog')), findsOneWidget);
+    expect(find.text('¿Ya te vas?'), findsOneWidget);
+    expect(find.bySemanticsLabel('Gato triste de Constanza'), findsOneWidget);
+    expect(
+      find.textContaining('Tus datos se quedan guardados'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('confirm-sign-out')));
+    await tester.pumpAndSettle();
+    expect(env.auth.currentUser, isNull);
+  });
+
   testWidgets('eliminar cuenta pide la contraseña y borra la cuenta', (
     tester,
   ) async {
@@ -71,6 +101,10 @@ void main() {
       find.byKey(const ValueKey('delete-account-password')),
       'password',
     );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('confirm-delete-account')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('confirm-delete-account')));
     await tester.pumpAndSettle();
 

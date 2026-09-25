@@ -61,8 +61,8 @@ abstract final class Env {
   /// `--dart-define=FORCE_PREMIUM=false`.
   ///
   /// Solo afecta a la app: las reglas de Firestore siguen exigiendo
-  /// `subscription.status` real para el tema oscuro y el mensaje del
-  /// recordatorio. Para probar eso de verdad, poner en la consola
+  /// `subscription.status` real para las funciones Premium. Para probarlas
+  /// de verdad, poner en la consola
   /// `users/{uid}.subscription = {status: 'active'}`.
   static const forcePremium =
       !kReleaseMode &&

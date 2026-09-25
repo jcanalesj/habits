@@ -57,6 +57,14 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('weight-consent-accept')));
     await tester.pumpAndSettle();
     expect(find.text('¿Cuál es tu objetivo?'), findsOneWidget);
+    expect(find.byKey(const ValueKey('weight-gym-cat')), findsOneWidget);
+    expect(find.bySemanticsLabel('Gato deportista de Constanza'), findsWidgets);
+    final onboardingDialog = find.byType(Dialog);
+    expect(tester.getTopLeft(onboardingDialog), Offset.zero);
+    expect(
+      tester.getSize(onboardingDialog),
+      tester.view.physicalSize / tester.view.devicePixelRatio,
+    );
 
     Future<void> next() async {
       await tester.tap(find.byKey(const Key('weight-onboarding-next')));
@@ -144,9 +152,20 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('1800 kcal/día recomendadas'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('weight-calories-card')),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('1.800'), findsOneWidget);
+    expect(find.text('Para tu objetivo'), findsOneWidget);
 
-    await tester.tap(find.text('Modificar objetivos'));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('weight-modify-goals')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('weight-modify-goals')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('weight-onboarding-next')));
     await tester.pumpAndSettle();

@@ -34,13 +34,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Premium puede elegir el tema oscuro y lo sincroniza', (
+  testWidgets('cualquier cuenta puede elegir el tema oscuro y sincronizarlo', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
     final preferences = await SharedPreferences.getInstance();
     final env = AuthTestEnv(initialUser: verifiedUser);
-    env.profiles.premium[verifiedUser.id] = true;
     await tester.pumpWidget(
       localizedApp(
         const AppearancePage(),
@@ -81,107 +80,6 @@ void main() {
     expect(preferences.getString(SharedThemeModePreferences.key), 'light');
   });
 
-  testWidgets('el tema oscuro muestra su preview Premium a cuentas gratis', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    final preferences = await SharedPreferences.getInstance();
-    final env = AuthTestEnv(initialUser: verifiedUser);
-    await tester.pumpWidget(
-      localizedApp(
-        const AppearancePage(),
-        overrides: [
-          ...env.overrides,
-          themeModePreferencesProvider.overrideWithValue(
-            SharedThemeModePreferences(preferences),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(AppearancePage)),
-    );
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('theme-mode-dark')),
-      220,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('theme-mode-dark')));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(const ValueKey('premium-dark-theme-dialog')),
-      findsOneWidget,
-    );
-    expect(find.text('Descubre Constanza de noche'), findsOneWidget);
-    expect(
-      find.image(const AssetImage('assets/images/premium.png')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('dark-theme-premium-preview')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('dark-theme-view-premium-plans')),
-      findsOneWidget,
-    );
-    expect(container.read(themeModeProvider), ThemeMode.light);
-    expect(preferences.getString(SharedThemeModePreferences.key), isNull);
-  });
-
-  testWidgets('"Ver planes" abre los planes y al comprar aplica el oscuro', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    final preferences = await SharedPreferences.getInstance();
-    final env = AuthTestEnv(initialUser: verifiedUser);
-    await tester.pumpWidget(
-      localizedApp(
-        const AppearancePage(),
-        overrides: [
-          ...env.overrides,
-          themeModePreferencesProvider.overrideWithValue(
-            SharedThemeModePreferences(preferences),
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(AppearancePage)),
-    );
-    final dark = find.byKey(const ValueKey('theme-mode-dark'));
-    await tester.scrollUntilVisible(
-      dark,
-      220,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(dark);
-    await tester.pumpAndSettle();
-    final viewPlans = find.byKey(
-      const ValueKey('dark-theme-view-premium-plans'),
-    );
-    await tester.ensureVisible(viewPlans);
-    await tester.pumpAndSettle();
-    await tester.tap(viewPlans);
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('paywall-page')), findsOneWidget);
-    await buyPremiumOnPaywall(tester);
-
-    expect(container.read(themeModeProvider), ThemeMode.dark);
-    expect(container.read(premiumSubscribedProvider), isTrue);
-    expect(
-      find.byKey(const ValueKey('premium-dark-theme-dialog')),
-      findsNothing,
-    );
-  });
-
   testWidgets('restaura el tema guardado y adopta el remoto', (tester) async {
     SharedPreferences.setMockInitialValues({
       SharedThemeModePreferences.key: 'dark',
@@ -210,9 +108,7 @@ void main() {
     expect(preferences.getString(SharedThemeModePreferences.key), 'light');
   });
 
-  testWidgets('una cuenta gratuita no conserva un tema oscuro anterior', (
-    tester,
-  ) async {
+  testWidgets('una cuenta gratuita conserva su tema oscuro', (tester) async {
     SharedPreferences.setMockInitialValues({
       SharedThemeModePreferences.key: 'dark',
     });
@@ -235,9 +131,9 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.byType(AppearancePage)),
     );
-    expect(container.read(themeModeProvider), ThemeMode.light);
-    expect(preferences.getString(SharedThemeModePreferences.key), 'light');
-    expect(env.profiles.themeModes[verifiedUser.id], ThemeMode.light);
+    expect(container.read(themeModeProvider), ThemeMode.dark);
+    expect(preferences.getString(SharedThemeModePreferences.key), 'dark');
+    expect(env.profiles.themeModes[verifiedUser.id], ThemeMode.dark);
   });
 
   testWidgets('se pinta sin errores en modo oscuro', (tester) async {

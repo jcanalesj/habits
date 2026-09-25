@@ -85,6 +85,7 @@ class _WeightPageState extends ConsumerState<WeightPage> {
     final updated = await showDialog<WeightProfile>(
       context: context,
       barrierDismissible: false,
+      useSafeArea: false,
       builder: (context) =>
           WeightOnboardingDialog(initialProfile: initialProfile),
     );
@@ -206,6 +207,7 @@ class _WeightPageState extends ConsumerState<WeightPage> {
     final profile = await showDialog<WeightProfile>(
       context: context,
       barrierDismissible: false,
+      useSafeArea: false,
       builder: (context) => const WeightOnboardingDialog(),
     );
     if (profile == null || !mounted) return;
@@ -225,7 +227,7 @@ class _WeightPageState extends ConsumerState<WeightPage> {
     final entries = entriesAsync.value ?? const <WeightEntry>[];
     final current = entries.firstOrNull?.kilograms;
     final initial = entries.lastOrNull?.kilograms;
-    final initialDate = entries.lastOrNull?.recordedAt;
+    final previous = entries.length > 1 ? entries[1].kilograms : null;
     final profile = profileAsync.value;
     final chartEntries = _range.filter(entries);
     final loadError =
@@ -262,31 +264,87 @@ class _WeightPageState extends ConsumerState<WeightPage> {
           : loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
               children: [
-                _WeightGoalBanner(
-                  goal: goal,
-                  format: _weight,
-                  onEdit: () => _editObjectives(profile, current),
-                ),
-                const SizedBox(height: 14),
-                _WeightSummary(
+                _WeightHeroCard(
                   initial: initial,
-                  initialDate: initialDate,
+                  previous: previous,
                   current: current,
                   goal: goal,
-                  calories: profile?.recommendedCalories,
                   format: _weight,
                 ),
+                const SizedBox(height: 26),
+                _ChartCard(
+                  entries: chartEntries,
+                  goal: goal,
+                  format: _weight,
+                  range: _range,
+                  onRangeSelected: (value) => setState(() => _range = value),
+                ),
                 const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _WeightMetricCard(
+                        key: const ValueKey('weight-edit-goals'),
+                        icon: PhosphorIconsBold.target,
+                        color: AppColors.lilac,
+                        label: context.l10n.weightGoal,
+                        value: goal == null ? '—' : '${_weight(goal)} kg',
+                        detail: current == null || goal == null
+                            ? null
+                            : '${context.l10n.weightRemaining} ${_weight((current - goal).abs())} kg',
+                        onTap: () => _editObjectives(profile, current),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _WeightMetricCard(
+                        key: const ValueKey('weight-calories-card'),
+                        icon: PhosphorIconsFill.fire,
+                        color: AppColors.pink,
+                        label: context.l10n.weightDailyCaloriesTitle,
+                        value: profile?.recommendedCalories == null
+                            ? '—'
+                            : NumberFormat.decimalPattern(
+                                Localizations.localeOf(context).languageCode,
+                              ).format(profile!.recommendedCalories),
+                        detail: profile?.recommendedCalories == null
+                            ? null
+                            : context.l10n.weightForYourGoal,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    key: const ValueKey('weight-modify-goals'),
+                    onPressed: () => _editObjectives(profile, current),
+                    icon: const Icon(PhosphorIconsBold.pencilSimple, size: 17),
+                    label: Text(context.l10n.weightModifyGoals),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _HistoryCard(
+                  entries: _showAllHistory ? entries : entries.take(3).toList(),
+                  allEntries: entries,
+                  format: _weight,
+                  onDelete: _deleteEntry,
+                  showViewAll: entries.length > 3 && !_showAllHistory,
+                  onViewAll: () => setState(() => _showAllHistory = true),
+                ),
+                const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
+                    key: const ValueKey('register-weight'),
                     onPressed: _saving ? null : () => _addMeasurement(current),
                     style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 17),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                     icon: _saving
@@ -297,33 +355,12 @@ class _WeightPageState extends ConsumerState<WeightPage> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Icon(PhosphorIconsBold.plus),
-                    label: Text(context.l10n.weightRegister),
+                        : const Icon(PhosphorIconsBold.plusCircle),
+                    label: Text(
+                      context.l10n.weightRegister,
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 26),
-                _SectionHeader(
-                  title: context.l10n.weightEvolution,
-                  trailing: _RangeSelector(
-                    selected: _range,
-                    onSelected: (value) => setState(() => _range = value),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _ChartCard(entries: chartEntries, goal: goal, format: _weight),
-                const SizedBox(height: 24),
-                _SectionHeader(
-                  title: context.l10n.weightHistory,
-                  action: entries.length > 3 && !_showAllHistory
-                      ? context.l10n.weightViewAll
-                      : null,
-                  onAction: () => setState(() => _showAllHistory = true),
-                ),
-                const SizedBox(height: 10),
-                _HistoryCard(
-                  entries: _showAllHistory ? entries : entries.take(3).toList(),
-                  format: _weight,
-                  onDelete: _deleteEntry,
                 ),
               ],
             ),
@@ -622,238 +659,290 @@ class _WeightStepperButton extends StatelessWidget {
   }
 }
 
-class _WeightGoalBanner extends StatelessWidget {
-  const _WeightGoalBanner({
-    required this.goal,
-    required this.format,
-    required this.onEdit,
-  });
-  final double? goal;
-  final String Function(double) format;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            palette.tint(palette.primary, .07),
-            palette.tint(AppColors.lilac),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: palette.surface.withValues(
-                alpha: palette.isDark ? 1 : .88,
-              ),
-              borderRadius: BorderRadius.circular(17),
-            ),
-            child: Icon(
-              PhosphorIconsBold.target,
-              color: palette.primary,
-              size: 30,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.l10n.weightPlanTitle,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  goal == null ? '—' : '${format(goal!)} kg',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextButton.icon(
-            onPressed: onEdit,
-            style: TextButton.styleFrom(
-              backgroundColor: palette.surface.withValues(
-                alpha: palette.isDark ? 1 : .72,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
-            ),
-            icon: const Icon(PhosphorIconsFill.pencilSimple, size: 18),
-            label: Text(context.l10n.weightModifyGoals),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _WeightSummary extends StatelessWidget {
-  const _WeightSummary({
+class _WeightHeroCard extends StatelessWidget {
+  const _WeightHeroCard({
     required this.initial,
-    required this.initialDate,
+    required this.previous,
     required this.current,
     required this.goal,
-    required this.calories,
     required this.format,
   });
 
   final double? initial;
-  final DateTime? initialDate;
+  final double? previous;
   final double? current;
   final double? goal;
-  final int? calories;
   final String Function(double) format;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final delta = current == null || previous == null
+        ? null
+        : current! - previous!;
+    final remaining = current == null || goal == null
+        ? null
+        : (current! - goal!).abs();
+    final total = initial == null || goal == null
+        ? null
+        : (initial! - goal!).abs();
+    final progress = total == null || total == 0 || remaining == null
+        ? 0.0
+        : (1 - remaining / total).clamp(0.0, 1.0);
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 20, 12, 16),
-      decoration: _surfaceDecoration(palette),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette.tint(palette.primary, .06),
+            palette.tint(AppColors.pink, .06),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: palette.border),
+      ),
       child: Column(
         children: [
-          IntrinsicHeight(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(22, 18, 10, 0),
             child: Row(
               children: [
-                _SummaryValue(
-                  value: initial,
-                  label: context.l10n.weightInitial,
-                  detail: initialDate == null
-                      ? null
-                      : DateFormat.yMMMd(
-                          Localizations.localeOf(context).languageCode,
-                        ).format(initialDate!),
-                  format: format,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.weightEncouragementTitle,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              color: palette.textPrimary,
+                              fontWeight: FontWeight.w900,
+                              height: 1.05,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        context.l10n.weightEncouragementBody,
+                        style: TextStyle(
+                          color: palette.textSecondary,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const VerticalDivider(width: 1),
-                _SummaryValue(
-                  value: current,
-                  label: context.l10n.weightCurrent,
-                  highlighted: true,
-                  detail: current == null || initial == null
-                      ? null
-                      : '${current! >= initial! ? '↗' : '↘'} ${current! >= initial! ? '+' : ''}${format(current! - initial!)} kg\n${context.l10n.weightSinceStart}',
-                  format: format,
-                ),
-                const VerticalDivider(width: 1),
-                _SummaryValue(
-                  value: goal,
-                  label: context.l10n.weightGoal,
-                  detail: current == null || goal == null
-                      ? null
-                      : '${format((current! - goal!).abs())} kg\n${context.l10n.weightToGoal}',
-                  format: format,
+                Image.asset(
+                  'assets/images/gatogym.png',
+                  width: 142,
+                  height: 116,
+                  fit: BoxFit.contain,
+                  semanticLabel: context.l10n.gymCatImageLabel,
                 ),
               ],
             ),
           ),
-          if (calories != null) ...[
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: palette.tint(palette.primary, .07),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    PhosphorIconsFill.lightning,
-                    size: 21,
-                    color: palette.primary,
-                  ),
-                  const SizedBox(width: 9),
-                  Flexible(
-                    child: Text(
-                      context.l10n.weightDailyCalories(calories!),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: palette.primary,
-                        fontSize: 17,
-                        height: 1.2,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+            decoration: BoxDecoration(
+              color: palette.surface.withValues(alpha: palette.isDark ? 1 : .9),
+              borderRadius: BorderRadius.circular(22),
             ),
-          ],
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _HeroWeightValue(
+                    label: context.l10n.weightCurrent,
+                    value: current == null ? '—' : '${format(current!)} kg',
+                    detail: delta == null
+                        ? null
+                        : '${delta <= 0 ? '↓' : '↑'} ${format(delta.abs())} kg ${context.l10n.weightSinceLast}',
+                    detailColor: delta != null && delta <= 0
+                        ? AppColors.green
+                        : AppColors.orange,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 82,
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  color: palette.divider,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _HeroWeightValue(
+                        label: context.l10n.weightGoal,
+                        value: goal == null ? '—' : '${format(goal!)} kg',
+                        detail: remaining == null
+                            ? null
+                            : '${context.l10n.weightRemaining} ${format(remaining)} kg',
+                      ),
+                      const SizedBox(height: 9),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(999),
+                        child: LinearProgressIndicator(
+                          minHeight: 7,
+                          value: progress,
+                          backgroundColor: palette.primary.withValues(
+                            alpha: .12,
+                          ),
+                          color: palette.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _SummaryValue extends StatelessWidget {
-  const _SummaryValue({
-    required this.value,
+class _HeroWeightValue extends StatelessWidget {
+  const _HeroWeightValue({
     required this.label,
-    required this.format,
+    required this.value,
     this.detail,
-    this.highlighted = false,
+    this.detailColor,
   });
-  final double? value;
+
   final String label;
-  final String Function(double) format;
+  final String value;
   final String? detail;
-  final bool highlighted;
+  final Color? detailColor;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-        decoration: highlighted
-            ? BoxDecoration(
-                color: palette.tint(palette.primary, .06),
-                borderRadius: BorderRadius.circular(18),
-              )
-            : null,
-        child: Column(
-          children: [
-            Text(
-              value == null ? '—' : '${format(value!)} kg',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: palette.textPrimary,
-                fontWeight: FontWeight.w900,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: palette.textSecondary)),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: palette.textPrimary,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        if (detail != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            detail!,
+            style: TextStyle(
+              color: detailColor ?? palette.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _WeightMetricCard extends StatelessWidget {
+  const _WeightMetricCard({
+    super.key,
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+    this.detail,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String value;
+  final String? detail;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Material(
+      color: palette.surface.withValues(alpha: palette.isDark ? 1 : .9),
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 128),
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: palette.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: palette.tint(color, .1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 24),
               ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: palette.textSecondary, fontSize: 12),
-            ),
-            if (detail != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                detail!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: highlighted ? palette.primary : palette.textSecondary,
-                  fontSize: 11,
-                  height: 1.25,
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: palette.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (detail != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        detail!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: palette.textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
+              if (onTap != null)
+                Icon(
+                  PhosphorIconsBold.caretRight,
+                  color: palette.textSecondary,
+                  size: 17,
+                ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -865,44 +954,85 @@ class _ChartCard extends StatelessWidget {
     required this.entries,
     required this.goal,
     required this.format,
+    required this.range,
+    required this.onRangeSelected,
   });
   final List<WeightEntry> entries;
   final double? goal;
   final String Function(double) format;
+  final _WeightRange range;
+  final ValueChanged<_WeightRange> onRangeSelected;
 
   @override
   Widget build(BuildContext context) {
-    if (entries.length < 2) {
-      return _EmptyBlock(
-        icon: PhosphorIconsBold.chartLine,
-        text: context.l10n.weightChartEmpty,
-      );
-    }
     final palette = context.palette;
     final chronological = entries.take(12).toList().reversed.toList();
     final locale = Localizations.localeOf(context).languageCode;
     return Container(
-      height: 280,
-      padding: const EdgeInsets.fromLTRB(10, 18, 10, 10),
+      padding: const EdgeInsets.fromLTRB(18, 18, 14, 14),
       decoration: _surfaceDecoration(palette),
-      child: CustomPaint(
-        painter: _WeightChartPainter(
-          palette: palette,
-          entries: chronological,
-          goal: goal,
-          goalLabel: goal == null
-              ? null
-              : context.l10n.weightGoalLabel(format(goal!)),
-          firstDate: DateFormat(
-            'dd/MM',
-            locale,
-          ).format(chronological.first.recordedAt),
-          lastDate: DateFormat(
-            'dd/MM',
-            locale,
-          ).format(chronological.last.recordedAt),
-        ),
-        child: const SizedBox.expand(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.weightEvolution,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      context.l10n.weightEvolutionSubtitle,
+                      style: TextStyle(color: palette.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              _RangeSelector(selected: range, onSelected: onRangeSelected),
+            ],
+          ),
+          const SizedBox(height: 14),
+          if (entries.length < 2)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 28),
+              child: _EmptyBlock(
+                icon: PhosphorIconsBold.chartLine,
+                text: context.l10n.weightChartEmpty,
+              ),
+            )
+          else
+            SizedBox(
+              height: 220,
+              child: CustomPaint(
+                painter: _WeightChartPainter(
+                  palette: palette,
+                  entries: chronological,
+                  goal: goal,
+                  goalLabel: goal == null
+                      ? null
+                      : context.l10n.weightGoalLabel(format(goal!)),
+                  firstDate: DateFormat(
+                    'd MMM',
+                    locale,
+                  ).format(chronological.first.recordedAt),
+                  lastDate: DateFormat(
+                    'd MMM',
+                    locale,
+                  ).format(chronological.last.recordedAt),
+                  currentLabel: '${format(chronological.last.kilograms)} kg',
+                  todayLabel: context.l10n.weightToday,
+                ),
+                child: const SizedBox.expand(),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -916,6 +1046,8 @@ class _WeightChartPainter extends CustomPainter {
     required this.goalLabel,
     required this.firstDate,
     required this.lastDate,
+    required this.currentLabel,
+    required this.todayLabel,
   });
   final AppPalette palette;
   final List<WeightEntry> entries;
@@ -923,6 +1055,8 @@ class _WeightChartPainter extends CustomPainter {
   final String? goalLabel;
   final String firstDate;
   final String lastDate;
+  final String currentLabel;
+  final String todayLabel;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -981,10 +1115,34 @@ class _WeightChartPainter extends CustomPainter {
           : plot.left + plot.width * i / (entries.length - 1);
       final point = Offset(x, y(entries[i].kilograms));
       points.add(point);
-      i == 0
-          ? path.moveTo(point.dx, point.dy)
-          : path.lineTo(point.dx, point.dy);
+      if (i == 0) {
+        path.moveTo(point.dx, point.dy);
+      } else {
+        final previous = points[i - 1];
+        final middleX = (previous.dx + point.dx) / 2;
+        path.cubicTo(
+          middleX,
+          previous.dy,
+          middleX,
+          point.dy,
+          point.dx,
+          point.dy,
+        );
+      }
     }
+    final fillPath = Path.from(path)
+      ..lineTo(points.last.dx, plot.bottom)
+      ..lineTo(points.first.dx, plot.bottom)
+      ..close();
+    canvas.drawPath(
+      fillPath,
+      Paint()
+        ..shader =
+            ui.Gradient.linear(Offset(0, plot.top), Offset(0, plot.bottom), [
+              palette.primary.withValues(alpha: .22),
+              palette.primary.withValues(alpha: .02),
+            ]),
+    );
     canvas.drawPath(
       path,
       Paint()
@@ -998,6 +1156,40 @@ class _WeightChartPainter extends CustomPainter {
       canvas.drawCircle(point, 5, Paint()..color = palette.surface);
       canvas.drawCircle(point, 3.5, Paint()..color = palette.primary);
     }
+    final lastPoint = points.last;
+    final bubbleText = '$currentLabel\n$todayLabel';
+    final bubblePainter = TextPainter(
+      text: TextSpan(
+        text: bubbleText,
+        style: TextStyle(
+          color: palette.onPrimary,
+          fontSize: 11,
+          height: 1.2,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      textAlign: TextAlign.center,
+      textDirection: ui.TextDirection.ltr,
+    )..layout();
+    final bubbleWidth = bubblePainter.width + 18;
+    final bubbleHeight = bubblePainter.height + 12;
+    final bubbleLeft = (lastPoint.dx - bubbleWidth / 2).clamp(
+      plot.left,
+      plot.right - bubbleWidth,
+    );
+    final bubbleTop = math.max(plot.top, lastPoint.dy - bubbleHeight - 15);
+    final bubbleRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(bubbleLeft, bubbleTop, bubbleWidth, bubbleHeight),
+      const Radius.circular(9),
+    );
+    canvas.drawRRect(bubbleRect, Paint()..color = palette.primary);
+    bubblePainter.paint(
+      canvas,
+      Offset(
+        bubbleLeft + (bubbleWidth - bubblePainter.width) / 2,
+        bubbleTop + 6,
+      ),
+    );
     _paintLabel(canvas, firstDate, Offset(plot.left, plot.bottom + 7));
     final lastPainter = _labelPainter(lastDate);
     lastPainter.paint(
@@ -1025,18 +1217,26 @@ class _WeightChartPainter extends CustomPainter {
       oldDelegate.goal != goal ||
       oldDelegate.goalLabel != goalLabel ||
       oldDelegate.firstDate != firstDate ||
-      oldDelegate.lastDate != lastDate;
+      oldDelegate.lastDate != lastDate ||
+      oldDelegate.currentLabel != currentLabel ||
+      oldDelegate.todayLabel != todayLabel;
 }
 
 class _HistoryCard extends StatelessWidget {
   const _HistoryCard({
     required this.entries,
+    required this.allEntries,
     required this.format,
     required this.onDelete,
+    required this.showViewAll,
+    required this.onViewAll,
   });
   final List<WeightEntry> entries;
+  final List<WeightEntry> allEntries;
   final String Function(double) format;
   final ValueChanged<WeightEntry> onDelete;
+  final bool showViewAll;
+  final VoidCallback onViewAll;
 
   @override
   Widget build(BuildContext context) {
@@ -1047,50 +1247,150 @@ class _HistoryCard extends StatelessWidget {
       );
     }
     final palette = context.palette;
+    final locale = Localizations.localeOf(context).languageCode;
+    final now = DateTime.now();
     return Container(
+      padding: const EdgeInsets.fromLTRB(18, 14, 10, 6),
       decoration: _surfaceDecoration(palette),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.weightHistory,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+                ),
+              ),
+              if (showViewAll)
+                TextButton.icon(
+                  onPressed: onViewAll,
+                  iconAlignment: IconAlignment.end,
+                  icon: const Icon(PhosphorIconsBold.caretRight, size: 16),
+                  label: Text(context.l10n.weightViewAll),
+                ),
+            ],
+          ),
           for (var index = 0; index < entries.length; index++) ...[
-            ListTile(
-              leading: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: palette.tint(AppColors.blue, .11),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  PhosphorIconsBold.scales,
-                  color: AppColors.blue,
-                ),
-              ),
-              title: Text(
-                '${format(entries[index].kilograms)} kg',
-                style: const TextStyle(fontWeight: FontWeight.w900),
-              ),
-              subtitle: Text(
-                DateFormat.yMMMd(
-                  Localizations.localeOf(context).languageCode,
-                ).format(entries[index].recordedAt),
-              ),
-              trailing: IconButton(
-                key: ValueKey('delete-weight-${entries[index].id}'),
-                tooltip: context.l10n.weightDeleteEntry,
-                icon: Icon(
-                  PhosphorIconsBold.trash,
-                  color: palette.textSecondary,
-                  size: 20,
-                ),
-                onPressed: () => onDelete(entries[index]),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _historyDate(
+                            entries[index].recordedAt,
+                            now,
+                            locale,
+                            context.l10n.weightToday,
+                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          DateFormat.Hm(
+                            locale,
+                          ).format(entries[index].recordedAt),
+                          style: TextStyle(
+                            color: palette.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    '${format(entries[index].kilograms)} kg',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  if (_deltaFor(entries[index]) case final delta?) ...[
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (delta <= 0 ? AppColors.green : AppColors.orange)
+                            .withValues(alpha: .11),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '${delta <= 0 ? '↓' : '↑'} ${delta > 0 ? '+' : ''}${format(delta)} kg',
+                        style: TextStyle(
+                          color: delta <= 0
+                              ? AppColors.green
+                              : AppColors.orange,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                  PopupMenuButton<String>(
+                    key: ValueKey('delete-weight-${entries[index].id}'),
+                    tooltip: context.l10n.weightDeleteEntry,
+                    icon: Icon(
+                      PhosphorIconsBold.dotsThreeVertical,
+                      color: palette.textSecondary,
+                      size: 20,
+                    ),
+                    onSelected: (_) => onDelete(entries[index]),
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            const Icon(
+                              PhosphorIconsBold.trash,
+                              color: AppColors.pink,
+                              size: 19,
+                            ),
+                            const SizedBox(width: 9),
+                            Text(context.l10n.delete),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             if (index != entries.length - 1)
-              const Divider(height: 1, indent: 72),
+              Divider(height: 1, color: palette.divider),
           ],
         ],
       ),
     );
+  }
+
+  double? _deltaFor(WeightEntry entry) {
+    final index = allEntries.indexWhere(
+      (candidate) => candidate.id == entry.id,
+    );
+    if (index < 0 || index >= allEntries.length - 1) return null;
+    return entry.kilograms - allEntries[index + 1].kilograms;
+  }
+
+  String _historyDate(
+    DateTime date,
+    DateTime now,
+    String locale,
+    String today,
+  ) {
+    final isToday =
+        date.year == now.year && date.month == now.month && date.day == now.day;
+    final formatted = DateFormat('d MMMM', locale).format(date);
+    return isToday ? '$today, $formatted' : formatted;
   }
 }
 
@@ -1119,36 +1419,6 @@ class _EmptyBlock extends StatelessWidget {
       ),
     );
   }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    this.action,
-    this.onAction,
-    this.trailing,
-  });
-  final String title;
-  final String? action;
-  final VoidCallback? onAction;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-      if (action != null) TextButton(onPressed: onAction, child: Text(action!)),
-      ?trailing,
-    ],
-  );
 }
 
 class _RangeSelector extends StatelessWidget {

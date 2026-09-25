@@ -195,12 +195,6 @@ service cloud.firestore {
         && unchanged('createdAt')
         // La suscripción solo la cambia el backend (Admin SDK / Functions).
         && unchanged('subscription')
-        // El tema oscuro es Premium. Solo se comprueba al CAMBIARLO: si la
-        // suscripción caduca con el oscuro puesto, el resto del perfil se
-        // sigue pudiendo editar (la app vuelve sola al claro).
-        && (unchanged('themeMode')
-            || incoming().themeMode != 'dark'
-            || subscriptionIsPremium(existing().subscription))
         && isServerTime(incoming().updatedAt)
         && (!('lastActiveAt' in incoming())
             || isServerTime(incoming().lastActiveAt)
