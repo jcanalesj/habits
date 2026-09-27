@@ -28,6 +28,10 @@ class HabitDto {
     required this.unit,
     required this.displayGoal,
     required this.progressIconId,
+    this.habitKind = 'build',
+    this.abstinenceStartedAt,
+    this.bestAbstinenceSeconds = 0,
+    this.relapseCount = 0,
   });
 
   final String id;
@@ -55,6 +59,10 @@ class HabitDto {
   final String? unit;
   final String? displayGoal;
   final String progressIconId;
+  final String habitKind;
+  final DateTime? abstinenceStartedAt;
+  final int bestAbstinenceSeconds;
+  final int relapseCount;
 
   factory HabitDto.fromSnapshot(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? const {};
@@ -78,6 +86,12 @@ class HabitDto {
       displayGoal: data[FirestoreFields.displayGoal] as String?,
       progressIconId:
           data[FirestoreFields.progressIconId] as String? ?? 'check',
+      habitKind: data[FirestoreFields.habitKind] as String? ?? 'build',
+      abstinenceStartedAt:
+          (data[FirestoreFields.abstinenceStartedAt] as Timestamp?)?.toDate(),
+      bestAbstinenceSeconds:
+          (data[FirestoreFields.bestAbstinenceSeconds] as num?)?.toInt() ?? 0,
+      relapseCount: (data[FirestoreFields.relapseCount] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -147,5 +161,9 @@ class HabitDto {
     FirestoreFields.unit: unit,
     FirestoreFields.displayGoal: displayGoal,
     FirestoreFields.progressIconId: progressIconId,
+    FirestoreFields.habitKind: habitKind,
+    FirestoreFields.abstinenceStartedAt: abstinenceStartedAt,
+    FirestoreFields.bestAbstinenceSeconds: bestAbstinenceSeconds,
+    FirestoreFields.relapseCount: relapseCount,
   };
 }

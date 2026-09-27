@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -78,6 +79,8 @@ enum _HabitFilter { all, daily, weekly, monthly, yearly }
 
 enum _WeightInvitationAction { start, later, never }
 
+String streakCardCollapsedKey(String userId) => 'streak_card_collapsed_$userId';
+
 class _HomeContent extends ConsumerStatefulWidget {
   const _HomeContent({
     required this.summary,
@@ -103,6 +106,27 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
   late bool _showColdStartWelcome;
   late final int _welcomeMessageIndex;
   late final String? _customWelcomeMessage;
+
+  String? get _userId => ref.read(authControllerProvider).value?.id;
+
+  bool get _streakCardInitiallyCollapsed {
+    final userId = _userId;
+    if (userId == null) return false;
+    return ref
+            .read(sharedPreferencesProvider)
+            ?.getBool(streakCardCollapsedKey(userId)) ??
+        false;
+  }
+
+  void _saveStreakCardCollapsed(bool collapsed) {
+    final userId = _userId;
+    if (userId == null) return;
+    unawaited(
+      ref
+          .read(sharedPreferencesProvider)
+          ?.setBool(streakCardCollapsedKey(userId), collapsed),
+    );
+  }
 
   Future<void> _showWeightInvitation() async {
     final userId = ref.read(authControllerProvider).value?.id;
@@ -291,9 +315,14 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     final nextReminder = _nextReminderHabit;
     final pending = _pending.where(_matchesFilter).toList();
     final completed = _completed.where(_matchesFilter).toList();
+    final allActiveHabits =
+        ref.watch(activeHabitsProvider).value ?? const <Habit>[];
+    final quitHabits = allActiveHabits
+        .where((habit) => habit.isQuitHabit)
+        .toList(growable: false);
     final weightEntriesAsync = ref.watch(weightEntriesProvider);
     final weightEntries = weightEntriesAsync.value ?? const <WeightEntry>[];
-    final hasHabits = summary.habits.isNotEmpty;
+    final hasHabits = allActiveHabits.isNotEmpty;
     final bottomClearance =
         AppBottomNavBar.contentClearance +
         MediaQuery.viewPaddingOf(context).bottom;
@@ -324,6 +353,8 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         GeneralStreakCard(
           streak: summary.streak,
           wildcards: summary.wildcards,
+          initiallyCollapsed: _streakCardInitiallyCollapsed,
+          onCollapsedChanged: _saveStreakCardCollapsed,
           deviceHour: DateTime.now().hour,
           onUseWildcard: summary.streak.canRescue && summary.wildcards.hasAny
               ? () => _useWildcard(context, ref)
@@ -345,7 +376,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
               onPressed: () => HabitsListPage.openCreateHabit(
                 context,
                 ref,
-                activeHabitCount: summary.habits.length,
+                activeHabitCount: allActiveHabits.length,
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: palette.isDark
@@ -386,12 +417,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
             mode: HabitTileMode.track,
           )
         else ...[
-          if (_pending.isEmpty && !_hideAllDone)
+          if (summary.habits.isNotEmpty && _pending.isEmpty && !_hideAllDone)
             _AllDoneCard(
               onCreate: () => HabitsListPage.openCreateHabit(
                 context,
                 ref,
-                activeHabitCount: summary.habits.length,
+                activeHabitCount: allActiveHabits.length,
               ),
               onDismiss: () => setState(() => _hideAllDone = true),
             )
@@ -420,6 +451,21 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
                   _setRepetitionCount(context, controller, habit, count);
                 },
               ),
+            ],
+          ],
+          if (quitHabits.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            _SubSection(
+              label: l10n.homeQuitHabitsTitle,
+              onSeeAll: () => context.go('/habits/manage?kind=quit'),
+            ),
+            const SizedBox(height: 8),
+            for (final habit in quitHabits) ...[
+              _HomeQuitHabitCard(
+                habit: habit,
+                onTap: () => context.go('/habits/manage?kind=quit'),
+              ),
+              if (habit != quitHabits.last) const SizedBox(height: 10),
             ],
           ],
           if (completed.isNotEmpty) ...[
@@ -483,6 +529,137 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       _HabitFilter.monthly => type == PeriodicityType.monthly,
       _HabitFilter.yearly => type == PeriodicityType.yearly,
     };
+  }
+}
+
+class _HomeQuitHabitCard extends StatefulWidget {
+  const _HomeQuitHabitCard({required this.habit, required this.onTap});
+
+  final Habit habit;
+  final VoidCallback onTap;
+
+  @override
+  State<_HomeQuitHabitCard> createState() => _HomeQuitHabitCardState();
+}
+
+class _HomeQuitHabitCardState extends State<_HomeQuitHabitCard> {
+  Timer? _timer;
+  DateTime _now = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(hours: 1), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _elapsed(BuildContext context) {
+    final started = widget.habit.abstinenceStartedAt ?? widget.habit.createdAt;
+    final duration = _now.difference(started);
+    final days = duration.inDays.clamp(0, 1 << 20);
+    if (days == 0) return context.l10n.homeQuitFirstDay;
+    if (days < 30) return context.l10n.homeQuitDurationDaysOnly(days);
+    final months = days ~/ 30;
+    final remainingDays = days % 30;
+    return remainingDays == 0
+        ? context.l10n.homeQuitDurationMonthsOnly(months)
+        : context.l10n.homeQuitDurationMonthsDays(months, remainingDays);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final habit = widget.habit;
+    final color = Color(habit.colorValue);
+    final palette = context.palette;
+    return Semantics(
+      button: true,
+      label: '${habit.name}, ${_elapsed(context)}',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Ink(
+            padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  color.withValues(alpha: .10),
+                  color.withValues(alpha: .15),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: palette.surface.withValues(
+                      alpha: palette.isDark ? 1 : .58,
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: HabitIcon(
+                    iconId: habit.iconId,
+                    legacyEmoji: habit.emoji,
+                    size: 46,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        habit.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: palette.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        _elapsed(context),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: color,
+                              fontWeight: FontWeight.w900,
+                            ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        context.l10n.homeQuitEncouragement,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: palette.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: palette.textSecondary),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

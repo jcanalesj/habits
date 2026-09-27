@@ -260,6 +260,41 @@ void main() {
     );
   });
 
+  testWidgets('recuerda para el usuario si la tarjeta de racha queda cerrada', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(
+      _appUnderTest(locale: const Locale('es'), preferences: preferences),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('collapse-streak-card')));
+    await tester.pumpAndSettle();
+    expect(
+      preferences.getBool(streakCardCollapsedKey(verifiedUser.id)),
+      isTrue,
+    );
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      _appUnderTest(locale: const Locale('es'), preferences: preferences),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('expand-streak-card')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('expand-streak-card')));
+    await tester.pumpAndSettle();
+    expect(
+      preferences.getBool(streakCardCollapsedKey(verifiedUser.id)),
+      isFalse,
+    );
+  });
+
   testWidgets('HomePage muestra el progreso del objetivo, no una racha', (
     tester,
   ) async {

@@ -93,6 +93,8 @@ class GeneralStreakCard extends StatefulWidget {
     required this.streak,
     required this.wildcards,
     this.onUseWildcard,
+    this.initiallyCollapsed = false,
+    this.onCollapsedChanged,
     this.deviceHour,
   }) : assert(deviceHour == null || (deviceHour >= 0 && deviceHour <= 23));
 
@@ -101,6 +103,8 @@ class GeneralStreakCard extends StatefulWidget {
 
   /// Null si no hay nada que rescatar o si no hay saldo.
   final VoidCallback? onUseWildcard;
+  final bool initiallyCollapsed;
+  final ValueChanged<bool>? onCollapsedChanged;
 
   /// Hora local usada para escoger la escena. Se puede fijar en pruebas.
   final int? deviceHour;
@@ -110,7 +114,19 @@ class GeneralStreakCard extends StatefulWidget {
 }
 
 class _GeneralStreakCardState extends State<GeneralStreakCard> {
-  bool _collapsed = false;
+  late bool _collapsed;
+
+  @override
+  void initState() {
+    super.initState();
+    _collapsed = widget.initiallyCollapsed;
+  }
+
+  void _setCollapsed(bool collapsed) {
+    if (_collapsed == collapsed) return;
+    setState(() => _collapsed = collapsed);
+    widget.onCollapsedChanged?.call(collapsed);
+  }
 
   bool get _atRisk => widget.streak.status == StreakStatus.atRisk;
 
@@ -200,7 +216,7 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                 streak: widget.streak,
                 wildcards: widget.wildcards,
                 atRisk: _atRisk,
-                onExpand: () => setState(() => _collapsed = false),
+                onExpand: () => _setCollapsed(false),
               )
             else
               Padding(
@@ -245,7 +261,7 @@ class _GeneralStreakCardState extends State<GeneralStreakCard> {
                         const SizedBox(width: 4),
                         IconButton(
                           key: const Key('collapse-streak-card'),
-                          onPressed: () => setState(() => _collapsed = true),
+                          onPressed: () => _setCollapsed(true),
                           tooltip: l10n.collapseStreakCard,
                           visualDensity: VisualDensity.compact,
                           style: IconButton.styleFrom(

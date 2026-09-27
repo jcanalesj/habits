@@ -12,6 +12,8 @@ HabitDraft habitDraft({
   String? displayGoal,
   String progressIconId = 'check',
   String? iconId = 'water_drop',
+  HabitKind kind = HabitKind.build,
+  DateTime? abstinenceStartedAt,
 }) => HabitDraft(
   name: name,
   ambitoId: ambitoId,
@@ -25,6 +27,8 @@ HabitDraft habitDraft({
   unit: unit,
   displayGoal: displayGoal,
   progressIconId: progressIconId,
+  kind: kind,
+  abstinenceStartedAt: abstinenceStartedAt,
 );
 
 /// Borrador de ámbito válido para tests.

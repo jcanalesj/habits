@@ -1841,7 +1841,7 @@ abstract class AppLocalizations {
   /// No description provided for @avatarTraveler.
   ///
   /// In en, this message translates to:
-  /// **'Cloud'**
+  /// **'Constanza'**
   String get avatarTraveler;
 
   /// No description provided for @avatarFriendly.
@@ -1865,7 +1865,7 @@ abstract class AppLocalizations {
   /// No description provided for @avatarZen.
   ///
   /// In en, this message translates to:
-  /// **'Snowball'**
+  /// **'Constanza'**
   String get avatarZen;
 
   /// No description provided for @avatarNight.
@@ -2444,6 +2444,24 @@ abstract class AppLocalizations {
   /// **'Emoji'**
   String get habitEmojiLabel;
 
+  /// No description provided for @emojiSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search emoji'**
+  String get emojiSearchHint;
+
+  /// No description provided for @emojiSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No emojis match that search.'**
+  String get emojiSearchEmpty;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get clearSearch;
+
   /// No description provided for @habitColorLabel.
   ///
   /// In en, this message translates to:
@@ -2455,6 +2473,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Area'**
   String get habitAmbitoLabel;
+
+  /// No description provided for @habitKindQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to do?'**
+  String get habitKindQuestion;
+
+  /// No description provided for @habitKindBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Positive habit'**
+  String get habitKindBuild;
+
+  /// No description provided for @habitKindQuit.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit habit'**
+  String get habitKindQuit;
+
+  /// No description provided for @habitKindBuildHint.
+  ///
+  /// In en, this message translates to:
+  /// **'An action you want to repeat and mark as completed.'**
+  String get habitKindBuildHint;
+
+  /// No description provided for @habitKindQuitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'See how long you have gone without it and reset the timer after a relapse.'**
+  String get habitKindQuitHint;
+
+  /// No description provided for @quitHabitsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit habits'**
+  String get quitHabitsTab;
+
+  /// No description provided for @buildHabitsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Build habits'**
+  String get buildHabitsTab;
+
+  /// No description provided for @quitHabitSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Free since {date}'**
+  String quitHabitSince(String date);
+
+  /// No description provided for @quitHabitRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Record: {duration}'**
+  String quitHabitRecord(String duration);
+
+  /// No description provided for @quitHabitReset.
+  ///
+  /// In en, this message translates to:
+  /// **'I relapsed'**
+  String get quitHabitReset;
+
+  /// No description provided for @quitHabitResetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A setback doesn\'t erase your progress'**
+  String get quitHabitResetTitle;
+
+  /// No description provided for @quitHabitResetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'What matters is trying again. We’ll save this period and start a new one from now.'**
+  String get quitHabitResetBody;
+
+  /// No description provided for @quitHabitProgressKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you achieved during {duration} still counts.'**
+  String quitHabitProgressKept(String duration);
+
+  /// No description provided for @quitHabitResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Log it and continue'**
+  String get quitHabitResetConfirm;
+
+  /// No description provided for @quitHabitKeepGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without resetting'**
+  String get quitHabitKeepGoing;
+
+  /// No description provided for @quitHabitResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'A new start has been logged. Keep going—you can do this.'**
+  String get quitHabitResetSuccess;
+
+  /// No description provided for @quitHabitHoursDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'and {hours, plural, =1{1 hour} other{{hours} hours}}'**
+  String quitHabitHoursDetail(int hours);
+
+  /// No description provided for @quitHabitEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re building something important. Keep going.'**
+  String get quitHabitEncouragement;
+
+  /// No description provided for @quitHabitEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any habits you want to quit yet.'**
+  String get quitHabitEmpty;
+
+  /// No description provided for @homeQuitHabitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Every moment counts'**
+  String get homeQuitHabitsTitle;
+
+  /// No description provided for @homeQuitEncouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going—every moment adds up.'**
+  String get homeQuitEncouragement;
+
+  /// No description provided for @homeQuitDurationDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d · {hours}h'**
+  String homeQuitDurationDays(int days, int hours);
+
+  /// No description provided for @homeQuitDurationHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h · {minutes}min'**
+  String homeQuitDurationHours(int hours, int minutes);
+
+  /// No description provided for @homeQuitFirstDay.
+  ///
+  /// In en, this message translates to:
+  /// **'First day'**
+  String get homeQuitFirstDay;
+
+  /// No description provided for @homeQuitDurationDaysOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{1 day} other{{days} days}}'**
+  String homeQuitDurationDaysOnly(int days);
+
+  /// No description provided for @homeQuitDurationMonthsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{months, plural, =1{1 month} other{{months} months}}'**
+  String homeQuitDurationMonthsOnly(int months);
+
+  /// No description provided for @homeQuitDurationMonthsDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{months, plural, =1{1 month} other{{months} months}} and {days, plural, =1{1 day} other{{days} days}}'**
+  String homeQuitDurationMonthsDays(int months, int days);
 
   /// No description provided for @habitPeriodicityLabel.
   ///
@@ -3547,6 +3727,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Habits'**
   String get statsHabits;
+
+  /// No description provided for @statsQuitHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit habit milestones'**
+  String get statsQuitHabits;
+
+  /// No description provided for @statsQuitCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current time'**
+  String get statsQuitCurrent;
+
+  /// No description provided for @statsQuitBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal best'**
+  String get statsQuitBest;
+
+  /// No description provided for @statsQuitRestarts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No new starts} =1{1 new start} other{{count} new starts}}'**
+  String statsQuitRestarts(int count);
 
   /// No description provided for @pendingHabitsWithCount.
   ///

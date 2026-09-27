@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
+import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/profile/premium/premium_gate.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_dimensions.dart';
@@ -12,10 +15,18 @@ import 'package:phosphor_icons/phosphor_icons.dart';
 
 /// Pestaña "Hábitos": todos los hábitos activos con su objetivo y la semana
 /// en curso. Tocar uno lleva a su edición.
-class HabitsListPage extends ConsumerWidget {
-  const HabitsListPage({super.key, this.standalone = false});
+class HabitsListPage extends ConsumerStatefulWidget {
+  const HabitsListPage({
+    super.key,
+    this.standalone = false,
+    this.initialKind = HabitKind.build,
+  });
 
   final bool standalone;
+  final HabitKind initialKind;
+
+  @override
+  ConsumerState<HabitsListPage> createState() => _HabitsListPageState();
 
   static const freeHabitLimit = 5;
 
@@ -45,13 +56,24 @@ class HabitsListPage extends ConsumerWidget {
     }
     context.push('/habit/new');
   }
+}
+
+class _HabitsListPageState extends ConsumerState<HabitsListPage> {
+  late HabitKind _selectedKind;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    _selectedKind = widget.initialKind;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final summaryAsync = ref.watch(homeControllerProvider);
+    final allHabitsAsync = ref.watch(activeHabitsProvider);
 
     return Scaffold(
-      appBar: standalone
+      appBar: widget.standalone
           ? AppBar(
               key: const ValueKey('standalone-habits-app-bar'),
               backgroundColor: Colors.transparent,
@@ -59,16 +81,27 @@ class HabitsListPage extends ConsumerWidget {
             )
           : null,
       body: SafeArea(
-        top: !standalone,
+        top: !widget.standalone,
         bottom: false,
-        child: switch (summaryAsync) {
-          AsyncData(:final value) => _Content(
-            summary: value,
-            standalone: standalone,
-          ),
-          AsyncError(:final error) => AppErrorView(
+        child: switch ((summaryAsync, allHabitsAsync)) {
+          (
+            AsyncData(value: final summary),
+            AsyncData(value: final allHabits),
+          ) =>
+            _Content(
+              summary: summary,
+              allHabits: allHabits,
+              standalone: widget.standalone,
+              selectedKind: _selectedKind,
+              onKindChanged: (kind) => setState(() => _selectedKind = kind),
+            ),
+          (AsyncError(error: final error), _) ||
+          (_, AsyncError(error: final error)) => AppErrorView(
             error: error,
-            onRetry: () => ref.invalidate(homeControllerProvider),
+            onRetry: () {
+              ref.invalidate(homeControllerProvider);
+              ref.invalidate(activeHabitsProvider);
+            },
           ),
           _ => const Center(child: CircularProgressIndicator()),
         },
@@ -268,10 +301,19 @@ class _PremiumBenefit extends StatelessWidget {
 }
 
 class _Content extends ConsumerWidget {
-  const _Content({required this.summary, required this.standalone});
+  const _Content({
+    required this.summary,
+    required this.allHabits,
+    required this.standalone,
+    required this.selectedKind,
+    required this.onKindChanged,
+  });
 
   final HomeSummary summary;
+  final List<Habit> allHabits;
   final bool standalone;
+  final HabitKind selectedKind;
+  final ValueChanged<HabitKind> onKindChanged;
 
   void _openEditor(BuildContext context, Habit habit) =>
       HabitsListPage.openEditHabit(context, habit);
@@ -281,8 +323,18 @@ class _Content extends ConsumerWidget {
     final l10n = context.l10n;
     final palette = context.palette;
 
-    if (summary.habits.isEmpty) {
+    if (allHabits.isEmpty) {
       return const _EmptyHabits();
+    }
+
+    final quitHabits = allHabits.where((habit) => habit.isQuitHabit).toList();
+    if (selectedKind == HabitKind.quit) {
+      return _QuitHabitsContent(
+        habits: quitHabits,
+        activeHabitCount: allHabits.length,
+        standalone: standalone,
+        onKindChanged: onKindChanged,
+      );
     }
 
     final visibleAmbitos = [
@@ -293,6 +345,8 @@ class _Content extends ConsumerWidget {
     return ListView(
       padding: EdgeInsets.fromLTRB(20, 16, 20, standalone ? 32 : 120),
       children: [
+        _HabitKindSelector(value: selectedKind, onChanged: onKindChanged),
+        const SizedBox(height: 20),
         Row(
           children: [
             Expanded(
@@ -328,6 +382,32 @@ class _Content extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 20),
+        if (summary.habits.isEmpty) ...[
+          SurfaceCard(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Text(
+                  l10n.emptyHabitsTitle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                FilledButton.icon(
+                  onPressed: () => HabitsListPage.openCreateHabit(
+                    context,
+                    ref,
+                    activeHabitCount: allHabits.length,
+                  ),
+                  icon: const Icon(Icons.add_rounded),
+                  label: Text(l10n.addHabit),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
         for (var index = 0; index < visibleAmbitos.length; index++) ...[
           Row(
             children: [
@@ -389,6 +469,373 @@ class _Content extends ConsumerWidget {
           const SizedBox(height: 20),
         ],
       ],
+    );
+  }
+}
+
+class _HabitKindSelector extends StatelessWidget {
+  const _HabitKindSelector({required this.value, required this.onChanged});
+
+  final HabitKind value;
+  final ValueChanged<HabitKind> onChanged;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: SegmentedButton<HabitKind>(
+      segments: [
+        ButtonSegment(
+          value: HabitKind.build,
+          icon: const Icon(Icons.add_task_rounded),
+          label: Text(context.l10n.buildHabitsTab),
+        ),
+        ButtonSegment(
+          value: HabitKind.quit,
+          icon: const Icon(Icons.timer_outlined),
+          label: Text(context.l10n.quitHabitsTab),
+        ),
+      ],
+      selected: {value},
+      onSelectionChanged: (values) => onChanged(values.first),
+    ),
+  );
+}
+
+class _QuitHabitsContent extends ConsumerWidget {
+  const _QuitHabitsContent({
+    required this.habits,
+    required this.activeHabitCount,
+    required this.standalone,
+    required this.onKindChanged,
+  });
+
+  final List<Habit> habits;
+  final int activeHabitCount;
+  final bool standalone;
+  final ValueChanged<HabitKind> onKindChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListView(
+      padding: EdgeInsets.fromLTRB(20, 16, 20, standalone ? 32 : 120),
+      children: [
+        _HabitKindSelector(value: HabitKind.quit, onChanged: onKindChanged),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Expanded(child: SectionHeader(title: context.l10n.quitHabitsTab)),
+            FilledButton.icon(
+              onPressed: () => HabitsListPage.openCreateHabit(
+                context,
+                ref,
+                activeHabitCount: activeHabitCount,
+              ),
+              icon: const Icon(Icons.add_rounded),
+              label: Text(context.l10n.addHabit),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (habits.isEmpty)
+          SurfaceCard(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              context.l10n.quitHabitEmpty,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: context.palette.textSecondary),
+            ),
+          )
+        else
+          for (final habit in habits) ...[
+            _QuitHabitCard(habit: habit),
+            const SizedBox(height: 12),
+          ],
+      ],
+    );
+  }
+}
+
+class _QuitHabitCard extends ConsumerStatefulWidget {
+  const _QuitHabitCard({required this.habit});
+  final Habit habit;
+
+  @override
+  ConsumerState<_QuitHabitCard> createState() => _QuitHabitCardState();
+}
+
+class _QuitHabitCardState extends ConsumerState<_QuitHabitCard> {
+  Timer? _timer;
+  DateTime _now = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _duration(int seconds) {
+    final days = (seconds < 0 ? 0 : seconds) ~/ Duration.secondsPerDay;
+    return days == 0
+        ? context.l10n.homeQuitFirstDay
+        : context.l10n.homeQuitDurationDaysOnly(days);
+  }
+
+  String _elapsedLabel(int seconds) {
+    final safe = seconds < 0 ? 0 : seconds;
+    final days = safe ~/ Duration.secondsPerDay;
+    final clock = _clock(safe);
+    if (days == 0) return clock;
+    return '${context.l10n.homeQuitDurationDaysOnly(days)} · $clock';
+  }
+
+  String _clock(int seconds) {
+    final safe = seconds < 0 ? 0 : seconds;
+    final hours = (safe ~/ Duration.secondsPerHour) % 24;
+    final minutes = (safe ~/ Duration.secondsPerMinute) % 60;
+    final remainingSeconds = safe % 60;
+    return '${hours.toString().padLeft(2, '0')}:'
+        '${minutes.toString().padLeft(2, '0')}:'
+        '${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _reset() async {
+    final started = widget.habit.abstinenceStartedAt ?? widget.habit.createdAt;
+    final elapsed = DateTime.now().difference(started).inSeconds;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: context.palette.scrim,
+      builder: (context) => _QuitHabitResetDialog(elapsed: _duration(elapsed)),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await ref
+          .read(habitsRepositoryProvider)
+          .resetQuitHabit(widget.habit.id, resetAt: DateTime.now());
+      if (mounted) {
+        AppNotice.show(context, message: context.l10n.quitHabitResetSuccess);
+      }
+    } catch (_) {
+      if (mounted) {
+        AppNotice.show(
+          context,
+          message: context.l10n.errorActionFailed,
+          type: AppNoticeType.error,
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final habit = widget.habit;
+    final started = habit.abstinenceStartedAt ?? habit.createdAt;
+    final elapsed = _now.difference(started).inSeconds;
+    final color = Color(habit.colorValue);
+    final palette = context.palette;
+    final textTheme = Theme.of(context).textTheme;
+    final tintEnd = color.withValues(alpha: palette.isDark ? .20 : .18);
+
+    return Container(
+      key: ValueKey('quit-habit-${habit.id}'),
+      padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette.surface.withValues(alpha: palette.isDark ? 1 : .72),
+            palette.isDark
+                ? Color.alphaBlend(tintEnd, palette.surface)
+                : tintEnd,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: palette.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: palette.surfaceMuted,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: HabitIcon(
+              iconId: habit.iconId,
+              legacyEmoji: habit.emoji,
+              size: 52,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  habit.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: palette.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  _elapsedLabel(elapsed),
+                  key: ValueKey('quit-habit-timer-${habit.id}'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: palette.textSecondary,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            onPressed: () => HabitsListPage.openEditHabit(context, habit),
+            tooltip: context.l10n.editHabitTitle,
+            visualDensity: VisualDensity.compact,
+            icon: Icon(Icons.more_horiz_rounded, color: palette.textSecondary),
+          ),
+          const SizedBox(width: 2),
+          IconButton(
+            key: ValueKey('quit-habit-reset-${habit.id}'),
+            onPressed: _reset,
+            tooltip: context.l10n.quitHabitReset,
+            style: IconButton.styleFrom(
+              fixedSize: const Size(46, 46),
+              foregroundColor: palette.primary,
+              backgroundColor: palette.isDark
+                  ? palette.surfaceMuted
+                  : palette.surface.withValues(alpha: .58),
+            ),
+            icon: const Icon(Icons.restart_alt_rounded, size: 24),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuitHabitResetDialog extends StatelessWidget {
+  const _QuitHabitResetDialog({required this.elapsed});
+
+  final String elapsed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final palette = context.palette;
+    final textTheme = Theme.of(context).textTheme;
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Material(
+          color: palette.dialogSurface,
+          borderRadius: BorderRadius.circular(32),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/love.png',
+                  width: 150,
+                  height: 130,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  l10n.quitHabitResetTitle,
+                  textAlign: TextAlign.center,
+                  style: textTheme.headlineSmall?.copyWith(
+                    color: palette.textPrimary,
+                    fontWeight: FontWeight.w900,
+                    height: 1.15,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.quitHabitResetBody,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: palette.textSecondary,
+                    height: 1.42,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: palette.tint(palette.primary, .08),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        PhosphorIconsBold.trendUp,
+                        color: palette.primary,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          l10n.quitHabitProgressKept(elapsed),
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: palette.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => Navigator.pop(context, true),
+                    icon: const Icon(Icons.restart_alt_rounded),
+                    label: Text(l10n.quitHabitResetConfirm),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: const StadiumBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(l10n.quitHabitKeepGoing),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -802,7 +1249,7 @@ class _EditHabitWarningDialog extends StatelessWidget {
               Transform.translate(
                 offset: const Offset(0, -14),
                 child: Image.asset(
-                  'assets/icons/edit.png',
+                  'assets/images/edit.png',
                   width: 168,
                   height: 168,
                   fit: BoxFit.contain,

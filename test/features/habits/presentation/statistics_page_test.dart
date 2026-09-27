@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/pages/statistics_page.dart';
 
@@ -77,5 +78,40 @@ void main() {
     );
     expect(progress.value, greaterThan(0));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('muestra los tiempos y récords de los hábitos que se dejan', (
+    tester,
+  ) async {
+    final env = AuthTestEnv(initialUser: verifiedUser);
+    final habit = await env.habits.createHabit(
+      HabitDraft(
+        name: 'Dejar de fumar',
+        ambitoId: Ambito.generalId,
+        colorValue: 0xFFF59E0B,
+        emoji: '🚭',
+        kind: HabitKind.quit,
+        abstinenceStartedAt: testInstant.subtract(const Duration(days: 4)),
+      ),
+      today: testToday,
+    );
+    await env.habits.resetQuitHabit(habit.id, resetAt: testInstant);
+
+    await tester.pumpWidget(
+      localizedApp(const StatisticsPage(), overrides: env.overrides),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Logros al dejar hábitos'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    expect(find.byKey(ValueKey('quit-habit-stat-${habit.id}')), findsOneWidget);
+    expect(find.text('Dejar de fumar'), findsOneWidget);
+    expect(find.text('Tiempo actual'), findsOneWidget);
+    expect(find.text('Mejor récord'), findsOneWidget);
+    expect(find.text('1 nuevo comienzo'), findsOneWidget);
   });
 }

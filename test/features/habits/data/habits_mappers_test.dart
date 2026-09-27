@@ -59,6 +59,10 @@ void main() {
         'unit': null,
         'displayGoal': null,
         'progressIconId': 'check',
+        'habitKind': 'build',
+        'abstinenceStartedAt': null,
+        'bestAbstinenceSeconds': 0,
+        'relapseCount': 0,
       });
     });
 

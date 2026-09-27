@@ -297,6 +297,10 @@ class InMemoryHabitsRepository implements HabitsRepository {
       unit: draft.unit,
       displayGoal: draft.displayGoal,
       progressIconId: draft.progressIconId,
+      kind: draft.kind,
+      abstinenceStartedAt: draft.kind == HabitKind.quit
+          ? (draft.abstinenceStartedAt ?? _now())
+          : null,
       order: _habits.length,
       createdAt: _now(),
     );
@@ -311,6 +315,26 @@ class InMemoryHabitsRepository implements HabitsRepository {
     if (index < 0) throw const HabitsException(HabitsFailure.habitNotFound);
     // Como en Firestore: editar no cambia el estado de borrado.
     _habits[index] = habit.copyWith(deletedAt: _habits[index].deletedAt);
+    _emitHabits();
+  }
+
+  @override
+  Future<void> resetQuitHabit(
+    String habitId, {
+    required DateTime resetAt,
+  }) async {
+    final index = _habits.indexWhere((habit) => habit.id == habitId);
+    if (index < 0) throw const HabitsException(HabitsFailure.habitNotFound);
+    final habit = _habits[index];
+    if (!habit.isQuitHabit || habit.abstinenceStartedAt == null) return;
+    final elapsed = resetAt.difference(habit.abstinenceStartedAt!).inSeconds;
+    _habits[index] = habit.copyWith(
+      abstinenceStartedAt: resetAt,
+      bestAbstinenceSeconds: elapsed > habit.bestAbstinenceSeconds
+          ? elapsed
+          : habit.bestAbstinenceSeconds,
+      relapseCount: habit.relapseCount + 1,
+    );
     _emitHabits();
   }
 

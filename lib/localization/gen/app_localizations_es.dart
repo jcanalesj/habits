@@ -966,7 +966,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Haz que Constanza sea un poquito más tuyo 💜';
 
   @override
-  String get avatarTraveler => 'Cloud';
+  String get avatarTraveler => 'Constanza';
 
   @override
   String get avatarFriendly => 'Licorice';
@@ -978,7 +978,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get avatarGamer => 'Peaches';
 
   @override
-  String get avatarZen => 'Snowball';
+  String get avatarZen => 'Constanza';
 
   @override
   String get avatarNight => 'Mocha';
@@ -1333,10 +1333,153 @@ class AppLocalizationsEs extends AppLocalizations {
   String get habitEmojiLabel => 'Emoji';
 
   @override
+  String get emojiSearchHint => 'Buscar emoji';
+
+  @override
+  String get emojiSearchEmpty => 'No hay emojis para esa búsqueda.';
+
+  @override
+  String get clearSearch => 'Borrar búsqueda';
+
+  @override
   String get habitColorLabel => 'Color';
 
   @override
   String get habitAmbitoLabel => 'Ámbito';
+
+  @override
+  String get habitKindQuestion => '¿Qué quieres hacer?';
+
+  @override
+  String get habitKindBuild => 'Hábito positivo';
+
+  @override
+  String get habitKindQuit => 'Dejar hábito';
+
+  @override
+  String get habitKindBuildHint =>
+      'Una acción que quieres repetir y marcar como completada.';
+
+  @override
+  String get habitKindQuitHint =>
+      'Verás cuánto tiempo llevas sin hacerlo y podrás reiniciar el contador si recaes.';
+
+  @override
+  String get quitHabitsTab => 'Dejar hábitos';
+
+  @override
+  String get buildHabitsTab => 'Crear hábitos';
+
+  @override
+  String quitHabitSince(String date) {
+    return 'Sin hacerlo desde $date';
+  }
+
+  @override
+  String quitHabitRecord(String duration) {
+    return 'Récord: $duration';
+  }
+
+  @override
+  String get quitHabitReset => 'He recaído';
+
+  @override
+  String get quitHabitResetTitle => 'Un tropiezo no borra tu progreso';
+
+  @override
+  String get quitHabitResetBody =>
+      'Lo importante es volver a intentarlo. Guardaremos este periodo y empezaremos uno nuevo desde ahora.';
+
+  @override
+  String quitHabitProgressKept(String duration) {
+    return 'Todo lo conseguido durante $duration sigue contando.';
+  }
+
+  @override
+  String get quitHabitResetConfirm => 'Registrar y seguir';
+
+  @override
+  String get quitHabitKeepGoing => 'Seguir sin reiniciar';
+
+  @override
+  String get quitHabitResetSuccess =>
+      'Nuevo comienzo registrado. Sigue adelante, puedes hacerlo.';
+
+  @override
+  String quitHabitHoursDetail(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours horas',
+      one: '1 hora',
+    );
+    return 'y $_temp0';
+  }
+
+  @override
+  String get quitHabitEncouragement =>
+      'Estás construyendo algo importante. Sigue adelante.';
+
+  @override
+  String get quitHabitEmpty => 'Aún no tienes hábitos que quieras dejar.';
+
+  @override
+  String get homeQuitHabitsTitle => 'Cada momento cuenta';
+
+  @override
+  String get homeQuitEncouragement => 'Sigue así, cada momento suma.';
+
+  @override
+  String homeQuitDurationDays(int days, int hours) {
+    return '$days d · $hours h';
+  }
+
+  @override
+  String homeQuitDurationHours(int hours, int minutes) {
+    return '$hours h · $minutes min';
+  }
+
+  @override
+  String get homeQuitFirstDay => 'Primer día';
+
+  @override
+  String homeQuitDurationDaysOnly(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeQuitDurationMonthsOnly(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '$months meses',
+      one: '1 mes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeQuitDurationMonthsDays(int months, int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '$months meses',
+      one: '1 mes',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '1 día',
+    );
+    return '$_temp0 y $_temp1';
+  }
 
   @override
   String get habitPeriodicityLabel => 'Objetivo';
@@ -1973,6 +2116,27 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get statsHabits => 'Hábitos';
+
+  @override
+  String get statsQuitHabits => 'Logros al dejar hábitos';
+
+  @override
+  String get statsQuitCurrent => 'Tiempo actual';
+
+  @override
+  String get statsQuitBest => 'Mejor récord';
+
+  @override
+  String statsQuitRestarts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nuevos comienzos',
+      one: '1 nuevo comienzo',
+      zero: 'Sin nuevos comienzos',
+    );
+    return '$_temp0';
+  }
 
   @override
   String pendingHabitsWithCount(int count) {

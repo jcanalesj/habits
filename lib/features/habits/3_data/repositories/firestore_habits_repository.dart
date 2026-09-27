@@ -223,6 +223,10 @@ class FirestoreHabitsRepository implements HabitsRepository {
           unit: draft.unit,
           displayGoal: draft.displayGoal,
           progressIconId: draft.progressIconId,
+          kind: draft.kind,
+          abstinenceStartedAt: draft.kind == HabitKind.quit
+              ? (draft.abstinenceStartedAt ?? now)
+              : null,
           // Orden monotónico sin consultar: válido offline y sin colisiones.
           order: now.millisecondsSinceEpoch,
           createdAt: now,
@@ -255,6 +259,30 @@ class FirestoreHabitsRepository implements HabitsRepository {
       }),
     );
   });
+
+  @override
+  Future<void> resetQuitHabit(String habitId, {required DateTime resetAt}) =>
+      _guard(() async {
+        final habit = await getHabit(habitId);
+        if (habit == null) {
+          throw const HabitsException(HabitsFailure.habitNotFound);
+        }
+        if (!habit.isQuitHabit || habit.abstinenceStartedAt == null) return;
+        final elapsed = resetAt
+            .difference(habit.abstinenceStartedAt!)
+            .inSeconds;
+        await awaitWrite(
+          _habitosRaw.doc(habitId).update({
+            FirestoreFields.abstinenceStartedAt: Timestamp.fromDate(resetAt),
+            FirestoreFields.bestAbstinenceSeconds:
+                elapsed > habit.bestAbstinenceSeconds
+                ? elapsed
+                : habit.bestAbstinenceSeconds,
+            FirestoreFields.relapseCount: habit.relapseCount + 1,
+            FirestoreFields.updatedAt: FieldValue.serverTimestamp(),
+          }),
+        );
+      });
 
   @override
   Future<void> reorderHabits(Map<String, int> orderById) => _guard(() async {

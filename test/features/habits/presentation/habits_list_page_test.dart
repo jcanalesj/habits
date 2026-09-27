@@ -124,7 +124,7 @@ void main() {
     expect(find.text('Tu historial se mantendrá.'), findsOneWidget);
     expect(find.text('Tu racha no se borrará.'), findsOneWidget);
     expect(
-      find.image(const AssetImage('assets/icons/edit.png')),
+      find.image(const AssetImage('assets/images/edit.png')),
       findsOneWidget,
     );
     expect(find.text('Continuar'), findsOneWidget);

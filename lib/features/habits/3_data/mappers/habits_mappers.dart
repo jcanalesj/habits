@@ -97,6 +97,10 @@ abstract final class HabitsMappers {
       unit: dto.unit,
       displayGoal: dto.displayGoal,
       progressIconId: dto.progressIconId,
+      kind: HabitKindX.fromStorage(dto.habitKind),
+      abstinenceStartedAt: dto.abstinenceStartedAt,
+      bestAbstinenceSeconds: dto.bestAbstinenceSeconds,
+      relapseCount: dto.relapseCount,
     );
   }
 
@@ -131,6 +135,10 @@ abstract final class HabitsMappers {
       unit: habit.unit,
       displayGoal: habit.displayGoal,
       progressIconId: habit.progressIconId,
+      habitKind: habit.kind.storageValue,
+      abstinenceStartedAt: habit.abstinenceStartedAt,
+      bestAbstinenceSeconds: habit.bestAbstinenceSeconds,
+      relapseCount: habit.relapseCount,
     );
   }
 

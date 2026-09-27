@@ -51,6 +51,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   @override
   Widget build(BuildContext context) {
     final summary = ref.watch(homeControllerProvider);
+    final allHabits = ref.watch(activeHabitsProvider);
 
     return Scaffold(
       backgroundColor: context.palette.background,
@@ -64,38 +65,46 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       body: SafeArea(
         top: !widget.standalone,
         bottom: false,
-        child: switch (summary) {
-          AsyncData(:final value) => Builder(
-            builder: (context) {
-              final (from, to) = _range(value.today);
-              final range = (from: from, to: to);
-              final logsAsync = ref.watch(logsBetweenProvider(range));
-              // La semana ya viene en la Home: se enseña sin esperar.
-              final logs =
-                  logsAsync.value ??
-                  (_period == _StatsPeriod.week ? value.weekLogs : null);
-              if (logs == null && logsAsync.hasError) {
-                return AppErrorView(
-                  error: logsAsync.error,
-                  onRetry: () => ref.invalidate(logsBetweenProvider(range)),
+        child: switch ((summary, allHabits)) {
+          (AsyncData(value: final value), AsyncData(value: final habits)) =>
+            Builder(
+              builder: (context) {
+                final (from, to) = _range(value.today);
+                final range = (from: from, to: to);
+                final logsAsync = ref.watch(logsBetweenProvider(range));
+                // La semana ya viene en la Home: se enseña sin esperar.
+                final logs =
+                    logsAsync.value ??
+                    (_period == _StatsPeriod.week ? value.weekLogs : null);
+                if (logs == null && logsAsync.hasError) {
+                  return AppErrorView(
+                    error: logsAsync.error,
+                    onRetry: () => ref.invalidate(logsBetweenProvider(range)),
+                  );
+                }
+                if (logs == null) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return _StatisticsContent(
+                  summary: value,
+                  quitHabits: habits
+                      .where((habit) => habit.isQuitHabit)
+                      .toList(),
+                  logs: logs,
+                  period: _period,
+                  rangeStart: from,
+                  standalone: widget.standalone,
+                  onPeriodChanged: (period) => setState(() => _period = period),
                 );
-              }
-              if (logs == null) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return _StatisticsContent(
-                summary: value,
-                logs: logs,
-                period: _period,
-                rangeStart: from,
-                standalone: widget.standalone,
-                onPeriodChanged: (period) => setState(() => _period = period),
-              );
-            },
-          ),
-          AsyncError(:final error) => AppErrorView(
+              },
+            ),
+          (AsyncError(error: final error), _) ||
+          (_, AsyncError(error: final error)) => AppErrorView(
             error: error,
-            onRetry: () => ref.invalidate(homeControllerProvider),
+            onRetry: () {
+              ref.invalidate(homeControllerProvider);
+              ref.invalidate(activeHabitsProvider);
+            },
           ),
           _ => const Center(child: CircularProgressIndicator()),
         },
@@ -107,6 +116,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
 class _StatisticsContent extends StatelessWidget {
   const _StatisticsContent({
     required this.summary,
+    required this.quitHabits,
     required this.logs,
     required this.period,
     required this.rangeStart,
@@ -115,6 +125,7 @@ class _StatisticsContent extends StatelessWidget {
   });
 
   final HomeSummary summary;
+  final List<Habit> quitHabits;
   final List<HabitLog> logs;
   final _StatsPeriod period;
   final LogicalDate rangeStart;
@@ -282,6 +293,19 @@ class _StatisticsContent extends StatelessWidget {
             logs: logs,
             onCalendar: () => context.push('/habit-calendars'),
           ),
+        if (quitHabits.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          _SectionTitle(
+            title: l10n.statsQuitHabits,
+            action: l10n.seeAll,
+            onTap: () => context.go('/habits/manage?kind=quit'),
+          ),
+          const SizedBox(height: 10),
+          for (final habit in quitHabits) ...[
+            _QuitHabitStatsCard(habit: habit),
+            if (habit != quitHabits.last) const SizedBox(height: 10),
+          ],
+        ],
         const SizedBox(height: 24),
         _SectionTitle(
           title: l10n.statsHabits,
@@ -307,6 +331,186 @@ class _StatisticsContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _QuitHabitStatsCard extends StatelessWidget {
+  const _QuitHabitStatsCard({required this.habit});
+
+  final Habit habit;
+
+  int get _currentSeconds {
+    final started = habit.abstinenceStartedAt ?? habit.createdAt;
+    return math.max(0, DateTime.now().difference(started).inSeconds);
+  }
+
+  String _duration(BuildContext context, int seconds) {
+    final safe = math.max(0, seconds);
+    final days = safe ~/ Duration.secondsPerDay;
+    final hours = (safe ~/ Duration.secondsPerHour) % 24;
+    final minutes = (safe ~/ Duration.secondsPerMinute) % 60;
+    final remainingSeconds = safe % 60;
+    final clock =
+        '${hours.toString().padLeft(2, '0')}:'
+        '${minutes.toString().padLeft(2, '0')}:'
+        '${remainingSeconds.toString().padLeft(2, '0')}';
+    if (days == 0) return clock;
+    if (days < 30) {
+      return '${context.l10n.homeQuitDurationDaysOnly(days)} · '
+          '${hours.toString().padLeft(2, '0')}:'
+          '${minutes.toString().padLeft(2, '0')}';
+    }
+    final months = days ~/ 30;
+    final remainingDays = days % 30;
+    return remainingDays == 0
+        ? context.l10n.homeQuitDurationMonthsOnly(months)
+        : context.l10n.homeQuitDurationMonthsDays(months, remainingDays);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final textTheme = Theme.of(context).textTheme;
+    final color = Color(habit.colorValue);
+    final current = _currentSeconds;
+    final best = math.max(current, habit.bestAbstinenceSeconds);
+
+    return Container(
+      key: ValueKey('quit-habit-stat-${habit.id}'),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [color.withValues(alpha: .09), color.withValues(alpha: .15)],
+        ),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: palette.surface.withValues(
+                    alpha: palette.isDark ? 1 : .62,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: HabitIcon(
+                  iconId: habit.iconId,
+                  legacyEmoji: habit.emoji,
+                  size: 38,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  habit.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: palette.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: palette.surface.withValues(
+                    alpha: palette.isDark ? .86 : .62,
+                  ),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  context.l10n.statsQuitRestarts(habit.relapseCount),
+                  style: textTheme.labelSmall?.copyWith(
+                    color: palette.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _QuitHabitMetric(
+                  label: context.l10n.statsQuitCurrent,
+                  value: _duration(context, current),
+                  color: color,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 38,
+                color: palette.textSecondary.withValues(alpha: .15),
+              ),
+              Expanded(
+                child: _QuitHabitMetric(
+                  label: context.l10n.statsQuitBest,
+                  value: _duration(context, best),
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuitHabitMetric extends StatelessWidget {
+  const _QuitHabitMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: palette.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Color.lerp(color, palette.textPrimary, .32),
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

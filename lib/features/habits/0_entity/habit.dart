@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:habits/features/habits/0_entity/habit_tracking.dart';
+import 'package:habits/features/habits/0_entity/habit_kind.dart';
 import 'package:habits/features/habits/0_entity/logical_date.dart';
 import 'package:habits/features/habits/0_entity/periodicity.dart';
 
@@ -18,6 +19,10 @@ class Habit {
     this.unit,
     this.displayGoal,
     this.progressIconId = 'check',
+    this.kind = HabitKind.build,
+    this.abstinenceStartedAt,
+    this.bestAbstinenceSeconds = 0,
+    this.relapseCount = 0,
     this.reminderTime,
     this.reminderMessage,
     this.order = 0,
@@ -29,11 +34,15 @@ class Habit {
   final List<PeriodicityEntry> periodicityTimeline;
   final int colorValue, targetCount, order;
   final HabitTrackingType trackingType;
+  final HabitKind kind;
+  final DateTime? abstinenceStartedAt;
+  final int bestAbstinenceSeconds, relapseCount;
   final String? unit, displayGoal, reminderTime, reminderMessage;
   final DateTime createdAt;
   final DateTime? deletedAt;
   bool get isDeleted => deletedAt != null;
   bool get hasRepetitions => trackingType == HabitTrackingType.repetitions;
+  bool get isQuitHabit => kind == HabitKind.quit;
   Periodicity periodicityOn(LogicalDate date) {
     var result = periodicityTimeline.isEmpty
         ? Periodicity.daily
@@ -58,6 +67,10 @@ class Habit {
     Object? unit = _sentinel,
     Object? displayGoal = _sentinel,
     String? progressIconId,
+    HabitKind? kind,
+    Object? abstinenceStartedAt = _sentinel,
+    int? bestAbstinenceSeconds,
+    int? relapseCount,
     Object? reminderTime = _sentinel,
     Object? reminderMessage = _sentinel,
     int? order,
@@ -78,6 +91,12 @@ class Habit {
         ? this.displayGoal
         : displayGoal as String?,
     progressIconId: progressIconId ?? this.progressIconId,
+    kind: kind ?? this.kind,
+    abstinenceStartedAt: identical(abstinenceStartedAt, _sentinel)
+        ? this.abstinenceStartedAt
+        : abstinenceStartedAt as DateTime?,
+    bestAbstinenceSeconds: bestAbstinenceSeconds ?? this.bestAbstinenceSeconds,
+    relapseCount: relapseCount ?? this.relapseCount,
     reminderTime: identical(reminderTime, _sentinel)
         ? this.reminderTime
         : reminderTime as String?,
@@ -105,13 +124,17 @@ class Habit {
       unit == other.unit &&
       displayGoal == other.displayGoal &&
       progressIconId == other.progressIconId &&
+      kind == other.kind &&
+      abstinenceStartedAt == other.abstinenceStartedAt &&
+      bestAbstinenceSeconds == other.bestAbstinenceSeconds &&
+      relapseCount == other.relapseCount &&
       reminderTime == other.reminderTime &&
       reminderMessage == other.reminderMessage &&
       order == other.order &&
       createdAt == other.createdAt &&
       deletedAt == other.deletedAt;
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     name,
     ambitoId,
@@ -124,12 +147,16 @@ class Habit {
     unit,
     displayGoal,
     progressIconId,
+    kind,
+    abstinenceStartedAt,
+    bestAbstinenceSeconds,
+    relapseCount,
     reminderTime,
     reminderMessage,
     order,
     createdAt,
     deletedAt,
-  );
+  ]);
 }
 
 const _sentinel = Object();

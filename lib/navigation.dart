@@ -6,6 +6,7 @@ import 'package:habits/features/auth/2_presentation/presentation.dart';
 import 'package:habits/features/auth/2_presentation/routes/routes.dart'
     as auth_routes;
 import 'package:habits/features/habits/2_presentation/pages/habit_calendars_page.dart';
+import 'package:habits/features/habits/0_entity/habit_kind.dart';
 import 'package:habits/features/habits/2_presentation/pages/habits_list_page.dart';
 import 'package:habits/features/habits/2_presentation/pages/statistics_page.dart';
 import 'package:habits/features/profile/profile_page.dart';
@@ -127,7 +128,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'manage',
-                    builder: (context, state) => const HabitsListPage(),
+                    builder: (context, state) => HabitsListPage(
+                      initialKind: state.uri.queryParameters['kind'] == 'quit'
+                          ? HabitKind.quit
+                          : HabitKind.build,
+                    ),
                   ),
                 ],
               ),

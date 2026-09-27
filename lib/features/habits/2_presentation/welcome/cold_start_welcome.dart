@@ -93,10 +93,13 @@ final isPremiumProvider = Provider<AsyncValue<bool>>((ref) {
   return const AsyncData(false);
 });
 
-/// Suscripción activa. Decide cuándo se muestran los pop-ups y las marcas
-/// Premium y qué funciones se desbloquean.
+/// Suscripción real activa, confirmada por Firestore o por la tienda.
+/// No incluye accesos promocionales ni el modo de desarrollo: este estado es
+/// el que debe controlar coronas, etiquetas y cualquier marca de suscriptor.
 final premiumSubscribedProvider = Provider<bool>(
-  (ref) => ref.watch(isPremiumProvider).value ?? false,
+  (ref) =>
+      ref.watch(remotePremiumProvider).value == true ||
+      ref.watch(storeEntitlementProvider).value == true,
 );
 
 /// Acceso a funciones avanzadas. Durante la promoción temporal es gratuito,
@@ -105,6 +108,7 @@ final premiumSubscribedProvider = Provider<bool>(
 final premiumAccessProvider = Provider<bool>(
   (ref) =>
       ref.watch(premiumFeaturesFreeProvider) ||
+      ref.watch(forcePremiumProvider) ||
       ref.watch(premiumSubscribedProvider),
 );
 

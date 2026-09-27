@@ -28,6 +28,10 @@ abstract final class FirestoreFields {
   // Hábitos
   static const ambitoId = 'ambitoId';
   static const iconId = 'iconId';
+  static const habitKind = 'habitKind';
+  static const abstinenceStartedAt = 'abstinenceStartedAt';
+  static const bestAbstinenceSeconds = 'bestAbstinenceSeconds';
+  static const relapseCount = 'relapseCount';
 
   /// Configuración inicial: mapa `{tipo, veces}`. En documentos anteriores a
   /// la fase 5 era un string suelto (`'weekly'`); el mapper lee ambas formas.

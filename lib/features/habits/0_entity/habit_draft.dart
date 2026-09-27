@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:habits/features/habits/0_entity/habit_tracking.dart';
+import 'package:habits/features/habits/0_entity/habit_kind.dart';
 import 'package:habits/features/habits/0_entity/periodicity.dart';
 
 @immutable
@@ -16,6 +17,8 @@ class HabitDraft {
     this.unit,
     this.displayGoal,
     this.progressIconId = 'check',
+    this.kind = HabitKind.build,
+    this.abstinenceStartedAt,
     this.reminderTime,
     this.reminderMessage,
   });
@@ -24,6 +27,8 @@ class HabitDraft {
   final Periodicity periodicity;
   final int colorValue, targetCount;
   final HabitTrackingType trackingType;
+  final HabitKind kind;
+  final DateTime? abstinenceStartedAt;
   final String? unit, displayGoal, reminderTime, reminderMessage;
   HabitDraft copyWith({String? name, String? emoji, String? iconId}) =>
       HabitDraft(
@@ -38,6 +43,8 @@ class HabitDraft {
         unit: unit,
         displayGoal: displayGoal,
         progressIconId: progressIconId,
+        kind: kind,
+        abstinenceStartedAt: abstinenceStartedAt,
         reminderTime: reminderTime,
         reminderMessage: reminderMessage,
       );

@@ -395,6 +395,7 @@ service cloud.firestore {
             'nombre', 'emoji', 'colorValue', 'ambitoId', 'periodicidad',
             'cambiosPeriodicidad', 'recordatorioHora', 'recordatorioMensaje', 'orden', 'deletedAt',
             'trackingType', 'targetCount', 'unit', 'displayGoal', 'iconId', 'progressIconId',
+            'habitKind', 'abstinenceStartedAt', 'bestAbstinenceSeconds', 'relapseCount',
             'createdAt', 'updatedAt',
             // legacy, solo tolerados
             'historialPeriodicidad', 'descansosPermitidos',
@@ -425,6 +426,14 @@ service cloud.firestore {
           && (!('unit' in d) || d.unit == null || isShortText(d.unit, 24))
           && (!('displayGoal' in d) || d.displayGoal == null || isShortText(d.displayGoal, 32))
           && (!('progressIconId' in d) || isShortText(d.progressIconId, 32))
+          && (!('habitKind' in d) || d.habitKind in ['build', 'quit'])
+          && (!('abstinenceStartedAt' in d) || isNullOrTimestamp(d.abstinenceStartedAt))
+          && (!('abstinenceStartedAt' in d) || d.abstinenceStartedAt == null
+              || d.abstinenceStartedAt <= request.time + duration.value(5, 'm'))
+          && (!('habitKind' in d) || d.habitKind != 'quit'
+              || (d.abstinenceStartedAt is timestamp))
+          && (!('bestAbstinenceSeconds' in d) || isNonNegInt(d.bestAbstinenceSeconds))
+          && (!('relapseCount' in d) || isNonNegInt(d.relapseCount))
           && isNonNegInt(d.orden)
           && isNullOrTimestamp(d.deletedAt);
       }

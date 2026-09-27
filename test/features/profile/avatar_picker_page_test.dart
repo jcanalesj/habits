@@ -37,11 +37,11 @@ void main() {
     expect(env.profiles.avatarIds[verifiedUser.id], 'magic');
 
     await tester.scrollUntilVisible(
-      find.text('Snowball'),
+      find.text('Constanza').last,
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.text('Snowball'));
+    await tester.tap(find.text('Constanza').last);
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('premium-avatar-dialog')), findsOneWidget);

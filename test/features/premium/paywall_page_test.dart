@@ -16,6 +16,20 @@ void main() {
 
     expect(container.read(premiumFeaturesFreeProvider), isTrue);
     expect(container.read(premiumAccessProvider), isTrue);
+    expect(container.read(premiumSubscribedProvider), isFalse);
+  });
+
+  test('forzar acceso en desarrollo no simula una suscripción', () {
+    final container = ProviderContainer(
+      overrides: [
+        premiumFeaturesFreeProvider.overrideWithValue(false),
+        forcePremiumProvider.overrideWithValue(true),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(container.read(premiumAccessProvider), isTrue);
+    expect(container.read(premiumSubscribedProvider), isFalse);
   });
 
   Future<AuthTestEnv> pumpPaywall(

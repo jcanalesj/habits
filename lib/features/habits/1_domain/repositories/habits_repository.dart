@@ -64,6 +64,9 @@ abstract class HabitsRepository {
   /// de periodicidad). No toca `deletedAt`: borrar es [softDeleteHabit].
   Future<void> updateHabit(Habit habit);
 
+  /// Cierra el periodo actual de abstinencia y comienza uno nuevo.
+  Future<void> resetQuitHabit(String habitId, {required DateTime resetAt});
+
   /// Cambia el `orden` de varios hábitos de forma atómica.
   Future<void> reorderHabits(Map<String, int> orderById);
 

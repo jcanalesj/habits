@@ -65,6 +65,10 @@ void main() {
         'unit',
         'displayGoal',
         'progressIconId',
+        'habitKind',
+        'abstinenceStartedAt',
+        'bestAbstinenceSeconds',
+        'relapseCount',
         'deletedAt',
         'createdAt',
         'updatedAt',
@@ -101,6 +105,25 @@ void main() {
       expect(deleted!.isDeleted, isTrue);
       final raw = await col('habitos').doc(a.id).get();
       expect(raw.exists, isTrue, reason: 'nunca hard delete');
+    });
+
+    test('reiniciar un hábito a dejar conserva su mejor periodo', () async {
+      final started = nowInstant.subtract(const Duration(days: 3));
+      final habit = await repository.createHabit(
+        habitDraft(
+          name: 'No fumar',
+          kind: HabitKind.quit,
+          abstinenceStartedAt: started,
+        ),
+        today: today,
+      );
+
+      await repository.resetQuitHabit(habit.id, resetAt: nowInstant);
+
+      final reset = (await repository.getHabit(habit.id))!;
+      expect(reset.abstinenceStartedAt!.isAtSameMomentAs(nowInstant), isTrue);
+      expect(reset.bestAbstinenceSeconds, const Duration(days: 3).inSeconds);
+      expect(reset.relapseCount, 1);
     });
 
     test('updateHabit guarda los campos editables y el historial', () async {

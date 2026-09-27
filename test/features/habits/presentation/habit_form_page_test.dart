@@ -109,6 +109,8 @@ void main() {
     await tester.tap(find.text('Ver todos'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('habit-emoji-✈️')), findsOneWidget);
+    expect(find.byKey(const ValueKey('habit-emoji-🚭')), findsNothing);
+    expect(find.byKey(const ValueKey('habit-emoji-🍺')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('habit-emoji-✈️')));
     await tester.pumpAndSettle();
@@ -119,6 +121,43 @@ void main() {
     final creado = habits.firstWhere((habit) => habit.name == 'Viajar');
     expect(creado.emoji, '✈️');
     expect(creado.iconId, isNull);
+  });
+
+  testWidgets('el buscador encuentra tabaco y cierra sin errores', (
+    tester,
+  ) async {
+    await tester.pumpWidget(appWith(const HabitFormPage()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Dejar hábito'));
+    await tester.pump();
+    await tester.tap(find.text('Ver todos'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('emoji-search-field')),
+      'fumar',
+    );
+    await tester.pump();
+
+    final results = find.byType(GridView);
+    expect(
+      find.descendant(
+        of: results,
+        matching: find.byKey(const ValueKey('habit-emoji-🚭')),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: results,
+        matching: find.byKey(const ValueKey('habit-emoji-🍺')),
+      ),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('habit-emoji-🚭')).last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(

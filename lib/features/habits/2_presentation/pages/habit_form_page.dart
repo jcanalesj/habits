@@ -41,6 +41,20 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     '✍️',
     '🌿',
   ];
+  static const _quitEmojis = [
+    '🚭',
+    '🚬',
+    '🍺',
+    '🍷',
+    '🥃',
+    '📵',
+    '🎰',
+    '🍬',
+    '🍔',
+    '☕',
+    '🎮',
+    '🛑',
+  ];
   static const _palette = [
     AppColors.lilac,
     AppColors.pink,
@@ -59,6 +73,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
   Periodicity _periodicity = Periodicity.daily;
   TimeOfDay? _reminder;
   HabitTrackingType _trackingType = HabitTrackingType.single;
+  HabitKind _kind = HabitKind.build;
   int _targetCount = 2;
   String _progressIconId = ProgressIconCatalog.fallbackId;
 
@@ -92,6 +107,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     _ambitoId = habit.ambitoId;
     _colorValue = habit.colorValue;
     _trackingType = habit.trackingType;
+    _kind = habit.kind;
     _targetCount = habit.targetCount;
     _unitController.text = habit.unit ?? '';
     _displayGoalController.text = habit.displayGoal ?? '';
@@ -199,6 +215,10 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
             unit: _nullableText(_unitController.text),
             displayGoal: _nullableText(_displayGoalController.text),
             progressIconId: _progressIconId,
+            kind: _kind,
+            abstinenceStartedAt: _kind == HabitKind.quit
+                ? DateTime.now()
+                : null,
           ),
           today: today,
         );
@@ -261,6 +281,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
             unit: _nullableText(_unitController.text),
             displayGoal: _nullableText(_displayGoalController.text),
             progressIconId: _progressIconId,
+            kind: original.kind,
           ),
         );
     switch (result) {
@@ -340,6 +361,53 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
+          if (!widget.isEditing) ...[
+            SurfaceCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Label(l10n.habitKindQuestion),
+                  const SizedBox(height: 6),
+                  SegmentedButton<HabitKind>(
+                    segments: [
+                      ButtonSegment(
+                        value: HabitKind.build,
+                        icon: const Icon(Icons.add_task_rounded),
+                        label: Text(l10n.habitKindBuild),
+                      ),
+                      ButtonSegment(
+                        value: HabitKind.quit,
+                        icon: const Icon(Icons.timer_outlined),
+                        label: Text(l10n.habitKindQuit),
+                      ),
+                    ],
+                    selected: {_kind},
+                    onSelectionChanged: (value) => setState(() {
+                      _kind = value.first;
+                      if (_kind == HabitKind.quit &&
+                          _emojiController.text == '💧') {
+                        _emojiController.text = '🚭';
+                      } else if (_kind == HabitKind.build &&
+                          _emojiController.text == '🚭') {
+                        _emojiController.text = '💧';
+                      }
+                    }),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _kind == HabitKind.quit
+                        ? l10n.habitKindQuitHint
+                        : l10n.habitKindBuildHint,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: palette.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           SurfaceCard(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -384,7 +452,8 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                 ],
                 _Label(l10n.habitEmojiLabel),
                 _EmojiPicker(
-                  emojis: _quickEmojis,
+                  emojis: _kind == HabitKind.quit ? _quitEmojis : _quickEmojis,
+                  includeQuitEmojis: _kind == HabitKind.quit,
                   selected: _emojiController.text,
                   onSelected: (emoji) =>
                       setState(() => _emojiController.text = emoji),
@@ -425,111 +494,113 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
               ),
             ),
           ],
-          const SizedBox(height: 16),
-          SurfaceCard(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Label(l10n.habitPeriodicityLabel),
-                PeriodicityField(
-                  value: _periodicity,
-                  onChanged: (value) => setState(() => _periodicity = value),
-                  deferredNotice: _deferredNotice(today),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          SurfaceCard(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Label(l10n.habitTrackingQuestion),
-                SegmentedButton<HabitTrackingType>(
-                  segments: [
-                    ButtonSegment(
-                      value: HabitTrackingType.single,
-                      label: Text(l10n.habitTrackingOnce),
-                    ),
-                    ButtonSegment(
-                      value: HabitTrackingType.repetitions,
-                      label: Text(l10n.habitTrackingSeveral),
-                    ),
-                  ],
-                  selected: {_trackingType},
-                  onSelectionChanged: (value) =>
-                      setState(() => _trackingType = value.first),
-                ),
-                if (_trackingType == HabitTrackingType.repetitions) ...[
-                  const SizedBox(height: 20),
-                  _Label(l10n.habitTargetCount),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton.filledTonal(
-                        onPressed: _targetCount > 2
-                            ? () => setState(() => _targetCount--)
-                            : null,
-                        tooltip: context.l10n.a11yDecrease,
-                        icon: const Icon(Icons.remove_rounded),
-                      ),
-                      SizedBox(
-                        width: 72,
-                        child: Text(
-                          '$_targetCount',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.w900),
-                        ),
-                      ),
-                      IconButton.filledTonal(
-                        onPressed: _targetCount < 999
-                            ? () => setState(() => _targetCount++)
-                            : null,
-                        tooltip: context.l10n.a11yIncrease,
-                        icon: const Icon(Icons.add_rounded),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _unitController,
-                    maxLength: 24,
-                    decoration: InputDecoration(
-                      labelText: l10n.habitUnitOptional,
-                      hintText: l10n.habitUnitHint,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _displayGoalController,
-                    maxLength: 32,
-                    decoration: InputDecoration(
-                      labelText: l10n.habitDisplayGoalOptional,
-                      hintText: l10n.habitDisplayGoalHint,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _Label(l10n.habitProgressIcon),
-                  Text(
-                    l10n.habitProgressIconSubtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: palette.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ProgressIconPicker(
-                    selectedId: _progressIconId,
-                    onSelected: (id) => setState(() => _progressIconId = id),
+          if (_kind == HabitKind.build) ...[
+            const SizedBox(height: 16),
+            SurfaceCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Label(l10n.habitPeriodicityLabel),
+                  PeriodicityField(
+                    value: _periodicity,
+                    onChanged: (value) => setState(() => _periodicity = value),
+                    deferredNotice: _deferredNotice(today),
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 16),
+            SurfaceCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Label(l10n.habitTrackingQuestion),
+                  SegmentedButton<HabitTrackingType>(
+                    segments: [
+                      ButtonSegment(
+                        value: HabitTrackingType.single,
+                        label: Text(l10n.habitTrackingOnce),
+                      ),
+                      ButtonSegment(
+                        value: HabitTrackingType.repetitions,
+                        label: Text(l10n.habitTrackingSeveral),
+                      ),
+                    ],
+                    selected: {_trackingType},
+                    onSelectionChanged: (value) =>
+                        setState(() => _trackingType = value.first),
+                  ),
+                  if (_trackingType == HabitTrackingType.repetitions) ...[
+                    const SizedBox(height: 20),
+                    _Label(l10n.habitTargetCount),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton.filledTonal(
+                          onPressed: _targetCount > 2
+                              ? () => setState(() => _targetCount--)
+                              : null,
+                          tooltip: context.l10n.a11yDecrease,
+                          icon: const Icon(Icons.remove_rounded),
+                        ),
+                        SizedBox(
+                          width: 72,
+                          child: Text(
+                            '$_targetCount',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                        IconButton.filledTonal(
+                          onPressed: _targetCount < 999
+                              ? () => setState(() => _targetCount++)
+                              : null,
+                          tooltip: context.l10n.a11yIncrease,
+                          icon: const Icon(Icons.add_rounded),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _unitController,
+                      maxLength: 24,
+                      decoration: InputDecoration(
+                        labelText: l10n.habitUnitOptional,
+                        hintText: l10n.habitUnitHint,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _displayGoalController,
+                      maxLength: 32,
+                      decoration: InputDecoration(
+                        labelText: l10n.habitDisplayGoalOptional,
+                        hintText: l10n.habitDisplayGoalHint,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _Label(l10n.habitProgressIcon),
+                    Text(
+                      l10n.habitProgressIconSubtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: palette.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ProgressIconPicker(
+                      selectedId: _progressIconId,
+                      onSelected: (id) => setState(() => _progressIconId = id),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           SurfaceCard(
             padding: const EdgeInsets.all(20),
@@ -806,13 +877,26 @@ class _Label extends StatelessWidget {
 class _EmojiPicker extends StatelessWidget {
   const _EmojiPicker({
     required this.emojis,
+    required this.includeQuitEmojis,
     required this.selected,
     required this.onSelected,
   });
 
   final List<String> emojis;
+  final bool includeQuitEmojis;
   final String selected;
   final ValueChanged<String> onSelected;
+
+  static const _quitOnlyEmojis = [
+    '🚭',
+    '🚬',
+    '🍺',
+    '🍷',
+    '🥃',
+    '🎰',
+    '🍔',
+    '🍬',
+  ];
 
   static const _allEmojis = [
     '💧',
@@ -1038,6 +1122,32 @@ class _EmojiPicker extends StatelessWidget {
     '➖',
   ];
 
+  static const _emojiKeywords = <String, String>{
+    '🚭':
+        'dejar fumar no fumar tabaco cigarro cigarrillo humo salud quit smoking tobacco',
+    '🚬': 'fumar tabaco cigarro cigarrillo nicotina smoking tobacco cigarette',
+    '🍺': 'cerveza alcohol beber bebida copa bar beer drinking',
+    '🍷': 'vino alcohol beber bebida copa wine drinking',
+    '🥃': 'alcohol licor whisky beber bebida copa liquor drinking',
+    '🎰': 'apuestas juego casino ludopatia gambling betting',
+    '🍔': 'comida basura fast food hamburguesa junk food',
+    '🍬': 'azucar dulce golosinas sugar candy',
+    '📵':
+        'movil telefono pantalla redes sociales smartphone phone social media',
+    '🎮': 'videojuegos jugar gaming games',
+    '☕': 'cafe cafeina coffee caffeine',
+    '🥤': 'refresco soda azucar bebida',
+    '🛑': 'parar dejar stop quit',
+  };
+
+  static String _normalized(String value) => value
+      .toLowerCase()
+      .replaceAll(RegExp('[áàä]'), 'a')
+      .replaceAll(RegExp('[éèë]'), 'e')
+      .replaceAll(RegExp('[íìï]'), 'i')
+      .replaceAll(RegExp('[óòö]'), 'o')
+      .replaceAll(RegExp('[úùü]'), 'u');
+
   Widget _item(AppPalette palette, String emoji, {VoidCallback? onTap}) =>
       Semantics(
         button: true,
@@ -1067,46 +1177,87 @@ class _EmojiPicker extends StatelessWidget {
       );
 
   Future<void> _showAll(BuildContext context) async {
+    var query = '';
     final picked = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (sheetContext) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.sizeOf(sheetContext).height * .62,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-                child: Text(
-                  context.l10n.habitEmojiLabel,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) {
+          final normalizedQuery = _normalized(query.trim());
+          final available = includeQuitEmojis
+              ? [..._quitOnlyEmojis, ..._allEmojis]
+              : _allEmojis;
+          final visible = normalizedQuery.isEmpty
+              ? available
+              : available
+                    .where(
+                      (emoji) => _normalized(
+                        '$emoji ${_emojiKeywords[emoji] ?? ''}',
+                      ).contains(normalizedQuery),
+                    )
+                    .toList(growable: false);
+          return SafeArea(
+            child: SizedBox(
+              height: MediaQuery.sizeOf(sheetContext).height * .72,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                      child: Text(
+                        context.l10n.habitEmojiLabel,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                      child: TextField(
+                        key: const ValueKey('emoji-search-field'),
+                        autofocus: false,
+                        onChanged: (value) =>
+                            setSheetState(() => query = value),
+                        decoration: InputDecoration(
+                          hintText: context.l10n.emojiSearchHint,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: visible.isEmpty
+                          ? Center(child: Text(context.l10n.emojiSearchEmpty))
+                          : GridView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 7,
+                                    mainAxisSpacing: 10,
+                                    crossAxisSpacing: 10,
+                                  ),
+                              itemCount: visible.length,
+                              itemBuilder: (itemContext, index) {
+                                final emoji = visible[index];
+                                return _item(
+                                  itemContext.palette,
+                                  emoji,
+                                  onTap: () =>
+                                      Navigator.pop(sheetContext, emoji),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
               ),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 7,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                  ),
-                  itemCount: _allEmojis.length,
-                  itemBuilder: (itemContext, index) {
-                    final emoji = _allEmojis[index];
-                    return _item(
-                      itemContext.palette,
-                      emoji,
-                      onTap: () => Navigator.pop(sheetContext, emoji),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
     if (picked != null) onSelected(picked);

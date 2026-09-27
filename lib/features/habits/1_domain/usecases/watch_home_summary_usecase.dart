@@ -59,7 +59,11 @@ class WatchHomeSummaryUsecase {
       ],
       (values) {
         final ambitos = values[0] as List<Ambito>;
-        final habits = values[1] as List<Habit>;
+        // Los hábitos que se quieren dejar tienen su propio contador. No son
+        // tareas completables y no deben alterar rachas ni estadísticas.
+        final habits = (values[1] as List<Habit>)
+            .where((habit) => !habit.isQuitHabit)
+            .toList(growable: false);
         final yearLogs = values[2] as List<HabitLog>;
         final activityDays = values[3] as Set<LogicalDate>;
         final protectedDays = values[4] as Set<LogicalDate>;
