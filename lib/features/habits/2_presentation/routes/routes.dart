@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/pages/habit_form_page.dart';
 import 'package:habits/features/habits/2_presentation/pages/habit_calendars_page.dart';
 import 'package:habits/features/habits/2_presentation/pages/home_page.dart';
@@ -17,7 +18,11 @@ final habitFormRoutesProvider = Provider<List<GoRoute>>((ref) {
   return [
     GoRoute(
       path: '/habit/new',
-      builder: (context, state) => const HabitFormPage(),
+      builder: (context, state) => HabitFormPage(
+        initialKind: state.uri.queryParameters['kind'] == 'quit'
+            ? HabitKind.quit
+            : HabitKind.build,
+      ),
     ),
     GoRoute(
       path: '/habit/:id',

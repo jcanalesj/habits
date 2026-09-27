@@ -45,6 +45,7 @@ class HabitsListPage extends ConsumerStatefulWidget {
     BuildContext context,
     WidgetRef ref, {
     required int activeHabitCount,
+    HabitKind initialKind = HabitKind.build,
   }) async {
     if (activeHabitCount >= freeHabitLimit) {
       final allowed = await requestPremiumAccess(
@@ -54,7 +55,9 @@ class HabitsListPage extends ConsumerStatefulWidget {
       );
       if (!allowed || !context.mounted) return;
     }
-    context.push('/habit/new');
+    context.push(
+      initialKind == HabitKind.quit ? '/habit/new?kind=quit' : '/habit/new',
+    );
   }
 }
 
@@ -413,32 +416,13 @@ class _Content extends ConsumerWidget {
             children: [
               Expanded(child: _AmbitoHeader(ambito: visibleAmbitos[index])),
               if (index == 0)
-                FilledButton.icon(
+                _AddHabitButton(
                   key: const ValueKey('add-habit-inline'),
                   onPressed: () => HabitsListPage.openCreateHabit(
                     context,
                     ref,
                     activeHabitCount: summary.habits.length,
                   ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: palette.isDark
-                        ? palette.primarySoft
-                        : palette.primary,
-                    foregroundColor: palette.isDark
-                        ? palette.primaryDeep
-                        : palette.onPrimary,
-                    side: palette.isDark
-                        ? BorderSide(
-                            color: palette.primary.withValues(alpha: .52),
-                          )
-                        : null,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 11,
-                    ),
-                  ),
-                  icon: const Icon(PhosphorIconsBold.plusCircle, size: 19),
-                  label: Text(l10n.addHabit),
                 ),
             ],
           ),
@@ -524,14 +508,14 @@ class _QuitHabitsContent extends ConsumerWidget {
         Row(
           children: [
             Expanded(child: SectionHeader(title: context.l10n.quitHabitsTab)),
-            FilledButton.icon(
+            _AddHabitButton(
+              key: const ValueKey('add-quit-habit-inline'),
               onPressed: () => HabitsListPage.openCreateHabit(
                 context,
                 ref,
                 activeHabitCount: activeHabitCount,
+                initialKind: HabitKind.quit,
               ),
-              icon: const Icon(Icons.add_rounded),
-              label: Text(context.l10n.addHabit),
             ),
           ],
         ),
@@ -551,6 +535,32 @@ class _QuitHabitsContent extends ConsumerWidget {
             const SizedBox(height: 12),
           ],
       ],
+    );
+  }
+}
+
+class _AddHabitButton extends StatelessWidget {
+  const _AddHabitButton({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return FilledButton.icon(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: palette.isDark ? palette.primarySoft : palette.primary,
+        foregroundColor: palette.isDark
+            ? palette.primaryDeep
+            : palette.onPrimary,
+        side: palette.isDark
+            ? BorderSide(color: palette.primary.withValues(alpha: .52))
+            : null,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      ),
+      icon: const Icon(PhosphorIconsBold.plusCircle, size: 19),
+      label: Text(context.l10n.addHabit),
     );
   }
 }

@@ -15,10 +15,15 @@ import 'package:habits/theme/app_theme.dart';
 ///  - un cambio de objetivo NO altera el periodo en curso, así que la
 ///    pantalla avisa de la fecha efectiva ANTES de guardar (§10).
 class HabitFormPage extends ConsumerStatefulWidget {
-  const HabitFormPage({super.key, this.habitId});
+  const HabitFormPage({
+    super.key,
+    this.habitId,
+    this.initialKind = HabitKind.build,
+  });
 
   /// Null para crear, id del hábito para editar.
   final String? habitId;
+  final HabitKind initialKind;
 
   bool get isEditing => habitId != null;
 
@@ -73,7 +78,7 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
   Periodicity _periodicity = Periodicity.daily;
   TimeOfDay? _reminder;
   HabitTrackingType _trackingType = HabitTrackingType.single;
-  HabitKind _kind = HabitKind.build;
+  late HabitKind _kind;
   int _targetCount = 2;
   String _progressIconId = ProgressIconCatalog.fallbackId;
 
@@ -87,6 +92,15 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
   static String? _nullableText(String value) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _kind = widget.initialKind;
+    if (!widget.isEditing && _kind == HabitKind.quit) {
+      _emojiController.text = _quitEmojis.first;
+    }
   }
 
   @override
@@ -417,7 +431,9 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                   _Label(l10n.habitNameLabel),
                   AuthTextField(
                     controller: _nameController,
-                    hint: l10n.habitNameHint,
+                    hint: _kind == HabitKind.quit
+                        ? l10n.quitHabitNameHint
+                        : l10n.habitNameHint,
                     icon: Icons.edit_rounded,
                     errorText: _errors.isEmpty ? null : _errorFor(l10n),
                     textInputAction: TextInputAction.done,

@@ -531,6 +531,7 @@
   "habitIdentityLockedHint": "The name and area can't be changed. Create a new habit instead.",
   "habitNameLabel": "Name",
   "habitNameHint": "E.g. Drink water",
+  "quitHabitNameHint": "E.g. Quit smoking",
   "habitEmojiLabel": "Emoji",
   "emojiSearchHint": "Search emoji",
   "emojiSearchEmpty": "No emojis match that search.",

@@ -65,6 +65,22 @@ void main() {
     expect(creado.periodicityOn(testToday).timesPerPeriod, 3);
   });
 
+  testWidgets('puede abrir la creación con dejar hábito seleccionado', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      appWith(const HabitFormPage(initialKind: HabitKind.quit)),
+    );
+    await tester.pumpAndSettle();
+
+    final selector = tester.widget<SegmentedButton<HabitKind>>(
+      find.byType(SegmentedButton<HabitKind>),
+    );
+    expect(selector.selected, {HabitKind.quit});
+    expect(find.text('Ej. Dejar de fumar'), findsOneWidget);
+    expect(find.byKey(const ValueKey('habit-emoji-🚭')), findsOneWidget);
+  });
+
   testWidgets('un nombre vacío mantiene el botón deshabilitado y no guarda', (
     tester,
   ) async {

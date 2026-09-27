@@ -1330,6 +1330,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get habitNameHint => 'Ej. Beber agua';
 
   @override
+  String get quitHabitNameHint => 'Ej. Dejar de fumar';
+
+  @override
   String get habitEmojiLabel => 'Emoji';
 
   @override

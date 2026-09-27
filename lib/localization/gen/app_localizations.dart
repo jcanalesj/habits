@@ -2438,6 +2438,12 @@ abstract class AppLocalizations {
   /// **'E.g. Drink water'**
   String get habitNameHint;
 
+  /// No description provided for @quitHabitNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. Quit smoking'**
+  String get quitHabitNameHint;
+
   /// No description provided for @habitEmojiLabel.
   ///
   /// In en, this message translates to:
