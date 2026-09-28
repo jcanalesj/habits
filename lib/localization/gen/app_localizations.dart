@@ -4388,6 +4388,36 @@ abstract class AppLocalizations {
   /// **'Move selected'**
   String get tasksRolloverSelected;
 
+  /// No description provided for @tasksRolloverDeleteSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard selected'**
+  String get tasksRolloverDeleteSelected;
+
+  /// No description provided for @tasksRolloverDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard these tasks?'**
+  String get tasksRolloverDeleteTitle;
+
+  /// No description provided for @tasksRolloverDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{This unfinished task will be permanently deleted.} other{These {count} unfinished tasks will be permanently deleted.}}'**
+  String tasksRolloverDeleteBody(int count);
+
+  /// No description provided for @tasksRolloverDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get tasksRolloverDeleteConfirm;
+
+  /// No description provided for @tasksRolloverDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Task discarded} other{{count} tasks discarded}}'**
+  String tasksRolloverDeleted(int count);
+
   /// No description provided for @tasksRolloverNotNow.
   ///
   /// In en, this message translates to:

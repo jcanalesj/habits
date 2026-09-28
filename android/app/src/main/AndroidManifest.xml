@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Reprograma los avisos tras reiniciar el móvil; si no, se pierden. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- NO se pide SCHEDULE_EXACT_ALARM a propósito: Google Play lo reserva
          para alarmas y calendarios, y un recordatorio de hábito tolera de
          sobra unos minutos de margen (ver AndroidScheduleMode.inexact...). -->

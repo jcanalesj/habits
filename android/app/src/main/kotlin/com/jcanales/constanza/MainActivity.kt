@@ -9,6 +9,9 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -101,6 +104,35 @@ class MainActivity : FlutterActivity() {
             })
     }
 
+    private fun registerHapticsChannel(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "constanza/haptics")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "habitCompleted" && call.method != "stepsGoalCompleted") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    getSystemService(VibratorManager::class.java).defaultVibrator
+                } else {
+                    @Suppress("DEPRECATION")
+                    getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                }
+                val duration = if (call.method == "stepsGoalCompleted") 500L else 45L
+                val amplitude = if (call.method == "stepsGoalCompleted") {
+                    VibrationEffect.DEFAULT_AMPLITUDE
+                } else {
+                    110
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(duration, amplitude))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(duration)
+                }
+                result.success(null)
+            }
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -116,6 +148,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         registerPedometerChannels(flutterEngine)
+        registerHapticsChannel(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "constanza/app_icon")
             .setMethodCallHandler { call, result ->
                 when (call.method) {

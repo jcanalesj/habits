@@ -12,14 +12,20 @@ import '../../helpers/auth_test_helpers.dart';
 Future<(AuthTestEnv, InMemoryTasksRepository)> pumpTasks(
   WidgetTester tester, {
   Iterable<TaskDraft> seeded = const [],
+  Set<int> completedIndexes = const {},
 }) async {
   SharedPreferences.setMockInitialValues({});
   final preferences = await SharedPreferences.getInstance();
   final env = AuthTestEnv(initialUser: verifiedUser);
   final repository = InMemoryTasksRepository(now: () => testInstant);
   addTearDown(repository.dispose);
+  var index = 0;
   for (final draft in seeded) {
-    await repository.create(draft);
+    index++;
+    final id = await repository.create(draft);
+    if (completedIndexes.contains(index)) {
+      await repository.setCompleted(id, true);
+    }
   }
   await tester.pumpWidget(
     localizedApp(
@@ -100,6 +106,24 @@ void main() {
     expect(find.text('Alta'), findsOneWidget);
   });
 
+  testWidgets('un día pasado muestra abiertas sus tareas completadas', (
+    tester,
+  ) async {
+    final yesterday = testToday.addDays(-1);
+    await pumpTasks(
+      tester,
+      seeded: [TaskDraft(title: 'Tarea histórica', date: yesterday)],
+      completedIndexes: {1},
+    );
+
+    await tester.tap(find.byKey(ValueKey('day-strip-${yesterday.key}')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tarea histórica'), findsOneWidget);
+    expect(find.text('Completadas · 1'), findsOneWidget);
+    expect(find.text('Nada pendiente para este día'), findsNothing);
+  });
+
   testWidgets('ofrece arrastrar las atrasadas y las pasa todas a hoy', (
     tester,
   ) async {
@@ -124,6 +148,33 @@ void main() {
     );
     expect(find.text('Pagar la luz'), findsOneWidget);
     expect(env.notifications.tagged.containsKey('task'), isTrue);
+  });
+
+  testWidgets('permite descartar las tareas atrasadas seleccionadas', (
+    tester,
+  ) async {
+    final (_, repository) = await pumpTasks(
+      tester,
+      seeded: [
+        TaskDraft(title: 'Pagar la luz', date: testToday.addDays(-2)),
+        TaskDraft(title: 'Devolver libro', date: testToday.addDays(-1)),
+        const TaskDraft(title: 'De hoy', date: testToday),
+      ],
+    );
+
+    await tester.tap(find.byKey(const ValueKey('rollover-task-2')));
+    await tester.tap(find.byKey(const ValueKey('rollover-delete-selected')));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Descartar estas tareas?'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('rollover-confirm-delete')));
+    await tester.pumpAndSettle();
+
+    expect(repository.all.map((task) => task.title), [
+      'Devolver libro',
+      'De hoy',
+    ]);
+    expect(find.text('Tarea descartada'), findsOneWidget);
   });
 
   testWidgets('las tareas con hora programan una notificación', (tester) async {

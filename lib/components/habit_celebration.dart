@@ -1,8 +1,13 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:habits/components/app_form_dialog.dart';
+import 'package:habits/components/app_haptics.dart';
+import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
+import 'package:phosphor_icons/phosphor_icons.dart';
 
 /// Celebración no bloqueante al registrar un hábito.
 abstract final class HabitCelebration {
@@ -10,6 +15,7 @@ abstract final class HabitCelebration {
     BuildContext context, {
     required String message,
     required bool allDone,
+    bool haptic = true,
   }) {
     final overlay = Overlay.of(context, rootOverlay: true);
     late final OverlayEntry entry;
@@ -21,7 +27,49 @@ abstract final class HabitCelebration {
       ),
     );
     overlay.insert(entry);
-    HapticFeedback.mediumImpact();
+    if (haptic) unawaited(AppHaptics.habitCompleted());
+  }
+
+  /// Celebra el momento especial en el que ya no queda ningún hábito del día.
+  ///
+  /// El confeti aparece de inmediato y el audio se reproduce en paralelo para
+  /// que un fallo del reproductor nunca impida mostrar la felicitación.
+  static Future<void> showDayCompleted(
+    BuildContext context, {
+    required String message,
+  }) async {
+    final l10n = context.l10n;
+    final player = AudioPlayer();
+
+    show(context, message: message, allDone: true);
+    unawaited(
+      player
+          .play(AssetSource('audio/applause.wav'), volume: .8)
+          .catchError((Object _) {}),
+    );
+
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierColor: context.palette.scrim,
+        builder: (dialogContext) => AppFormDialog(
+          key: const ValueKey('habits-day-completed-dialog'),
+          hero: const AppDialogHero.cat(
+            badge: PhosphorIconsBold.confetti,
+            color: AppColors.primary,
+          ),
+          title: message,
+          helper: l10n.allHabitsDoneBody,
+          primaryLabel: l10n.continueLabel,
+          primaryIcon: PhosphorIconsBold.sparkle,
+          primaryKey: const ValueKey('habits-day-completed-ok'),
+          onPrimary: () => Navigator.pop(dialogContext),
+          secondaryLabel: l10n.cancel,
+        ),
+      );
+    } finally {
+      await player.dispose();
+    }
   }
 }
 

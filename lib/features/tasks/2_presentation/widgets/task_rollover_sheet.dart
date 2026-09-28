@@ -7,12 +7,19 @@ import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 /// Ofrece pasar a hoy las tareas atrasadas: todas o una selección.
-/// Devuelve las elegidas, o null si el usuario prefiere dejarlo.
-Future<List<TaskItem>?> showTaskRolloverSheet(
+/// También permite descartar definitivamente las seleccionadas.
+enum TaskRolloverAction { move, delete }
+
+typedef TaskRolloverResult = ({
+  TaskRolloverAction action,
+  List<TaskItem> tasks,
+});
+
+Future<TaskRolloverResult?> showTaskRolloverSheet(
   BuildContext context, {
   required List<TaskItem> overdue,
   required LogicalDate today,
-}) => showModalBottomSheet<List<TaskItem>>(
+}) => showModalBottomSheet<TaskRolloverResult>(
   context: context,
   showDragHandle: true,
   isScrollControlled: true,
@@ -107,19 +114,36 @@ class _RolloverSheetState extends State<_RolloverSheet> {
             const SizedBox(height: 12),
             FilledButton(
               key: const ValueKey('rollover-all'),
-              onPressed: () => Navigator.pop(context, widget.overdue),
+              onPressed: () => Navigator.pop(context, (
+                action: TaskRolloverAction.move,
+                tasks: widget.overdue,
+              )),
               child: Text(l10n.tasksRolloverAll),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
               key: const ValueKey('rollover-selected'),
               onPressed: partial && _selected.isNotEmpty
-                  ? () => Navigator.pop(context, [
-                      for (final task in widget.overdue)
-                        if (_selected.contains(task.id)) task,
-                    ])
+                  ? () => Navigator.pop(context, (
+                      action: TaskRolloverAction.move,
+                      tasks: [
+                        for (final task in widget.overdue)
+                          if (_selected.contains(task.id)) task,
+                      ],
+                    ))
                   : null,
               child: Text(l10n.tasksRolloverSelected),
+            ),
+            TextButton.icon(
+              key: const ValueKey('rollover-delete-selected'),
+              onPressed: _selected.isEmpty
+                  ? null
+                  : () => _confirmDelete(context),
+              icon: const Icon(PhosphorIconsBold.trash),
+              label: Text(l10n.tasksRolloverDeleteSelected),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error,
+              ),
             ),
             TextButton(
               key: const ValueKey('rollover-not-now'),
@@ -130,5 +154,38 @@ class _RolloverSheetState extends State<_RolloverSheet> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.tasksRolloverDeleteTitle),
+        content: Text(l10n.tasksRolloverDeleteBody(_selected.length)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            key: const ValueKey('rollover-confirm-delete'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l10n.tasksRolloverDeleteConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    Navigator.pop(context, (
+      action: TaskRolloverAction.delete,
+      tasks: [
+        for (final task in widget.overdue)
+          if (_selected.contains(task.id)) task,
+      ],
+    ));
   }
 }

@@ -48,17 +48,30 @@ class _TasksPageState extends ConsumerState<TasksPage> {
     if (prefs?.getString(key) == today.key) return;
     await prefs?.setString(key, today.key);
     if (!mounted) return;
-    final chosen = await showTaskRolloverSheet(
+    final result = await showTaskRolloverSheet(
       context,
       overdue: overdue,
       today: today,
     );
-    if (chosen == null || chosen.isEmpty || !mounted) return;
-    await ref.read(tasksRepositoryProvider).moveToDay(chosen, today);
+    if (result == null || result.tasks.isEmpty || !mounted) return;
+    final repository = ref.read(tasksRepositoryProvider);
+    if (result.action == TaskRolloverAction.delete) {
+      for (final task in result.tasks) {
+        await repository.delete(task.id);
+      }
+      if (!mounted) return;
+      AppNotice.show(
+        context,
+        message: context.l10n.tasksRolloverDeleted(result.tasks.length),
+        type: AppNoticeType.success,
+      );
+      return;
+    }
+    await repository.moveToDay(result.tasks, today);
     if (!mounted) return;
     AppNotice.show(
       context,
-      message: context.l10n.tasksRolloverDone(chosen.length),
+      message: context.l10n.tasksRolloverDone(result.tasks.length),
       type: AppNoticeType.success,
     );
   }
@@ -484,11 +497,13 @@ class _TaskListCard extends StatelessWidget {
 
 class _CompletedSection extends StatefulWidget {
   const _CompletedSection({
+    super.key,
     required this.tasks,
     required this.today,
     required this.onToggle,
     required this.onTap,
     required this.onDelete,
+    this.initiallyExpanded = false,
   });
 
   final List<TaskItem> tasks;
@@ -496,13 +511,22 @@ class _CompletedSection extends StatefulWidget {
   final _TaskAction onToggle;
   final _TaskAction onTap;
   final _TaskAction onDelete;
+  final bool initiallyExpanded;
 
   @override
   State<_CompletedSection> createState() => _CompletedSectionState();
 }
 
 class _CompletedSectionState extends State<_CompletedSection> {
-  bool _expanded = false;
+  late bool _expanded = widget.initiallyExpanded;
+
+  @override
+  void didUpdateWidget(covariant _CompletedSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.initiallyExpanded && widget.initiallyExpanded) {
+      _expanded = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -592,7 +616,7 @@ class _DayView extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (pending.isEmpty)
+        if (pending.isEmpty && completed.isEmpty)
           _TasksEmptyState(
             icon: PhosphorIconsFill.checkCircle,
             text: l10n.tasksEmptyDay,
@@ -607,11 +631,13 @@ class _DayView extends ConsumerWidget {
             onDelete: onDelete,
           ),
         _CompletedSection(
+          key: ValueKey('tasks-completed-$day'),
           tasks: completed,
           today: today,
           onToggle: onToggle,
           onTap: onTap,
           onDelete: onDelete,
+          initiallyExpanded: day.isBefore(today),
         ),
       ],
     );

@@ -266,11 +266,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
 
     // Desmarcar es una corrección, no un logro: solo celebramos al completar.
     if (wasCompleted) return;
-    HabitCelebration.show(
-      context,
-      message: _nextCelebrationMessage(allDone: completesTheDay),
-      allDone: completesTheDay,
-    );
+    final message = _nextCelebrationMessage(allDone: completesTheDay);
+    if (completesTheDay) {
+      await HabitCelebration.showDayCompleted(context, message: message);
+    } else {
+      HabitCelebration.show(context, message: message, allDone: false);
+    }
   }
 
   void _notifyActionFailed(BuildContext context) => AppNotice.show(
@@ -300,11 +301,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       return;
     }
     if (!completesHabit) return;
-    HabitCelebration.show(
-      context,
-      message: _nextCelebrationMessage(allDone: completesTheDay),
-      allDone: completesTheDay,
-    );
+    final message = _nextCelebrationMessage(allDone: completesTheDay);
+    if (completesTheDay) {
+      await HabitCelebration.showDayCompleted(context, message: message);
+    } else {
+      HabitCelebration.show(context, message: message, allDone: false);
+    }
   }
 
   @override
@@ -463,7 +465,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
             for (final habit in quitHabits) ...[
               _HomeQuitHabitCard(
                 habit: habit,
-                onTap: () => HabitsListPage.openEditHabit(context, habit),
+                onTap: () => context.go('/habits/manage?kind=quit'),
               ),
               if (habit != quitHabits.last) const SizedBox(height: 10),
             ],

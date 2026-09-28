@@ -68,5 +68,6 @@ flutter:
     - assets/images/app_icons/
     - assets/images/avatars/
     - assets/images/cards/
+    - assets/images/pomodoro/
     - assets/audio/
     - assets/logo/

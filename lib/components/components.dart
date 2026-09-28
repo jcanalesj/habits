@@ -32,6 +32,7 @@ export 'cat_mascot.dart';
 export 'cold_start_welcome.dart';
 export 'amount_field.dart';
 export 'app_form_dialog.dart';
+export 'app_haptics.dart';
 export 'app_text_field.dart';
 export 'confirm_delete_dialog.dart';
 export 'day_strip.dart';

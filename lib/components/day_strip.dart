@@ -140,6 +140,7 @@ class _DayChip extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 3),
         child: InkWell(
+          key: ValueKey('day-strip-${date.key}'),
           onTap: onTap,
           borderRadius: BorderRadius.circular(18),
           child: AnimatedContainer(

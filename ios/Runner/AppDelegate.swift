@@ -1,5 +1,6 @@
 import CoreMotion
 import Flutter
+import AudioToolbox
 import UIKit
 
 @main
@@ -27,6 +28,28 @@ import UIKit
     }
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "PedometerChannel") {
       pedometerChannel.register(messenger: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "HapticsChannel") {
+      registerHapticsChannel(messenger: registrar.messenger())
+    }
+  }
+
+  private func registerHapticsChannel(messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "constanza/haptics", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "habitCompleted" || call.method == "stepsGoalCompleted" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      if call.method == "stepsGoalCompleted" {
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+        result(nil)
+        return
+      }
+      let generator = UIImpactFeedbackGenerator(style: .medium)
+      generator.prepare()
+      generator.impactOccurred(intensity: 0.75)
+      result(nil)
     }
   }
 

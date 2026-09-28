@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/components/components.dart';
@@ -128,54 +130,20 @@ class _PomodoroPageState extends ConsumerState<PomodoroPage> {
           40 + MediaQuery.viewPaddingOf(context).bottom,
         ),
         children: [
+          const _PomodoroHero(),
+          const SizedBox(height: 18),
           Center(
-            child: Text(
-              phaseLabel.toUpperCase(),
-              key: const ValueKey('pomodoro-phase'),
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.6,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Center(
-            child: ProgressRing(
+            child: _PomodoroDial(
               progress: state.progress,
-              size: 260,
               color: color,
-              semanticLabel: phaseLabel,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _clock(state.remainingSeconds),
-                    key: const ValueKey('pomodoro-clock'),
-                    style: TextStyle(
-                      color: palette.textPrimary,
-                      fontSize: 56,
-                      fontWeight: FontWeight.w900,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                      height: 1,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.pomodoroCycleProgress(
-                      (state.isWork
-                              ? state.completedInCycle + 1
-                              : state.completedInCycle)
-                          .clamp(1, config.pomodorosPerCycle),
-                      config.pomodorosPerCycle,
-                    ),
-                    style: TextStyle(
-                      color: palette.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              phaseLabel: phaseLabel,
+              clock: _clock(state.remainingSeconds),
+              cycleLabel: l10n.pomodoroCycleProgress(
+                (state.isWork
+                        ? state.completedInCycle + 1
+                        : state.completedInCycle)
+                    .clamp(1, config.pomodorosPerCycle),
+                config.pomodorosPerCycle,
               ),
             ),
           ),
@@ -271,11 +239,7 @@ class _PomodoroPageState extends ConsumerState<PomodoroPage> {
           ),
           const SizedBox(height: 10),
           if (today.isEmpty)
-            EmptyStateBlock(
-              icon: PhosphorIconsRegular.timer,
-              text: l10n.pomodoroSessionsEmpty,
-              color: AppColors.flame,
-            )
+            _EmptySessions(text: l10n.pomodoroSessionsEmpty)
           else
             Container(
               clipBehavior: Clip.antiAlias,
@@ -303,6 +267,195 @@ class _PomodoroPageState extends ConsumerState<PomodoroPage> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PomodoroHero extends StatelessWidget {
+  const _PomodoroHero();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 112,
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(26),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.flame.withValues(alpha: .10),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Image.asset(
+      'assets/images/pomodoro/pomodoro_hero.png',
+      fit: BoxFit.cover,
+      alignment: Alignment.center,
+    ),
+  );
+}
+
+class _PomodoroDial extends StatelessWidget {
+  const _PomodoroDial({
+    required this.progress,
+    required this.color,
+    required this.phaseLabel,
+    required this.clock,
+    required this.cycleLabel,
+  });
+
+  final double progress;
+  final Color color;
+  final String phaseLabel;
+  final String clock;
+  final String cycleLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Semantics(
+      label: phaseLabel,
+      value: clock,
+      child: SizedBox.square(
+        dimension: 270,
+        child: CustomPaint(
+          painter: _PomodoroDialPainter(
+            progress: progress,
+            trackColor: color.withValues(alpha: .12),
+            startColor: const Color(0xFFFFA43A),
+            endColor: const Color(0xFFFF625C),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  phaseLabel.toUpperCase(),
+                  key: const ValueKey('pomodoro-phase'),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.8,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  clock,
+                  key: const ValueKey('pomodoro-clock'),
+                  style: TextStyle(
+                    color: palette.textPrimary,
+                    fontSize: 56,
+                    fontWeight: FontWeight.w900,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    height: .95,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  cycleLabel,
+                  style: TextStyle(
+                    color: palette.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PomodoroDialPainter extends CustomPainter {
+  const _PomodoroDialPainter({
+    required this.progress,
+    required this.trackColor,
+    required this.startColor,
+    required this.endColor,
+  });
+
+  final double progress;
+  final Color trackColor;
+  final Color startColor;
+  final Color endColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const stroke = 13.0;
+    final rect = Offset.zero & size;
+    final arcRect = rect.deflate(stroke / 2);
+    final track = Paint()
+      ..color = trackColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke;
+    canvas.drawOval(arcRect, track);
+
+    final value = progress.clamp(0.0, 1.0);
+    if (value <= 0) return;
+    final paint = Paint()
+      ..shader = SweepGradient(
+        startAngle: -math.pi / 2,
+        endAngle: math.pi * 3 / 2,
+        colors: [startColor, endColor],
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = stroke;
+    canvas.drawArc(arcRect, -math.pi / 2, math.pi * 2 * value, false, paint);
+  }
+
+  @override
+  bool shouldRepaint(_PomodoroDialPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.trackColor != trackColor ||
+      oldDelegate.startColor != startColor ||
+      oldDelegate.endColor != endColor;
+}
+
+class _EmptySessions extends StatelessWidget {
+  const _EmptySessions({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: palette.border),
+        boxShadow: [
+          BoxShadow(
+            color: palette.shadow,
+            blurRadius: 18,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Image.asset(
+            'assets/images/pomodoro/pomodoro_empty_cat.png',
+            height: 74,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: palette.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );

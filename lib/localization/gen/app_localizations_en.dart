@@ -2501,6 +2501,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tasksRolloverSelected => 'Move selected';
 
   @override
+  String get tasksRolloverDeleteSelected => 'Discard selected';
+
+  @override
+  String get tasksRolloverDeleteTitle => 'Discard these tasks?';
+
+  @override
+  String tasksRolloverDeleteBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'These $count unfinished tasks will be permanently deleted.',
+      one: 'This unfinished task will be permanently deleted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tasksRolloverDeleteConfirm => 'Discard';
+
+  @override
+  String tasksRolloverDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tasks discarded',
+      one: 'Task discarded',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get tasksRolloverNotNow => 'Not now';
 
   @override

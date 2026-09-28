@@ -19,7 +19,9 @@ Future<void> showStepsGoalCelebration(
     context,
     message: l10n.stepsGoalCelebrationTitle,
     allDone: true,
+    haptic: false,
   );
+  unawaited(AppHaptics.stepsGoalCompleted());
   try {
     // El diálogo aparece de inmediato; el audio nunca bloquea la felicitación.
     unawaited(

@@ -466,6 +466,20 @@ void main() {
         await tester.pumpAndSettle();
       }
 
+      expect(
+        find.byKey(const ValueKey('habits-day-completed-dialog')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('habits-day-completed-dialog')),
+          matching: find.text('Has registrado todos tus hábitos.'),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('habits-day-completed-ok')));
+      await tester.pumpAndSettle();
+
       expect(find.textContaining('Todo hecho por hoy'), findsOneWidget);
       expect(find.textContaining('Pendientes'), findsNothing);
       expect(find.text('Completados hoy (5)'), findsOneWidget);
