@@ -701,90 +701,104 @@ class _QuitHabitCardState extends ConsumerState<_QuitHabitCard> {
     final textTheme = Theme.of(context).textTheme;
     final tintEnd = color.withValues(alpha: palette.isDark ? .20 : .18);
 
-    return Container(
+    return Semantics(
       key: ValueKey('quit-habit-${habit.id}'),
-      padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            palette.surface.withValues(alpha: palette.isDark ? 1 : .72),
-            palette.isDark
-                ? Color.alphaBlend(tintEnd, palette.surface)
-                : tintEnd,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: palette.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            alignment: Alignment.center,
+      button: true,
+      label: context.l10n.editHabitTitle,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => HabitsListPage.openEditHabit(context, habit),
+          borderRadius: BorderRadius.circular(24),
+          child: Ink(
+            padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
             decoration: BoxDecoration(
-              color: palette.surfaceMuted,
-              borderRadius: BorderRadius.circular(18),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  palette.surface.withValues(alpha: palette.isDark ? 1 : .72),
+                  palette.isDark
+                      ? Color.alphaBlend(tintEnd, palette.surface)
+                      : tintEnd,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: palette.border),
             ),
-            child: HabitIcon(
-              iconId: habit.iconId,
-              legacyEmoji: habit.emoji,
-              size: 52,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  habit.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.titleMedium?.copyWith(
-                    color: palette.textPrimary,
-                    fontWeight: FontWeight.w800,
+                Container(
+                  width: 72,
+                  height: 72,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: palette.surfaceMuted,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: HabitIcon(
+                    iconId: habit.iconId,
+                    legacyEmoji: habit.emoji,
+                    size: 52,
                   ),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  _elapsedLabel(elapsed),
-                  key: ValueKey('quit-habit-timer-${habit.id}'),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: palette.textSecondary,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        habit.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: palette.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        _elapsedLabel(elapsed),
+                        key: ValueKey('quit-habit-timer-${habit.id}'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: palette.textSecondary,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  onPressed: () => HabitsListPage.openEditHabit(context, habit),
+                  tooltip: context.l10n.editHabitTitle,
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    Icons.more_horiz_rounded,
+                    color: palette.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: 2),
+                IconButton(
+                  key: ValueKey('quit-habit-reset-${habit.id}'),
+                  onPressed: _reset,
+                  tooltip: context.l10n.quitHabitReset,
+                  style: IconButton.styleFrom(
+                    fixedSize: const Size(46, 46),
+                    foregroundColor: palette.primary,
+                    backgroundColor: palette.isDark
+                        ? palette.surfaceMuted
+                        : palette.surface.withValues(alpha: .58),
+                  ),
+                  icon: const Icon(Icons.restart_alt_rounded, size: 24),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 4),
-          IconButton(
-            onPressed: () => HabitsListPage.openEditHabit(context, habit),
-            tooltip: context.l10n.editHabitTitle,
-            visualDensity: VisualDensity.compact,
-            icon: Icon(Icons.more_horiz_rounded, color: palette.textSecondary),
-          ),
-          const SizedBox(width: 2),
-          IconButton(
-            key: ValueKey('quit-habit-reset-${habit.id}'),
-            onPressed: _reset,
-            tooltip: context.l10n.quitHabitReset,
-            style: IconButton.styleFrom(
-              fixedSize: const Size(46, 46),
-              foregroundColor: palette.primary,
-              backgroundColor: palette.isDark
-                  ? palette.surfaceMuted
-                  : palette.surface.withValues(alpha: .58),
-            ),
-            icon: const Icon(Icons.restart_alt_rounded, size: 24),
-          ),
-        ],
+        ),
       ),
     );
   }

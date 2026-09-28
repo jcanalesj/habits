@@ -125,6 +125,7 @@ class StepsController extends Notifier<StepsState> {
       final storedToday = next.value
           ?.where((day) => day.day == state.today)
           .firstOrNull;
+      if (storedToday != null) _mergeStoredIntoLedger(storedToday);
       if (storedToday != null && storedToday.steps > state.todaySteps) {
         state = state.copyWith(
           todaySteps: storedToday.steps,
@@ -137,6 +138,7 @@ class StepsController extends Notifier<StepsState> {
         .value
         ?.where((day) => day.day == today)
         .firstOrNull;
+    if (stored != null) _mergeStoredIntoLedger(stored);
     final initialSteps = _initialSteps(today, stored);
     _lastSavedSteps = stored?.steps;
 
@@ -155,6 +157,20 @@ class StepsController extends Notifier<StepsState> {
     final fromLedger = _ledger.dayKey == today.key ? _ledger.todaySteps : 0;
     final fromStore = stored?.steps ?? 0;
     return fromLedger > fromStore ? fromLedger : fromStore;
+  }
+
+  /// Si la nube ya tiene un total mayor, Android debe continuar sumando
+  /// desde ese valor. De lo contrario el estado visible queda congelado en
+  /// el máximo remoto hasta que el contador local lo alcance.
+  void _mergeStoredIntoLedger(StepsDay stored) {
+    if (_ledger.dayKey != null && _ledger.dayKey != stored.day.key) return;
+    if (_ledger.todaySteps >= stored.steps) return;
+    _ledger = StepLedgerState(
+      lastCounter: _ledger.lastCounter,
+      dayKey: stored.day.key,
+      todaySteps: stored.steps,
+    );
+    _ledgerStore.save(_ledger.toJson());
   }
 
   Future<void> _start() async {

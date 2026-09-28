@@ -197,6 +197,23 @@ void main() {
       expect(t.container.read(stepsControllerProvider).todaySteps, 3000);
     });
 
+    test('Android continúa sumando desde un total remoto mayor', () async {
+      final t = make(seeded: [StepsDay(day: testToday, steps: 6842)]);
+      final sub = t.container.listen(stepsControllerProvider, (_, _) {});
+      addTearDown(sub.close);
+      await t.container.read(storedStepsDaysProvider.future);
+      await settle();
+      t.container.invalidate(stepsControllerProvider);
+      await settle();
+
+      t.source.emit(PedometerSample(at: testInstant, counter: 23595));
+      t.source.emit(PedometerSample(at: testInstant, counter: 23596));
+      await settle();
+
+      expect(t.container.read(stepsControllerProvider).todaySteps, 6843);
+      expect(StepLedgerState.fromJson(t.ledger.json!).todaySteps, 6843);
+    });
+
     test(
       'sin permiso lo pide al solicitarlo y rellena el historial en iOS',
       () async {

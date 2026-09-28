@@ -463,7 +463,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
             for (final habit in quitHabits) ...[
               _HomeQuitHabitCard(
                 habit: habit,
-                onTap: () => context.go('/habits/manage?kind=quit'),
+                onTap: () => HabitsListPage.openEditHabit(context, habit),
               ),
               if (habit != quitHabits.last) const SizedBox(height: 10),
             ],
