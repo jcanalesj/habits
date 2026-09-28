@@ -3,6 +3,7 @@ import 'dart:ui' show Color;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:habits/features/habits/0_entity/habit_reminder.dart';
+import 'package:habits/features/habits/0_entity/scheduled_notification.dart';
 import 'package:habits/features/habits/1_domain/repositories/notifications_repository.dart';
 import 'package:habits/features/habits/1_domain/services/logical_calendar.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -23,6 +24,17 @@ class LocalNotificationsRepository implements NotificationsRepository {
   static const _channelName = 'Recordatorios de hábitos';
   static const _channelDescription =
       'Avisos a la hora que hayas elegido para cada hábito.';
+
+  static const _toolsChannelId = 'tools';
+  static const _toolsChannelName = 'Herramientas';
+  static const _toolsChannelDescription =
+      'Tareas con hora y fin de los pomodoros.';
+
+  /// Las notificaciones de herramientas llevan `tool:<etiqueta>:<id>` en el
+  /// payload: así se distinguen de los recordatorios de hábitos (cuyo
+  /// payload es el id del hábito) al cancelar por bloques.
+  static const _toolPayloadPrefix = 'tool:';
+  static String _taggedPrefix(String tag) => '$_toolPayloadPrefix$tag:';
 
   /// Silueta blanca en `res/drawable-*`: Android pinta el icono pequeño de
   /// las notificaciones como máscara, así que el icono a color saldría como
@@ -120,7 +132,7 @@ class LocalNotificationsRepository implements NotificationsRepository {
     await initialize();
     // Cancelar y reprogramar entero: mucho más simple de razonar que
     // calcular diferencias, y son unas pocas decenas de avisos.
-    await _plugin.cancelAll();
+    await cancelHabitReminders();
 
     // El calendario ya sabe resolver "esta hora en la zona del perfil", y
     // degrada a UTC si la zona guardada es inválida.
@@ -170,9 +182,65 @@ class LocalNotificationsRepository implements NotificationsRepository {
   }
 
   @override
+  Future<void> cancelHabitReminders() async {
+    await initialize();
+    await _cancelWhere(
+      (payload) => !(payload?.startsWith(_toolPayloadPrefix) ?? false),
+    );
+  }
+
+  @override
   Future<void> cancelAll() async {
     await initialize();
     await _plugin.cancelAll();
+  }
+
+  @override
+  Future<void> syncTagged(
+    String tag,
+    List<ScheduledNotification> notifications,
+  ) async {
+    await initialize();
+    await cancelTagged(tag);
+    final now = DateTime.now().toUtc();
+    for (final notification in notifications) {
+      if (!notification.whenUtc.isAfter(now)) continue;
+      await _plugin.zonedSchedule(
+        id: notification.id,
+        title: notification.title,
+        body: notification.body,
+        scheduledDate: tz.TZDateTime.from(notification.whenUtc, tz.UTC),
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            _toolsChannelId,
+            _toolsChannelName,
+            channelDescription: _toolsChannelDescription,
+            icon: _androidIcon,
+            color: _brandColor,
+            importance: Importance.high,
+            priority: Priority.high,
+            playSound: !notification.silent,
+          ),
+          iOS: DarwinNotificationDetails(presentSound: !notification.silent),
+        ),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: '${_taggedPrefix(tag)}${notification.payload}',
+      );
+    }
+  }
+
+  @override
+  Future<void> cancelTagged(String tag) async {
+    await initialize();
+    final prefix = _taggedPrefix(tag);
+    await _cancelWhere((payload) => payload?.startsWith(prefix) ?? false);
+  }
+
+  Future<void> _cancelWhere(bool Function(String? payload) test) async {
+    final pending = await _plugin.pendingNotificationRequests();
+    for (final request in pending) {
+      if (test(request.payload)) await _plugin.cancel(id: request.id);
+    }
   }
 
   @override

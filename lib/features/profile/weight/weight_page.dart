@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:habits/components/app_notice.dart';
+import 'package:habits/components/components.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
 import 'package:habits/features/profile/weight/weight_entry.dart';
 import 'package:habits/features/profile/weight/weight_onboarding_dialog.dart';
@@ -274,7 +274,12 @@ class _WeightPageState extends ConsumerState<WeightPage> {
           : loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                40 + MediaQuery.viewPaddingOf(context).bottom,
+              ),
               children: [
                 _WeightHeroCard(
                   initial: initial,
@@ -295,7 +300,7 @@ class _WeightPageState extends ConsumerState<WeightPage> {
                 Row(
                   children: [
                     Expanded(
-                      child: _WeightMetricCard(
+                      child: MetricTile(
                         key: const ValueKey('weight-edit-goals'),
                         icon: PhosphorIconsBold.target,
                         color: AppColors.lilac,
@@ -309,7 +314,7 @@ class _WeightPageState extends ConsumerState<WeightPage> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: _WeightMetricCard(
+                      child: MetricTile(
                         key: const ValueKey('weight-calories-card'),
                         icon: PhosphorIconsFill.fire,
                         color: AppColors.pink,
@@ -1104,104 +1109,6 @@ class _HeroWeightValue extends StatelessWidget {
   }
 }
 
-class _WeightMetricCard extends StatelessWidget {
-  const _WeightMetricCard({
-    super.key,
-    required this.icon,
-    required this.color,
-    required this.label,
-    required this.value,
-    this.detail,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final Color color;
-  final String label;
-  final String value;
-  final String? detail;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-    return Material(
-      color: palette.surface.withValues(alpha: palette.isDark ? 1 : .9),
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 128),
-          padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: palette.border),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: palette.tint(color, .1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: palette.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      value,
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    if (detail != null) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        detail!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: palette.textSecondary,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (onTap != null)
-                Icon(
-                  PhosphorIconsBold.caretRight,
-                  color: palette.textSecondary,
-                  size: 17,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _ChartCard extends StatelessWidget {
   const _ChartCard({
     required this.entries,
@@ -1223,7 +1130,7 @@ class _ChartCard extends StatelessWidget {
     final locale = Localizations.localeOf(context).languageCode;
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 14, 14),
-      decoration: _surfaceDecoration(palette),
+      decoration: surfaceDecoration(palette),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1248,14 +1155,19 @@ class _ChartCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _RangeSelector(selected: range, onSelected: onRangeSelected),
+              SegmentedPill<_WeightRange>(
+                options: _WeightRange.values,
+                selected: range,
+                labelOf: (range) => range.label,
+                onSelected: onRangeSelected,
+              ),
             ],
           ),
           const SizedBox(height: 14),
           if (entries.length < 2)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 28),
-              child: _EmptyBlock(
+              child: EmptyStateBlock(
                 icon: PhosphorIconsBold.chartLine,
                 text: context.l10n.weightChartEmpty,
               ),
@@ -1494,7 +1406,7 @@ class _HistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (entries.isEmpty) {
-      return _EmptyBlock(
+      return EmptyStateBlock(
         icon: PhosphorIconsBold.scales,
         text: context.l10n.weightHistoryEmpty,
       );
@@ -1504,7 +1416,7 @@ class _HistoryCard extends StatelessWidget {
     final now = DateTime.now();
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 14, 10, 6),
-      decoration: _surfaceDecoration(palette),
+      decoration: surfaceDecoration(palette),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1646,87 +1558,3 @@ class _HistoryCard extends StatelessWidget {
     return isToday ? '$today, $formatted' : formatted;
   }
 }
-
-class _EmptyBlock extends StatelessWidget {
-  const _EmptyBlock({required this.icon, required this.text});
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      decoration: _surfaceDecoration(palette),
-      child: Column(
-        children: [
-          Icon(icon, color: AppColors.lilac, size: 38),
-          const SizedBox(height: 10),
-          Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: palette.textSecondary, height: 1.35),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RangeSelector extends StatelessWidget {
-  const _RangeSelector({required this.selected, required this.onSelected});
-  final _WeightRange selected;
-  final ValueChanged<_WeightRange> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: palette.tint(palette.primary, .06),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final range in _WeightRange.values)
-            InkWell(
-              onTap: () => onSelected(range),
-              borderRadius: BorderRadius.circular(15),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 11,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: range == selected
-                      ? palette.primary
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Text(
-                  range.label,
-                  style: TextStyle(
-                    color: range == selected
-                        ? palette.onPrimary
-                        : palette.textSecondary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-BoxDecoration _surfaceDecoration(AppPalette palette) => BoxDecoration(
-  color: palette.surface.withValues(alpha: palette.isDark ? 1 : .86),
-  borderRadius: BorderRadius.circular(22),
-  border: Border.all(color: palette.border),
-);

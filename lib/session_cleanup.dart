@@ -6,6 +6,7 @@ import 'package:habits/features/auth/2_presentation/controllers/register_control
 import 'package:habits/features/auth/2_presentation/controllers/verification_origin.dart';
 import 'package:habits/features/auth/2_presentation/controllers/verify_email_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
+import 'package:habits/features/pomodoro/2_presentation/providers/pomodoro_providers.dart';
 import 'package:habits/features/premium/2_presentation/premium_providers.dart';
 import 'package:habits/features/profile/appearance/app_icon.dart';
 import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
@@ -51,7 +52,13 @@ class SessionCleanup {
     await _safely('desvincular tienda', () async {
       await _ref.read(purchasesRepositoryProvider).reset();
     });
+    await _safely('parar el pomodoro', () async {
+      // El temporizador del usuario anterior no debe seguir contando (ni
+      // registrar sesiones) para el siguiente.
+      await _ref.read(pomodoroStateStoreProvider).save(null);
+    });
     _ref
+      ..invalidate(pomodoroControllerProvider)
       ..invalidate(loginControllerProvider)
       ..invalidate(registerControllerProvider)
       ..invalidate(verifyEmailControllerProvider)

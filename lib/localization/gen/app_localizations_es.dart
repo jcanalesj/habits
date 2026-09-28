@@ -993,7 +993,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get avatarHazel => 'Hazel';
 
   @override
-  String get avatarCookie => 'Cookie';
+  String get avatarCookie => 'Crispin';
 
   @override
   String get avatarPremium => 'Premium';
@@ -2298,4 +2298,976 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumCatImageLabel => 'Gato con corona Premium';
+
+  @override
+  String get navTools => 'Herramientas';
+
+  @override
+  String get toolsTitle => 'Herramientas';
+
+  @override
+  String get toolsSubtitle => 'Utilidades para tu día a día';
+
+  @override
+  String get toolsNoticeBody =>
+      'Las herramientas no afectan a tu racha: son ayudas para organizar tu día.';
+
+  @override
+  String get toolsNoticeDismiss => 'Entendido';
+
+  @override
+  String get toolsComingSoon => 'Próximamente';
+
+  @override
+  String get toolTasksTitle => 'Tareas';
+
+  @override
+  String get toolTasksSubtitle => 'Lo que tienes que hacer, día a día';
+
+  @override
+  String get toolPomodoroTitle => 'Pomodoro';
+
+  @override
+  String get toolPomodoroSubtitle => 'Concéntrate por bloques';
+
+  @override
+  String get toolShoppingTitle => 'Compra';
+
+  @override
+  String get toolShoppingSubtitle => 'Para no olvidar nada';
+
+  @override
+  String get toolFinanceTitle => 'Finanzas';
+
+  @override
+  String get toolFinanceSubtitle => 'Tu dinero bajo control';
+
+  @override
+  String get toolStepsTitle => 'Pasos';
+
+  @override
+  String get toolStepsSubtitle => 'Lo que caminas cada día';
+
+  @override
+  String get toolsPremiumTitle => 'Herramientas Premium';
+
+  @override
+  String get toolsPremiumBody =>
+      'Tareas, Pomodoro, lista de la compra, finanzas y pasos forman parte de Constanza Premium.';
+
+  @override
+  String get toolsPremiumBenefit1 => 'Las cinco herramientas, sin límites';
+
+  @override
+  String get toolsPremiumBenefit2 => 'Sincronizadas en todos tus dispositivos';
+
+  @override
+  String get toolsPremiumBenefit3 => 'Sin anuncios y con todas las novedades';
+
+  @override
+  String get tasksTitle => 'Tareas';
+
+  @override
+  String get tasksViewDay => 'Día';
+
+  @override
+  String get tasksViewUpcoming => 'Próximas';
+
+  @override
+  String get tasksViewUndated => 'Sin fecha';
+
+  @override
+  String get tasksEmptyDay => 'Nada pendiente para este día';
+
+  @override
+  String get tasksEmptyUpcoming =>
+      'No tienes tareas programadas para los próximos días';
+
+  @override
+  String get tasksEmptyUndated => 'No hay tareas sin fecha';
+
+  @override
+  String get tasksCompletedSection => 'Completadas';
+
+  @override
+  String get tasksNewTask => 'Nueva tarea';
+
+  @override
+  String get tasksEditTask => 'Editar tarea';
+
+  @override
+  String get tasksFormHelper =>
+      'Ponle un título claro; la fecha y la hora son opcionales.';
+
+  @override
+  String get tasksTitleLabel => 'Título';
+
+  @override
+  String get tasksNoteLabel => 'Nota (opcional)';
+
+  @override
+  String get tasksDateLabel => 'Fecha';
+
+  @override
+  String get tasksDateNone => 'Sin fecha';
+
+  @override
+  String get tasksDatePick => 'Elegir';
+
+  @override
+  String get tasksTimeLabel => 'Hora';
+
+  @override
+  String get tasksTimeNone => 'Sin hora';
+
+  @override
+  String get tasksTimeNeedsDate => 'Pon una fecha para elegir hora';
+
+  @override
+  String get tasksPriorityLabel => 'Prioridad';
+
+  @override
+  String get tasksPriorityLow => 'Baja';
+
+  @override
+  String get tasksPriorityNormal => 'Normal';
+
+  @override
+  String get tasksPriorityHigh => 'Alta';
+
+  @override
+  String get tasksSave => 'Guardar tarea';
+
+  @override
+  String get tasksCreated => 'Tarea creada';
+
+  @override
+  String get tasksUpdated => 'Tarea actualizada';
+
+  @override
+  String get tasksDeleted => 'Tarea eliminada';
+
+  @override
+  String get tasksUndo => 'Deshacer';
+
+  @override
+  String get tasksDeleteTitle => '¿Eliminar esta tarea?';
+
+  @override
+  String get tasksDeleteBody => 'Se borrará con su nota. No afecta a tu racha.';
+
+  @override
+  String tasksMarkDone(String title) {
+    return 'Marcar $title como hecha';
+  }
+
+  @override
+  String tasksMarkUndone(String title) {
+    return 'Marcar $title como pendiente';
+  }
+
+  @override
+  String tasksRolledFrom(String date) {
+    return 'desde el $date';
+  }
+
+  @override
+  String get tasksToday => 'Hoy';
+
+  @override
+  String get tasksTomorrow => 'Mañana';
+
+  @override
+  String get tasksYesterday => 'Ayer';
+
+  @override
+  String get tasksOverdueBadge => 'Atrasada';
+
+  @override
+  String tasksRolloverTitle(int count) {
+    return 'Tienes $count tareas sin terminar';
+  }
+
+  @override
+  String get tasksRolloverBody =>
+      'Son de días anteriores. Elige cuáles pasan a hoy; las demás se quedan donde están.';
+
+  @override
+  String get tasksRolloverAll => 'Pasar todas a hoy';
+
+  @override
+  String get tasksRolloverSelected => 'Pasar las seleccionadas';
+
+  @override
+  String get tasksRolloverNotNow => 'Ahora no';
+
+  @override
+  String tasksRolloverDone(int count) {
+    return '$count tareas pasadas a hoy';
+  }
+
+  @override
+  String get tasksReminderTitle => 'Tarea pendiente';
+
+  @override
+  String tasksPendingTodayWithCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pendientes hoy',
+      one: '1 pendiente hoy',
+      zero: 'Nada pendiente hoy',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tasksSaveError =>
+      'No se pudo guardar la tarea. Inténtalo de nuevo.';
+
+  @override
+  String get pomodoroTitle => 'Pomodoro';
+
+  @override
+  String get pomodoroPhaseWork => 'Concentración';
+
+  @override
+  String get pomodoroPhaseShortBreak => 'Descanso';
+
+  @override
+  String get pomodoroPhaseLongBreak => 'Descanso largo';
+
+  @override
+  String pomodoroCycleProgress(int current, int total) {
+    return 'Pomodoro $current de $total';
+  }
+
+  @override
+  String get pomodoroStart => 'Empezar';
+
+  @override
+  String get pomodoroPause => 'Pausar';
+
+  @override
+  String get pomodoroResume => 'Reanudar';
+
+  @override
+  String get pomodoroReset => 'Reiniciar fase';
+
+  @override
+  String get pomodoroSkip => 'Saltar fase';
+
+  @override
+  String get pomodoroLabelHint => '¿En qué trabajas?';
+
+  @override
+  String get pomodoroTodayLabel => 'Hoy';
+
+  @override
+  String get pomodoroWeekLabel => 'Esta semana';
+
+  @override
+  String pomodoroTodayDetailWithCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pomodoros',
+      one: '1 pomodoro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pomodoroMinutesWithCount(int count) {
+    return '$count min';
+  }
+
+  @override
+  String get pomodoroFocusMinutes => 'de concentración';
+
+  @override
+  String get pomodoroSessionsToday => 'Sesiones de hoy';
+
+  @override
+  String get pomodoroSessionsEmpty =>
+      'Aún no has completado ningún pomodoro hoy';
+
+  @override
+  String get pomodoroSessionNoLabel => 'Sin etiqueta';
+
+  @override
+  String get pomodoroSettingsTitle => 'Ajustes del Pomodoro';
+
+  @override
+  String get pomodoroSettingWork => 'Concentración';
+
+  @override
+  String get pomodoroSettingShortBreak => 'Descanso corto';
+
+  @override
+  String get pomodoroSettingLongBreak => 'Descanso largo';
+
+  @override
+  String get pomodoroSettingPerCycle => 'Pomodoros por ciclo';
+
+  @override
+  String get pomodoroSettingAutoBreaks => 'Iniciar descansos automáticamente';
+
+  @override
+  String get pomodoroSettingAutoWork => 'Iniciar concentración automáticamente';
+
+  @override
+  String get pomodoroSettingSound => 'Sonido al terminar';
+
+  @override
+  String get pomodoroSettingVibration => 'Vibración';
+
+  @override
+  String get pomodoroSettingsSave => 'Guardar ajustes';
+
+  @override
+  String get pomodoroSettingsSaved => 'Ajustes guardados';
+
+  @override
+  String get pomodoroClearHistory => 'Borrar historial';
+
+  @override
+  String get pomodoroClearHistoryTitle => '¿Borrar todas las sesiones?';
+
+  @override
+  String get pomodoroClearHistoryBody =>
+      'Se eliminarán todos los pomodoros registrados. Los ajustes se conservan.';
+
+  @override
+  String get pomodoroHistoryCleared => 'Historial borrado';
+
+  @override
+  String get pomodoroWorkDoneTitle => '¡Concentración terminada!';
+
+  @override
+  String pomodoroWorkDoneBody(int minutes) {
+    return 'Toca un descanso de $minutes min';
+  }
+
+  @override
+  String get pomodoroBreakDoneTitle => 'Descanso terminado';
+
+  @override
+  String pomodoroBreakDoneBody(int minutes) {
+    return 'Vuelve a la concentración: $minutes min';
+  }
+
+  @override
+  String pomodoroTodayWithCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pomodoros hoy',
+      one: '1 pomodoro hoy',
+      zero: 'Ningún pomodoro hoy',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pomodoroMinutesLabel => 'minutos';
+
+  @override
+  String get shoppingTitle => 'Lista de la compra';
+
+  @override
+  String get shoppingAddHint => 'Añadir artículo…';
+
+  @override
+  String get shoppingAdd => 'Añadir';
+
+  @override
+  String get shoppingToBuy => 'Por comprar';
+
+  @override
+  String get shoppingInCart => 'En el carrito';
+
+  @override
+  String get shoppingEmpty =>
+      'Tu lista está vacía. Escribe arriba lo que necesitas.';
+
+  @override
+  String get shoppingClearBought => 'Vaciar comprados';
+
+  @override
+  String get shoppingClearAll => 'Vaciar todo';
+
+  @override
+  String get shoppingClearBoughtTitle => '¿Quitar los artículos comprados?';
+
+  @override
+  String get shoppingClearBoughtBody =>
+      'Se eliminarán los artículos marcados en el carrito.';
+
+  @override
+  String get shoppingClearAllTitle => '¿Vaciar toda la lista?';
+
+  @override
+  String get shoppingClearAllBody =>
+      'Se eliminarán todos los artículos, comprados o no.';
+
+  @override
+  String get shoppingCleared => 'Lista actualizada';
+
+  @override
+  String get shoppingEditItem => 'Editar artículo';
+
+  @override
+  String get shoppingNameLabel => 'Artículo';
+
+  @override
+  String get shoppingQuantityLabel => 'Cantidad (opcional)';
+
+  @override
+  String get shoppingNoteLabel => 'Nota (opcional)';
+
+  @override
+  String get shoppingSave => 'Guardar';
+
+  @override
+  String get shoppingDeleteTitle => '¿Eliminar este artículo?';
+
+  @override
+  String shoppingMarkBought(String name) {
+    return 'Marcar $name como comprado';
+  }
+
+  @override
+  String shoppingMarkPending(String name) {
+    return 'Devolver $name a la lista';
+  }
+
+  @override
+  String shoppingPendingWithCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count por comprar',
+      one: '1 por comprar',
+      zero: 'Nada por comprar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shoppingQuantityShort(int count) {
+    return 'x$count';
+  }
+
+  @override
+  String get shoppingSaveError =>
+      'No se pudo guardar el artículo. Inténtalo de nuevo.';
+
+  @override
+  String get financeTitle => 'Finanzas';
+
+  @override
+  String get financeMonthBalance => 'Saldo del mes';
+
+  @override
+  String get financeIncome => 'Ingresos';
+
+  @override
+  String get financeExpenses => 'Gastos';
+
+  @override
+  String financeFixedProgress(int done, int total) {
+    return 'Fijos registrados $done de $total';
+  }
+
+  @override
+  String get financePreviousMonth => 'Mes anterior';
+
+  @override
+  String get financeNextMonth => 'Mes siguiente';
+
+  @override
+  String get financeTabMovements => 'Movimientos';
+
+  @override
+  String get financeTabFixed => 'Fijos';
+
+  @override
+  String get financeTabInvestments => 'Inversiones';
+
+  @override
+  String get financeTabPending => 'Pendientes';
+
+  @override
+  String get financeMovementsEmpty =>
+      'Sin movimientos este mes. Apunta el primero.';
+
+  @override
+  String get financeFixedEmpty =>
+      'Sin gastos fijos. Añade los que se repiten cada mes.';
+
+  @override
+  String get financeInvestmentsEmpty =>
+      'Sin inversiones. Apunta lo que tienes invertido y actualiza su valor cuando quieras.';
+
+  @override
+  String get financePendingEmpty =>
+      'Sin compras pendientes. Anota lo que quieres comprar más adelante.';
+
+  @override
+  String get financeNewMovement => 'Nuevo movimiento';
+
+  @override
+  String get financeEditMovement => 'Editar movimiento';
+
+  @override
+  String get financeNewFixed => 'Nuevo gasto fijo';
+
+  @override
+  String get financeEditFixed => 'Editar gasto fijo';
+
+  @override
+  String get financeNewInvestment => 'Nueva inversión';
+
+  @override
+  String get financeEditInvestment => 'Editar inversión';
+
+  @override
+  String get financeNewPending => 'Nueva compra pendiente';
+
+  @override
+  String get financeEditPending => 'Editar compra pendiente';
+
+  @override
+  String get financeTypeExpense => 'Gasto';
+
+  @override
+  String get financeTypeIncome => 'Ingreso';
+
+  @override
+  String get financeAmountLabel => 'Importe';
+
+  @override
+  String get financeConceptLabel => 'Concepto';
+
+  @override
+  String get financeCategoryLabel => 'Categoría';
+
+  @override
+  String get financeDateLabel => 'Fecha';
+
+  @override
+  String get financeNoteLabel => 'Nota (opcional)';
+
+  @override
+  String get financeNameLabel => 'Nombre';
+
+  @override
+  String get financeDayOfMonthLabel => 'Día del mes';
+
+  @override
+  String financeDayOfMonth(int day) {
+    return 'día $day de cada mes';
+  }
+
+  @override
+  String get financeActiveLabel => 'Activo';
+
+  @override
+  String get financeInactive => 'Inactivo';
+
+  @override
+  String financeLogThisMonth(String month) {
+    return 'Registrar en $month';
+  }
+
+  @override
+  String get financeLoggedThisMonth => 'Registrado ✓';
+
+  @override
+  String get financeFixedTotal => 'Comprometido al mes';
+
+  @override
+  String get financeInvestmentTypeLabel => 'Tipo';
+
+  @override
+  String get financeContributedLabel => 'Aportado';
+
+  @override
+  String get financeCurrentValueLabel => 'Valor actual';
+
+  @override
+  String get financeUpdateValue => 'Actualizar valor';
+
+  @override
+  String get financeContribute => 'Aportar';
+
+  @override
+  String get financeContributionAmount => 'Cantidad a aportar';
+
+  @override
+  String get financeContributionAsMovement => 'Registrar también como gasto';
+
+  @override
+  String get financeReturn => 'Rentabilidad';
+
+  @override
+  String get financeTotalContributed => 'Total aportado';
+
+  @override
+  String get financeTotalValue => 'Valor total';
+
+  @override
+  String get financeEstimatedLabel => 'Importe estimado';
+
+  @override
+  String get financeTargetDateLabel => 'Fecha objetivo (opcional)';
+
+  @override
+  String get financeNoTargetDate => 'Sin fecha';
+
+  @override
+  String get financePriorityLabel => 'Prioridad';
+
+  @override
+  String get financePriorityLow => 'Baja';
+
+  @override
+  String get financePriorityNormal => 'Normal';
+
+  @override
+  String get financePriorityHigh => 'Alta';
+
+  @override
+  String get financeMarkBought => 'Comprado';
+
+  @override
+  String get financeBoughtTitle => '¿Cuánto ha costado?';
+
+  @override
+  String get financeBoughtHelper => 'Se registrará como gasto de este mes.';
+
+  @override
+  String get financeBoughtSection => 'Compradas';
+
+  @override
+  String get financeEstimatedTotal => 'Total estimado';
+
+  @override
+  String get financeSave => 'Guardar';
+
+  @override
+  String get financeSaved => 'Guardado';
+
+  @override
+  String get financeDeleteTitle => '¿Eliminar este elemento?';
+
+  @override
+  String get financeDeleteBody => 'Los movimientos ya registrados no se tocan.';
+
+  @override
+  String get financeSettingsTitle => 'Ajustes de Finanzas';
+
+  @override
+  String get financeCurrencyLabel => 'Moneda';
+
+  @override
+  String get financeCurrencyHelper =>
+      'Cambiar la moneda no convierte los importes: solo cambia el símbolo.';
+
+  @override
+  String get financeMonthStartLabel => 'Día de inicio del mes';
+
+  @override
+  String get financeSettingsSave => 'Guardar ajustes';
+
+  @override
+  String get financeCategoryHome => 'Casa';
+
+  @override
+  String get financeCategoryFood => 'Comida';
+
+  @override
+  String get financeCategoryTransport => 'Transporte';
+
+  @override
+  String get financeCategoryLeisure => 'Ocio';
+
+  @override
+  String get financeCategoryHealth => 'Salud';
+
+  @override
+  String get financeCategoryClothes => 'Ropa';
+
+  @override
+  String get financeCategorySubscriptions => 'Suscripciones';
+
+  @override
+  String get financeCategoryGifts => 'Regalos';
+
+  @override
+  String get financeCategorySalary => 'Nómina';
+
+  @override
+  String get financeCategoryInvestment => 'Inversión';
+
+  @override
+  String get financeCategoryOther => 'Otros';
+
+  @override
+  String get financeInvestmentFunds => 'Fondos';
+
+  @override
+  String get financeInvestmentStocks => 'Acciones';
+
+  @override
+  String get financeInvestmentCrypto => 'Cripto';
+
+  @override
+  String get financeInvestmentDeposit => 'Depósito';
+
+  @override
+  String get financeInvestmentProperty => 'Inmueble';
+
+  @override
+  String get financeInvestmentOther => 'Otro';
+
+  @override
+  String financeMonthSummary(String balance) {
+    return 'Saldo $balance';
+  }
+
+  @override
+  String get financeSaveError => 'No se pudo guardar. Inténtalo de nuevo.';
+
+  @override
+  String get financeToday => 'Hoy';
+
+  @override
+  String get financeYesterday => 'Ayer';
+
+  @override
+  String get stepsTitle => 'Pasos';
+
+  @override
+  String get stepsConsentTitle => 'Tus pasos';
+
+  @override
+  String get stepsConsentAccept => 'Permitir';
+
+  @override
+  String get stepsConsentLater => 'Ahora no';
+
+  @override
+  String get stepsNoPermissionTitle => 'Sin permiso de salud';
+
+  @override
+  String get stepsGrantPermission => 'Dar permiso';
+
+  @override
+  String stepsOfGoal(String goal) {
+    return 'de $goal';
+  }
+
+  @override
+  String get stepsGoalReached => '¡Objetivo conseguido!';
+
+  @override
+  String get stepsDistanceLabel => 'Distancia';
+
+  @override
+  String stepsDistanceKm(String km) {
+    return '$km km';
+  }
+
+  @override
+  String get stepsDistanceEstimated => 'estimada';
+
+  @override
+  String get stepsAverageLabel => 'Media 7 días';
+
+  @override
+  String get stepsAverageDetail => 'pasos al día';
+
+  @override
+  String get stepsWeekTitle => 'Esta semana';
+
+  @override
+  String get stepsChangeGoal => 'Cambiar objetivo';
+
+  @override
+  String get stepsGoalTitle => 'Objetivo diario';
+
+  @override
+  String get stepsGoalHelper => 'Pasos que quieres dar cada día.';
+
+  @override
+  String get stepsGoalSave => 'Guardar objetivo';
+
+  @override
+  String get stepsGoalSaved => 'Objetivo guardado';
+
+  @override
+  String stepsUpdatedAt(String time) {
+    return 'Última actualización $time';
+  }
+
+  @override
+  String get stepsRefresh => 'Actualizar';
+
+  @override
+  String get stepsTimezoneHint =>
+      'El día se corta según la zona horaria de tu perfil.';
+
+  @override
+  String stepsSummary(String steps, String goal) {
+    return '$steps / $goal';
+  }
+
+  @override
+  String get stepsSummaryNoPermission => 'Sin permiso';
+
+  @override
+  String get stepsReadError =>
+      'No se pudieron leer los pasos. Inténtalo de nuevo.';
+
+  @override
+  String get stepsConsentBody =>
+      'Constanza contará tus pasos con el sensor de movimiento del propio móvil, sin depender de otras apps. El total de cada día se guarda en tu cuenta para que puedas ver tu evolución desde que usas Constanza. No se comparte con nadie y puedes borrarlo cuando quieras.';
+
+  @override
+  String get stepsNoPermissionBody =>
+      'Para contar tus pasos, Constanza necesita acceso al sensor de movimiento. iOS: Ajustes › Privacidad › Movimiento y forma física › Constanza. Android: Ajustes › Aplicaciones › Constanza › Permisos › Actividad física.';
+
+  @override
+  String get stepsUnavailableTitle => 'Sin sensor de pasos';
+
+  @override
+  String get stepsUnavailableBody =>
+      'Este dispositivo no tiene contador de pasos. Podrás ver aquí el histórico guardado en tu cuenta desde otros dispositivos.';
+
+  @override
+  String get stepsSummaryUnavailable => 'Sin sensor';
+
+  @override
+  String get stepsCaloriesLabel => 'Calorías';
+
+  @override
+  String stepsCaloriesKcal(String kcal) {
+    return '$kcal kcal';
+  }
+
+  @override
+  String get stepsEstimatedShort => 'estimación';
+
+  @override
+  String get stepsStreakLabel => 'Racha de objetivo';
+
+  @override
+  String stepsStreakDaysWithCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get stepsStreakDetail => 'seguidos cumpliendo';
+
+  @override
+  String stepsRemainingWithCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Te faltan $countString pasos',
+      one: 'Te falta 1 paso',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get stepsHistoryTitle => 'Tu evolución';
+
+  @override
+  String get stepsRangeWeek => '7 días';
+
+  @override
+  String get stepsRangeMonth => '30 días';
+
+  @override
+  String get stepsRangeYear => '1 año';
+
+  @override
+  String get stepsRangeAll => 'Todo';
+
+  @override
+  String get stepsHistoryEmpty =>
+      'Todavía no hay días guardados. En cuanto camines con Constanza, aparecerán aquí.';
+
+  @override
+  String get stepsTotalLabel => 'Total';
+
+  @override
+  String get stepsDailyAverageLabel => 'Media diaria';
+
+  @override
+  String get stepsBestDayLabel => 'Mejor día';
+
+  @override
+  String get stepsGoalDaysLabel => 'Días con objetivo';
+
+  @override
+  String stepsGoalDaysValue(int done, int total) {
+    return '$done de $total';
+  }
+
+  @override
+  String get stepsDistanceTotalLabel => 'Distancia';
+
+  @override
+  String get stepsCaloriesTotalLabel => 'Calorías';
+
+  @override
+  String get stepsRecentDays => 'Días recientes';
+
+  @override
+  String get stepsByMonth => 'Por meses';
+
+  @override
+  String stepsStepsWithCount(String count) {
+    return '$count pasos';
+  }
+
+  @override
+  String stepsSinceLabel(String date) {
+    return 'Desde el $date';
+  }
+
+  @override
+  String get stepsGoalCelebrationTitle => '¡Enhorabuena!';
+
+  @override
+  String stepsGoalCelebrationBody(String steps) {
+    return 'Has alcanzado tu objetivo con $steps pasos hoy. ¡Sigue así!';
+  }
+
+  @override
+  String get stepsGoalCelebrationAction => '¡Genial!';
+
+  @override
+  String get stepsCelebrationCatImageLabel => 'Gato celebrando';
+
+  @override
+  String get stepsCountingLive => 'Contando con el sensor del móvil';
+
+  @override
+  String get stepsSensorNote =>
+      'Los pasos se cuentan aunque la app esté cerrada. Ábrela de vez en cuando para guardar el total del día.';
 }

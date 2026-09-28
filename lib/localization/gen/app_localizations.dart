@@ -1895,7 +1895,7 @@ abstract class AppLocalizations {
   /// No description provided for @avatarCookie.
   ///
   /// In en, this message translates to:
-  /// **'Cookie'**
+  /// **'Crispin'**
   String get avatarCookie;
 
   /// No description provided for @avatarPremium.
@@ -4003,6 +4003,1692 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Premium cat wearing a crown'**
   String get premiumCatImageLabel;
+
+  /// No description provided for @navTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get navTools;
+
+  /// No description provided for @toolsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get toolsTitle;
+
+  /// No description provided for @toolsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyday utilities'**
+  String get toolsSubtitle;
+
+  /// No description provided for @toolsNoticeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools don\'t affect your streak: they\'re helpers to organise your day.'**
+  String get toolsNoticeBody;
+
+  /// No description provided for @toolsNoticeDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get toolsNoticeDismiss;
+
+  /// No description provided for @toolsComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get toolsComingSoon;
+
+  /// No description provided for @toolTasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get toolTasksTitle;
+
+  /// No description provided for @toolTasksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What you need to do, day by day'**
+  String get toolTasksSubtitle;
+
+  /// No description provided for @toolPomodoroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pomodoro'**
+  String get toolPomodoroTitle;
+
+  /// No description provided for @toolPomodoroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus in blocks'**
+  String get toolPomodoroSubtitle;
+
+  /// No description provided for @toolShoppingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get toolShoppingTitle;
+
+  /// No description provided for @toolShoppingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'So you forget nothing'**
+  String get toolShoppingSubtitle;
+
+  /// No description provided for @toolFinanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finances'**
+  String get toolFinanceTitle;
+
+  /// No description provided for @toolFinanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your money under control'**
+  String get toolFinanceSubtitle;
+
+  /// No description provided for @toolStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get toolStepsTitle;
+
+  /// No description provided for @toolStepsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How much you walk each day'**
+  String get toolStepsSubtitle;
+
+  /// No description provided for @toolsPremiumTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium tools'**
+  String get toolsPremiumTitle;
+
+  /// No description provided for @toolsPremiumBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks, Pomodoro, shopping list, finances and steps are part of Constanza Premium.'**
+  String get toolsPremiumBody;
+
+  /// No description provided for @toolsPremiumBenefit1.
+  ///
+  /// In en, this message translates to:
+  /// **'All five tools, no limits'**
+  String get toolsPremiumBenefit1;
+
+  /// No description provided for @toolsPremiumBenefit2.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced across all your devices'**
+  String get toolsPremiumBenefit2;
+
+  /// No description provided for @toolsPremiumBenefit3.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad-free, with every new feature'**
+  String get toolsPremiumBenefit3;
+
+  /// No description provided for @tasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get tasksTitle;
+
+  /// No description provided for @tasksViewDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get tasksViewDay;
+
+  /// No description provided for @tasksViewUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get tasksViewUpcoming;
+
+  /// No description provided for @tasksViewUndated.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get tasksViewUndated;
+
+  /// No description provided for @tasksEmptyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing pending for this day'**
+  String get tasksEmptyDay;
+
+  /// No description provided for @tasksEmptyUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks scheduled for the coming days'**
+  String get tasksEmptyUpcoming;
+
+  /// No description provided for @tasksEmptyUndated.
+  ///
+  /// In en, this message translates to:
+  /// **'No undated tasks'**
+  String get tasksEmptyUndated;
+
+  /// No description provided for @tasksCompletedSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get tasksCompletedSection;
+
+  /// No description provided for @tasksNewTask.
+  ///
+  /// In en, this message translates to:
+  /// **'New task'**
+  String get tasksNewTask;
+
+  /// No description provided for @tasksEditTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit task'**
+  String get tasksEditTask;
+
+  /// No description provided for @tasksFormHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Give it a clear title; date and time are optional.'**
+  String get tasksFormHelper;
+
+  /// No description provided for @tasksTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get tasksTitleLabel;
+
+  /// No description provided for @tasksNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get tasksNoteLabel;
+
+  /// No description provided for @tasksDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get tasksDateLabel;
+
+  /// No description provided for @tasksDateNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get tasksDateNone;
+
+  /// No description provided for @tasksDatePick.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick'**
+  String get tasksDatePick;
+
+  /// No description provided for @tasksTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get tasksTimeLabel;
+
+  /// No description provided for @tasksTimeNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No time'**
+  String get tasksTimeNone;
+
+  /// No description provided for @tasksTimeNeedsDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a date to pick a time'**
+  String get tasksTimeNeedsDate;
+
+  /// No description provided for @tasksPriorityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get tasksPriorityLabel;
+
+  /// No description provided for @tasksPriorityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get tasksPriorityLow;
+
+  /// No description provided for @tasksPriorityNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get tasksPriorityNormal;
+
+  /// No description provided for @tasksPriorityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get tasksPriorityHigh;
+
+  /// No description provided for @tasksSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save task'**
+  String get tasksSave;
+
+  /// No description provided for @tasksCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Task created'**
+  String get tasksCreated;
+
+  /// No description provided for @tasksUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Task updated'**
+  String get tasksUpdated;
+
+  /// No description provided for @tasksDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Task deleted'**
+  String get tasksDeleted;
+
+  /// No description provided for @tasksUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get tasksUndo;
+
+  /// No description provided for @tasksDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this task?'**
+  String get tasksDeleteTitle;
+
+  /// No description provided for @tasksDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It will be removed along with its note. Your streak is not affected.'**
+  String get tasksDeleteBody;
+
+  /// No description provided for @tasksMarkDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark {title} as done'**
+  String tasksMarkDone(String title);
+
+  /// No description provided for @tasksMarkUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark {title} as pending'**
+  String tasksMarkUndone(String title);
+
+  /// No description provided for @tasksRolledFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'from {date}'**
+  String tasksRolledFrom(String date);
+
+  /// No description provided for @tasksToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get tasksToday;
+
+  /// No description provided for @tasksTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get tasksTomorrow;
+
+  /// No description provided for @tasksYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get tasksYesterday;
+
+  /// No description provided for @tasksOverdueBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get tasksOverdueBadge;
+
+  /// No description provided for @tasksRolloverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} unfinished tasks'**
+  String tasksRolloverTitle(int count);
+
+  /// No description provided for @tasksRolloverBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They belong to previous days. Choose which ones move to today; the rest stay where they are.'**
+  String get tasksRolloverBody;
+
+  /// No description provided for @tasksRolloverAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Move all to today'**
+  String get tasksRolloverAll;
+
+  /// No description provided for @tasksRolloverSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Move selected'**
+  String get tasksRolloverSelected;
+
+  /// No description provided for @tasksRolloverNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get tasksRolloverNotNow;
+
+  /// No description provided for @tasksRolloverDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tasks moved to today'**
+  String tasksRolloverDone(int count);
+
+  /// No description provided for @tasksReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task due'**
+  String get tasksReminderTitle;
+
+  /// No description provided for @tasksPendingTodayWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing pending today} =1{1 pending today} other{{count} pending today}}'**
+  String tasksPendingTodayWithCount(int count);
+
+  /// No description provided for @tasksSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'The task could not be saved. Please try again.'**
+  String get tasksSaveError;
+
+  /// No description provided for @pomodoroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pomodoro'**
+  String get pomodoroTitle;
+
+  /// No description provided for @pomodoroPhaseWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get pomodoroPhaseWork;
+
+  /// No description provided for @pomodoroPhaseShortBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Break'**
+  String get pomodoroPhaseShortBreak;
+
+  /// No description provided for @pomodoroPhaseLongBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Long break'**
+  String get pomodoroPhaseLongBreak;
+
+  /// No description provided for @pomodoroCycleProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Pomodoro {current} of {total}'**
+  String pomodoroCycleProgress(int current, int total);
+
+  /// No description provided for @pomodoroStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get pomodoroStart;
+
+  /// No description provided for @pomodoroPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pomodoroPause;
+
+  /// No description provided for @pomodoroResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get pomodoroResume;
+
+  /// No description provided for @pomodoroReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset phase'**
+  String get pomodoroReset;
+
+  /// No description provided for @pomodoroSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip phase'**
+  String get pomodoroSkip;
+
+  /// No description provided for @pomodoroLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you working on?'**
+  String get pomodoroLabelHint;
+
+  /// No description provided for @pomodoroTodayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get pomodoroTodayLabel;
+
+  /// No description provided for @pomodoroWeekLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get pomodoroWeekLabel;
+
+  /// No description provided for @pomodoroTodayDetailWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 pomodoro} other{{count} pomodoros}}'**
+  String pomodoroTodayDetailWithCount(int count);
+
+  /// No description provided for @pomodoroMinutesWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String pomodoroMinutesWithCount(int count);
+
+  /// No description provided for @pomodoroFocusMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'of focus'**
+  String get pomodoroFocusMinutes;
+
+  /// No description provided for @pomodoroSessionsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s sessions'**
+  String get pomodoroSessionsToday;
+
+  /// No description provided for @pomodoroSessionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t completed a pomodoro today yet'**
+  String get pomodoroSessionsEmpty;
+
+  /// No description provided for @pomodoroSessionNoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No label'**
+  String get pomodoroSessionNoLabel;
+
+  /// No description provided for @pomodoroSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pomodoro settings'**
+  String get pomodoroSettingsTitle;
+
+  /// No description provided for @pomodoroSettingWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get pomodoroSettingWork;
+
+  /// No description provided for @pomodoroSettingShortBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Short break'**
+  String get pomodoroSettingShortBreak;
+
+  /// No description provided for @pomodoroSettingLongBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Long break'**
+  String get pomodoroSettingLongBreak;
+
+  /// No description provided for @pomodoroSettingPerCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pomodoros per cycle'**
+  String get pomodoroSettingPerCycle;
+
+  /// No description provided for @pomodoroSettingAutoBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Start breaks automatically'**
+  String get pomodoroSettingAutoBreaks;
+
+  /// No description provided for @pomodoroSettingAutoWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Start focus automatically'**
+  String get pomodoroSettingAutoWork;
+
+  /// No description provided for @pomodoroSettingSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound when done'**
+  String get pomodoroSettingSound;
+
+  /// No description provided for @pomodoroSettingVibration.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibration'**
+  String get pomodoroSettingVibration;
+
+  /// No description provided for @pomodoroSettingsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save settings'**
+  String get pomodoroSettingsSave;
+
+  /// No description provided for @pomodoroSettingsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved'**
+  String get pomodoroSettingsSaved;
+
+  /// No description provided for @pomodoroClearHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history'**
+  String get pomodoroClearHistory;
+
+  /// No description provided for @pomodoroClearHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all sessions?'**
+  String get pomodoroClearHistoryTitle;
+
+  /// No description provided for @pomodoroClearHistoryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'All logged pomodoros will be removed. Your settings are kept.'**
+  String get pomodoroClearHistoryBody;
+
+  /// No description provided for @pomodoroHistoryCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'History cleared'**
+  String get pomodoroHistoryCleared;
+
+  /// No description provided for @pomodoroWorkDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus session done!'**
+  String get pomodoroWorkDoneTitle;
+
+  /// No description provided for @pomodoroWorkDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for a {minutes} min break'**
+  String pomodoroWorkDoneBody(int minutes);
+
+  /// No description provided for @pomodoroBreakDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Break over'**
+  String get pomodoroBreakDoneTitle;
+
+  /// No description provided for @pomodoroBreakDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to focus: {minutes} min'**
+  String pomodoroBreakDoneBody(int minutes);
+
+  /// No description provided for @pomodoroTodayWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No pomodoros today} =1{1 pomodoro today} other{{count} pomodoros today}}'**
+  String pomodoroTodayWithCount(int count);
+
+  /// No description provided for @pomodoroMinutesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get pomodoroMinutesLabel;
+
+  /// No description provided for @shoppingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping list'**
+  String get shoppingTitle;
+
+  /// No description provided for @shoppingAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an item…'**
+  String get shoppingAddHint;
+
+  /// No description provided for @shoppingAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get shoppingAdd;
+
+  /// No description provided for @shoppingToBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'To buy'**
+  String get shoppingToBuy;
+
+  /// No description provided for @shoppingInCart.
+  ///
+  /// In en, this message translates to:
+  /// **'In the cart'**
+  String get shoppingInCart;
+
+  /// No description provided for @shoppingEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your list is empty. Type what you need above.'**
+  String get shoppingEmpty;
+
+  /// No description provided for @shoppingClearBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear bought items'**
+  String get shoppingClearBought;
+
+  /// No description provided for @shoppingClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear everything'**
+  String get shoppingClearAll;
+
+  /// No description provided for @shoppingClearBoughtTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove bought items?'**
+  String get shoppingClearBoughtTitle;
+
+  /// No description provided for @shoppingClearBoughtBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The items marked in the cart will be removed.'**
+  String get shoppingClearBoughtBody;
+
+  /// No description provided for @shoppingClearAllTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the whole list?'**
+  String get shoppingClearAllTitle;
+
+  /// No description provided for @shoppingClearAllBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every item will be removed, bought or not.'**
+  String get shoppingClearAllBody;
+
+  /// No description provided for @shoppingCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'List updated'**
+  String get shoppingCleared;
+
+  /// No description provided for @shoppingEditItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit item'**
+  String get shoppingEditItem;
+
+  /// No description provided for @shoppingNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Item'**
+  String get shoppingNameLabel;
+
+  /// No description provided for @shoppingQuantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity (optional)'**
+  String get shoppingQuantityLabel;
+
+  /// No description provided for @shoppingNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get shoppingNoteLabel;
+
+  /// No description provided for @shoppingSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get shoppingSave;
+
+  /// No description provided for @shoppingDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this item?'**
+  String get shoppingDeleteTitle;
+
+  /// No description provided for @shoppingMarkBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark {name} as bought'**
+  String shoppingMarkBought(String name);
+
+  /// No description provided for @shoppingMarkPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Put {name} back on the list'**
+  String shoppingMarkPending(String name);
+
+  /// No description provided for @shoppingPendingWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing to buy} =1{1 to buy} other{{count} to buy}}'**
+  String shoppingPendingWithCount(int count);
+
+  /// No description provided for @shoppingQuantityShort.
+  ///
+  /// In en, this message translates to:
+  /// **'x{count}'**
+  String shoppingQuantityShort(int count);
+
+  /// No description provided for @shoppingSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'The item could not be saved. Please try again.'**
+  String get shoppingSaveError;
+
+  /// No description provided for @financeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finances'**
+  String get financeTitle;
+
+  /// No description provided for @financeMonthBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Month balance'**
+  String get financeMonthBalance;
+
+  /// No description provided for @financeIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get financeIncome;
+
+  /// No description provided for @financeExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get financeExpenses;
+
+  /// No description provided for @financeFixedProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed costs logged {done} of {total}'**
+  String financeFixedProgress(int done, int total);
+
+  /// No description provided for @financePreviousMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get financePreviousMonth;
+
+  /// No description provided for @financeNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get financeNextMonth;
+
+  /// No description provided for @financeTabMovements.
+  ///
+  /// In en, this message translates to:
+  /// **'Movements'**
+  String get financeTabMovements;
+
+  /// No description provided for @financeTabFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed'**
+  String get financeTabFixed;
+
+  /// No description provided for @financeTabInvestments.
+  ///
+  /// In en, this message translates to:
+  /// **'Investments'**
+  String get financeTabInvestments;
+
+  /// No description provided for @financeTabPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Wishlist'**
+  String get financeTabPending;
+
+  /// No description provided for @financeMovementsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No movements this month. Log the first one.'**
+  String get financeMovementsEmpty;
+
+  /// No description provided for @financeFixedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No fixed costs yet. Add the ones that repeat every month.'**
+  String get financeFixedEmpty;
+
+  /// No description provided for @financeInvestmentsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No investments yet. Log what you have invested and update its value whenever you like.'**
+  String get financeInvestmentsEmpty;
+
+  /// No description provided for @financePendingEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending purchases. Note what you plan to buy later.'**
+  String get financePendingEmpty;
+
+  /// No description provided for @financeNewMovement.
+  ///
+  /// In en, this message translates to:
+  /// **'New movement'**
+  String get financeNewMovement;
+
+  /// No description provided for @financeEditMovement.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit movement'**
+  String get financeEditMovement;
+
+  /// No description provided for @financeNewFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'New fixed cost'**
+  String get financeNewFixed;
+
+  /// No description provided for @financeEditFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit fixed cost'**
+  String get financeEditFixed;
+
+  /// No description provided for @financeNewInvestment.
+  ///
+  /// In en, this message translates to:
+  /// **'New investment'**
+  String get financeNewInvestment;
+
+  /// No description provided for @financeEditInvestment.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit investment'**
+  String get financeEditInvestment;
+
+  /// No description provided for @financeNewPending.
+  ///
+  /// In en, this message translates to:
+  /// **'New pending purchase'**
+  String get financeNewPending;
+
+  /// No description provided for @financeEditPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit pending purchase'**
+  String get financeEditPending;
+
+  /// No description provided for @financeTypeExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get financeTypeExpense;
+
+  /// No description provided for @financeTypeIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get financeTypeIncome;
+
+  /// No description provided for @financeAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get financeAmountLabel;
+
+  /// No description provided for @financeConceptLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Concept'**
+  String get financeConceptLabel;
+
+  /// No description provided for @financeCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get financeCategoryLabel;
+
+  /// No description provided for @financeDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get financeDateLabel;
+
+  /// No description provided for @financeNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get financeNoteLabel;
+
+  /// No description provided for @financeNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get financeNameLabel;
+
+  /// No description provided for @financeDayOfMonthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of month'**
+  String get financeDayOfMonthLabel;
+
+  /// No description provided for @financeDayOfMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'day {day} of every month'**
+  String financeDayOfMonth(int day);
+
+  /// No description provided for @financeActiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get financeActiveLabel;
+
+  /// No description provided for @financeInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get financeInactive;
+
+  /// No description provided for @financeLogThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in {month}'**
+  String financeLogThisMonth(String month);
+
+  /// No description provided for @financeLoggedThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged ✓'**
+  String get financeLoggedThisMonth;
+
+  /// No description provided for @financeFixedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Committed per month'**
+  String get financeFixedTotal;
+
+  /// No description provided for @financeInvestmentTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get financeInvestmentTypeLabel;
+
+  /// No description provided for @financeContributedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Contributed'**
+  String get financeContributedLabel;
+
+  /// No description provided for @financeCurrentValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current value'**
+  String get financeCurrentValueLabel;
+
+  /// No description provided for @financeUpdateValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Update value'**
+  String get financeUpdateValue;
+
+  /// No description provided for @financeContribute.
+  ///
+  /// In en, this message translates to:
+  /// **'Contribute'**
+  String get financeContribute;
+
+  /// No description provided for @financeContributionAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to contribute'**
+  String get financeContributionAmount;
+
+  /// No description provided for @financeContributionAsMovement.
+  ///
+  /// In en, this message translates to:
+  /// **'Also log as an expense'**
+  String get financeContributionAsMovement;
+
+  /// No description provided for @financeReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Return'**
+  String get financeReturn;
+
+  /// No description provided for @financeTotalContributed.
+  ///
+  /// In en, this message translates to:
+  /// **'Total contributed'**
+  String get financeTotalContributed;
+
+  /// No description provided for @financeTotalValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total value'**
+  String get financeTotalValue;
+
+  /// No description provided for @financeEstimatedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated amount'**
+  String get financeEstimatedLabel;
+
+  /// No description provided for @financeTargetDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target date (optional)'**
+  String get financeTargetDateLabel;
+
+  /// No description provided for @financeNoTargetDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No date'**
+  String get financeNoTargetDate;
+
+  /// No description provided for @financePriorityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get financePriorityLabel;
+
+  /// No description provided for @financePriorityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get financePriorityLow;
+
+  /// No description provided for @financePriorityNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get financePriorityNormal;
+
+  /// No description provided for @financePriorityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get financePriorityHigh;
+
+  /// No description provided for @financeMarkBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Bought'**
+  String get financeMarkBought;
+
+  /// No description provided for @financeBoughtTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How much did it cost?'**
+  String get financeBoughtTitle;
+
+  /// No description provided for @financeBoughtHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'It will be logged as an expense for this month.'**
+  String get financeBoughtHelper;
+
+  /// No description provided for @financeBoughtSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Bought'**
+  String get financeBoughtSection;
+
+  /// No description provided for @financeEstimatedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated total'**
+  String get financeEstimatedTotal;
+
+  /// No description provided for @financeSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get financeSave;
+
+  /// No description provided for @financeSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get financeSaved;
+
+  /// No description provided for @financeDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this item?'**
+  String get financeDeleteTitle;
+
+  /// No description provided for @financeDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Movements already logged are not affected.'**
+  String get financeDeleteBody;
+
+  /// No description provided for @financeSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finance settings'**
+  String get financeSettingsTitle;
+
+  /// No description provided for @financeCurrencyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get financeCurrencyLabel;
+
+  /// No description provided for @financeCurrencyHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing the currency does not convert amounts: only the symbol changes.'**
+  String get financeCurrencyHelper;
+
+  /// No description provided for @financeMonthStartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Month start day'**
+  String get financeMonthStartLabel;
+
+  /// No description provided for @financeSettingsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save settings'**
+  String get financeSettingsSave;
+
+  /// No description provided for @financeCategoryHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get financeCategoryHome;
+
+  /// No description provided for @financeCategoryFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get financeCategoryFood;
+
+  /// No description provided for @financeCategoryTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get financeCategoryTransport;
+
+  /// No description provided for @financeCategoryLeisure.
+  ///
+  /// In en, this message translates to:
+  /// **'Leisure'**
+  String get financeCategoryLeisure;
+
+  /// No description provided for @financeCategoryHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get financeCategoryHealth;
+
+  /// No description provided for @financeCategoryClothes.
+  ///
+  /// In en, this message translates to:
+  /// **'Clothes'**
+  String get financeCategoryClothes;
+
+  /// No description provided for @financeCategorySubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions'**
+  String get financeCategorySubscriptions;
+
+  /// No description provided for @financeCategoryGifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Gifts'**
+  String get financeCategoryGifts;
+
+  /// No description provided for @financeCategorySalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary'**
+  String get financeCategorySalary;
+
+  /// No description provided for @financeCategoryInvestment.
+  ///
+  /// In en, this message translates to:
+  /// **'Investment'**
+  String get financeCategoryInvestment;
+
+  /// No description provided for @financeCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get financeCategoryOther;
+
+  /// No description provided for @financeInvestmentFunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Funds'**
+  String get financeInvestmentFunds;
+
+  /// No description provided for @financeInvestmentStocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Stocks'**
+  String get financeInvestmentStocks;
+
+  /// No description provided for @financeInvestmentCrypto.
+  ///
+  /// In en, this message translates to:
+  /// **'Crypto'**
+  String get financeInvestmentCrypto;
+
+  /// No description provided for @financeInvestmentDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get financeInvestmentDeposit;
+
+  /// No description provided for @financeInvestmentProperty.
+  ///
+  /// In en, this message translates to:
+  /// **'Property'**
+  String get financeInvestmentProperty;
+
+  /// No description provided for @financeInvestmentOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get financeInvestmentOther;
+
+  /// No description provided for @financeMonthSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance {balance}'**
+  String financeMonthSummary(String balance);
+
+  /// No description provided for @financeSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'It could not be saved. Please try again.'**
+  String get financeSaveError;
+
+  /// No description provided for @financeToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get financeToday;
+
+  /// No description provided for @financeYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get financeYesterday;
+
+  /// No description provided for @stepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get stepsTitle;
+
+  /// No description provided for @stepsConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your steps'**
+  String get stepsConsentTitle;
+
+  /// No description provided for @stepsConsentAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get stepsConsentAccept;
+
+  /// No description provided for @stepsConsentLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get stepsConsentLater;
+
+  /// No description provided for @stepsNoPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No health permission'**
+  String get stepsNoPermissionTitle;
+
+  /// No description provided for @stepsGrantPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant permission'**
+  String get stepsGrantPermission;
+
+  /// No description provided for @stepsOfGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'of {goal}'**
+  String stepsOfGoal(String goal);
+
+  /// No description provided for @stepsGoalReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached!'**
+  String get stepsGoalReached;
+
+  /// No description provided for @stepsDistanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get stepsDistanceLabel;
+
+  /// No description provided for @stepsDistanceKm.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String stepsDistanceKm(String km);
+
+  /// No description provided for @stepsDistanceEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'estimated'**
+  String get stepsDistanceEstimated;
+
+  /// No description provided for @stepsAverageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'7-day average'**
+  String get stepsAverageLabel;
+
+  /// No description provided for @stepsAverageDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'steps a day'**
+  String get stepsAverageDetail;
+
+  /// No description provided for @stepsWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get stepsWeekTitle;
+
+  /// No description provided for @stepsChangeGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Change goal'**
+  String get stepsChangeGoal;
+
+  /// No description provided for @stepsGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get stepsGoalTitle;
+
+  /// No description provided for @stepsGoalHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps you want to take each day.'**
+  String get stepsGoalHelper;
+
+  /// No description provided for @stepsGoalSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save goal'**
+  String get stepsGoalSave;
+
+  /// No description provided for @stepsGoalSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal saved'**
+  String get stepsGoalSaved;
+
+  /// No description provided for @stepsUpdatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated {time}'**
+  String stepsUpdatedAt(String time);
+
+  /// No description provided for @stepsRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get stepsRefresh;
+
+  /// No description provided for @stepsTimezoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Days are cut according to your profile time zone.'**
+  String get stepsTimezoneHint;
+
+  /// No description provided for @stepsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{steps} / {goal}'**
+  String stepsSummary(String steps, String goal);
+
+  /// No description provided for @stepsSummaryNoPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'No permission'**
+  String get stepsSummaryNoPermission;
+
+  /// No description provided for @stepsReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps could not be read. Please try again.'**
+  String get stepsReadError;
+
+  /// No description provided for @stepsConsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Constanza will count your steps with your phone\'s own motion sensor, without relying on other apps. Each day\'s total is saved to your account so you can see your progress since you started using Constanza. It is never shared and you can delete it whenever you like.'**
+  String get stepsConsentBody;
+
+  /// No description provided for @stepsNoPermissionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To count your steps, Constanza needs access to the motion sensor. iOS: Settings › Privacy › Motion & Fitness › Constanza. Android: Settings › Apps › Constanza › Permissions › Physical activity.'**
+  String get stepsNoPermissionBody;
+
+  /// No description provided for @stepsUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No step sensor'**
+  String get stepsUnavailableTitle;
+
+  /// No description provided for @stepsUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no step counter. You can still see the history saved to your account from other devices.'**
+  String get stepsUnavailableBody;
+
+  /// No description provided for @stepsSummaryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No sensor'**
+  String get stepsSummaryUnavailable;
+
+  /// No description provided for @stepsCaloriesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get stepsCaloriesLabel;
+
+  /// No description provided for @stepsCaloriesKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal'**
+  String stepsCaloriesKcal(String kcal);
+
+  /// No description provided for @stepsEstimatedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'estimate'**
+  String get stepsEstimatedShort;
+
+  /// No description provided for @stepsStreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal streak'**
+  String get stepsStreakLabel;
+
+  /// No description provided for @stepsStreakDaysWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String stepsStreakDaysWithCount(int count);
+
+  /// No description provided for @stepsStreakDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'in a row on target'**
+  String get stepsStreakDetail;
+
+  /// No description provided for @stepsRemainingWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 step to go} other{{count} steps to go}}'**
+  String stepsRemainingWithCount(int count);
+
+  /// No description provided for @stepsHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress'**
+  String get stepsHistoryTitle;
+
+  /// No description provided for @stepsRangeWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get stepsRangeWeek;
+
+  /// No description provided for @stepsRangeMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get stepsRangeMonth;
+
+  /// No description provided for @stepsRangeYear.
+  ///
+  /// In en, this message translates to:
+  /// **'1 year'**
+  String get stepsRangeYear;
+
+  /// No description provided for @stepsRangeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get stepsRangeAll;
+
+  /// No description provided for @stepsHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No days saved yet. As soon as you walk with Constanza, they will show up here.'**
+  String get stepsHistoryEmpty;
+
+  /// No description provided for @stepsTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get stepsTotalLabel;
+
+  /// No description provided for @stepsDailyAverageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily average'**
+  String get stepsDailyAverageLabel;
+
+  /// No description provided for @stepsBestDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best day'**
+  String get stepsBestDayLabel;
+
+  /// No description provided for @stepsGoalDaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Days on target'**
+  String get stepsGoalDaysLabel;
+
+  /// No description provided for @stepsGoalDaysValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total}'**
+  String stepsGoalDaysValue(int done, int total);
+
+  /// No description provided for @stepsDistanceTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get stepsDistanceTotalLabel;
+
+  /// No description provided for @stepsCaloriesTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get stepsCaloriesTotalLabel;
+
+  /// No description provided for @stepsRecentDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent days'**
+  String get stepsRecentDays;
+
+  /// No description provided for @stepsByMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'By month'**
+  String get stepsByMonth;
+
+  /// No description provided for @stepsStepsWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} steps'**
+  String stepsStepsWithCount(String count);
+
+  /// No description provided for @stepsSinceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Since {date}'**
+  String stepsSinceLabel(String date);
+
+  /// No description provided for @stepsGoalCelebrationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations!'**
+  String get stepsGoalCelebrationTitle;
+
+  /// No description provided for @stepsGoalCelebrationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached your goal with {steps} steps today. Keep it up!'**
+  String stepsGoalCelebrationBody(String steps);
+
+  /// No description provided for @stepsGoalCelebrationAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Awesome!'**
+  String get stepsGoalCelebrationAction;
+
+  /// No description provided for @stepsCelebrationCatImageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cat celebrating'**
+  String get stepsCelebrationCatImageLabel;
+
+  /// No description provided for @stepsCountingLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting with your phone\'s sensor'**
+  String get stepsCountingLive;
+
+  /// No description provided for @stepsSensorNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps are counted even when the app is closed. Open it from time to time to save the day\'s total.'**
+  String get stepsSensorNote;
 }
 
 class _AppLocalizationsDelegate

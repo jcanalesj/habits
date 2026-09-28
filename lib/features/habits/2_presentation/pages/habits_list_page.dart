@@ -346,7 +346,12 @@ class _Content extends ConsumerWidget {
     ];
 
     return ListView(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, standalone ? 32 : 120),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        standalone ? 32 + MediaQuery.viewPaddingOf(context).bottom : 120,
+      ),
       children: [
         _HabitKindSelector(value: selectedKind, onChanged: onKindChanged),
         const SizedBox(height: 20),
@@ -501,7 +506,12 @@ class _QuitHabitsContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, standalone ? 32 : 120),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        standalone ? 32 + MediaQuery.viewPaddingOf(context).bottom : 120,
+      ),
       children: [
         _HabitKindSelector(value: HabitKind.quit, onChanged: onKindChanged),
         const SizedBox(height: 20),

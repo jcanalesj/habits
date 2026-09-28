@@ -7,6 +7,7 @@ environment:
   sdk: ^3.10.4
 
 dependencies:
+  audioplayers: ^6.5.1
   cloud_firestore: ^6.9.0
   cloud_functions: ^6.5.0
   firebase_app_check: ^0.4.8
@@ -47,6 +48,13 @@ dev_dependencies:
     sdk: flutter
   mock_exceptions: ^0.8.2
 
+# firebase_core_web 3.11.0 usa Object.isA, una API que todavía no está
+# disponible para valores capturados por `catch` en Dart 3.10 (Flutter 3.38).
+# Mantener este pin hasta actualizar el SDK o hasta que FlutterFire publique
+# una versión compatible con Dart 3.10.
+dependency_overrides:
+  firebase_core_web: 3.10.0
+
 flutter:
   uses-material-design: true
   generate: true
@@ -60,4 +68,5 @@ flutter:
     - assets/images/app_icons/
     - assets/images/avatars/
     - assets/images/cards/
+    - assets/audio/
     - assets/logo/

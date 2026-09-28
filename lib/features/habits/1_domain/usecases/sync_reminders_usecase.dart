@@ -35,13 +35,13 @@ class SyncRemindersUsecase {
   }) async {
     try {
       if (!enabled) {
-        await _notifications.cancelAll();
+        await _notifications.cancelHabitReminders();
         return 0;
       }
 
       final permission = await _notifications.currentPermission();
       if (permission == NotificationPermission.denied) {
-        await _notifications.cancelAll();
+        await _notifications.cancelHabitReminders();
         return 0;
       }
 

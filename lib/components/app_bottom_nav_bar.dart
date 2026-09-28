@@ -3,7 +3,9 @@ import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
-/// Barra de navegación inferior: Hábitos, Mis hábitos, Estadísticas y Perfil.
+/// Barra de navegación inferior: Inicio, Mis hábitos, Herramientas (en el
+/// centro), Estadísticas y Perfil. El orden es el de las ramas del shell en
+/// `navigation.dart`.
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({
     super.key,
@@ -16,6 +18,32 @@ class AppBottomNavBar extends StatelessWidget {
 
   final int currentIndex;
   final ValueChanged<int> onTap;
+
+  static const _tabs = <_NavTab>[
+    _NavTab(PhosphorIconsRegular.house, PhosphorIconsFill.house, _homeLabel),
+    _NavTab(
+      PhosphorIconsRegular.calendarDots,
+      PhosphorIconsFill.calendarDots,
+      _habitsLabel,
+    ),
+    _NavTab(
+      PhosphorIconsRegular.squaresFour,
+      PhosphorIconsFill.squaresFour,
+      _toolsLabel,
+    ),
+    _NavTab(
+      PhosphorIconsRegular.chartBar,
+      PhosphorIconsFill.chartBar,
+      _statsLabel,
+    ),
+    _NavTab(PhosphorIconsRegular.user, PhosphorIconsFill.user, _profileLabel),
+  ];
+
+  static String _homeLabel(AppLocalizations l10n) => l10n.navHome;
+  static String _habitsLabel(AppLocalizations l10n) => l10n.navHabits;
+  static String _toolsLabel(AppLocalizations l10n) => l10n.navTools;
+  static String _statsLabel(AppLocalizations l10n) => l10n.navStats;
+  static String _profileLabel(AppLocalizations l10n) => l10n.navProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -41,52 +69,28 @@ class AppBottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Expanded(
-                child: _NavItem(
-                  icon: currentIndex == 0
-                      ? PhosphorIconsFill.house
-                      : PhosphorIconsRegular.house,
-                  label: l10n.navHome,
-                  selected: currentIndex == 0,
-                  onTap: () => onTap(0),
+              for (final (index, tab) in _tabs.indexed)
+                Expanded(
+                  child: _NavItem(
+                    icon: currentIndex == index ? tab.fill : tab.regular,
+                    label: tab.label(l10n),
+                    selected: currentIndex == index,
+                    onTap: () => onTap(index),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _NavItem(
-                  icon: currentIndex == 1
-                      ? PhosphorIconsFill.calendarDots
-                      : PhosphorIconsRegular.calendarDots,
-                  label: l10n.navHabits,
-                  selected: currentIndex == 1,
-                  onTap: () => onTap(1),
-                ),
-              ),
-              Expanded(
-                child: _NavItem(
-                  icon: currentIndex == 2
-                      ? PhosphorIconsFill.chartBar
-                      : PhosphorIconsRegular.chartBar,
-                  label: l10n.navStats,
-                  selected: currentIndex == 2,
-                  onTap: () => onTap(2),
-                ),
-              ),
-              Expanded(
-                child: _NavItem(
-                  icon: currentIndex == 3
-                      ? PhosphorIconsFill.user
-                      : PhosphorIconsRegular.user,
-                  label: l10n.navProfile,
-                  selected: currentIndex == 3,
-                  onTap: () => onTap(3),
-                ),
-              ),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+class _NavTab {
+  const _NavTab(this.regular, this.fill, this.label);
+  final IconData regular;
+  final IconData fill;
+  final String Function(AppLocalizations l10n) label;
 }
 
 class _NavItem extends StatelessWidget {

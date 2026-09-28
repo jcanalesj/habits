@@ -19,6 +19,8 @@ import 'package:habits/features/habits/2_presentation/routes/routes.dart'
     as habits_routes;
 import 'package:habits/features/splash/2_presentation/routes/routes.dart'
     as splash_routes;
+import 'package:habits/features/tools/2_presentation/routes/routes.dart'
+    as tools_routes;
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/widgets/app_shell.dart';
 
@@ -62,6 +64,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final habitFormRoutes = ref.watch(habits_routes.habitFormRoutesProvider);
   final splashRoutes = ref.watch(splash_routes.splashRoutesProvider);
   final authRoutes = ref.watch(auth_routes.authRoutesProvider);
+  final toolsRoutes = ref.watch(tools_routes.toolsRoutesProvider);
+  final toolPageRoutes = ref.watch(tools_routes.toolPageRoutesProvider);
 
   // Cada cambio de sesión re-evalúa el redirect de la ruta actual.
   final sessionTick = ValueNotifier<int>(0);
@@ -86,6 +90,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...authRoutes,
       // Fuera del shell: el formulario ocupa la pantalla completa.
       ...habitFormRoutes,
+      // Cada herramienta también va a pantalla completa, como los
+      // sub-ajustes de Perfil; solo el panel vive en su rama.
+      ...toolPageRoutes,
       GoRoute(
         path: '/profile/avatar',
         builder: (context, state) => const AvatarPickerPage(),
@@ -138,6 +145,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Rama central: Herramientas.
+          StatefulShellBranch(routes: toolsRoutes),
           StatefulShellBranch(
             routes: [
               GoRoute(

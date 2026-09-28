@@ -373,7 +373,12 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     return _Scaffold(
       title: widget.isEditing ? l10n.editHabitTitle : l10n.newHabitTitle,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          8,
+          20,
+          40 + MediaQuery.viewPaddingOf(context).bottom,
+        ),
         children: [
           if (!widget.isEditing) ...[
             SurfaceCard(

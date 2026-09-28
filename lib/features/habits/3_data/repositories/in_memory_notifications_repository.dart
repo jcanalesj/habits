@@ -1,4 +1,5 @@
 import 'package:habits/features/habits/0_entity/habit_reminder.dart';
+import 'package:habits/features/habits/0_entity/scheduled_notification.dart';
 import 'package:habits/features/habits/1_domain/repositories/notifications_repository.dart';
 
 /// [NotificationsRepository] en memoria para tests: registra qué se ha
@@ -15,6 +16,9 @@ class InMemoryNotificationsRepository implements NotificationsRepository {
   String? lastTimezone;
   int syncCalls = 0;
   int cancelAllCalls = 0;
+
+  /// Notificaciones de herramientas programadas, por etiqueta.
+  final tagged = <String, List<ScheduledNotification>>{};
 
   @override
   Future<void> initialize() async {}
@@ -38,11 +42,32 @@ class InMemoryNotificationsRepository implements NotificationsRepository {
   }
 
   @override
-  Future<void> cancelAll() async {
+  Future<void> cancelHabitReminders() async {
     cancelAllCalls++;
     scheduled = const [];
   }
 
   @override
-  Future<int> pendingCount() async => scheduled.length;
+  Future<void> cancelAll() async {
+    cancelAllCalls++;
+    scheduled = const [];
+    tagged.clear();
+  }
+
+  @override
+  Future<void> syncTagged(
+    String tag,
+    List<ScheduledNotification> notifications,
+  ) async {
+    tagged[tag] = List.unmodifiable(notifications);
+  }
+
+  @override
+  Future<void> cancelTagged(String tag) async {
+    tagged.remove(tag);
+  }
+
+  @override
+  Future<int> pendingCount() async =>
+      scheduled.length + tagged.values.fold(0, (sum, list) => sum + list.length);
 }

@@ -77,4 +77,6 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    // ActivityCompat/ContextCompat para el permiso del contador de pasos.
+    implementation("androidx.core:core-ktx:1.13.1")
 }

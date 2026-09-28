@@ -1,4 +1,5 @@
 import 'package:habits/features/habits/0_entity/habit_reminder.dart';
+import 'package:habits/features/habits/0_entity/scheduled_notification.dart';
 
 /// Permiso del sistema para mostrar notificaciones.
 enum NotificationPermission {
@@ -39,8 +40,21 @@ abstract class NotificationsRepository {
     required String Function(HabitReminder reminder) body,
   });
 
-  /// Cancela todo. Se usa al desactivar los recordatorios y al cerrar sesión.
+  /// Cancela solo los recordatorios de hábitos (los de las herramientas se
+  /// conservan). Se usa al desactivar los recordatorios o sin permiso.
+  Future<void> cancelHabitReminders();
+
+  /// Cancela absolutamente todo. Se usa al cerrar sesión.
   Future<void> cancelAll();
+
+  /// Sustituye las notificaciones de la herramienta [tag] (tareas,
+  /// pomodoro…) por [notifications]. Mismo criterio que [sync]: cancelar y
+  /// reprogramar en bloque, sin tocar las de otras herramientas ni las de
+  /// hábitos.
+  Future<void> syncTagged(String tag, List<ScheduledNotification> notifications);
+
+  /// Cancela todas las notificaciones de la herramienta [tag].
+  Future<void> cancelTagged(String tag);
 
   /// Recordatorios realmente pendientes en el sistema. Para diagnóstico.
   Future<int> pendingCount();

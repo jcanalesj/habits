@@ -12,3 +12,4 @@ export 'logical_date.dart';
 export 'periodicity.dart';
 export 'streak_state.dart';
 export 'wildcard_balance.dart';
+export 'scheduled_notification.dart';

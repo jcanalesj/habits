@@ -83,7 +83,9 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
             20,
             widget.isHabitsTab ? 16 : 8,
             20,
-            widget.isHabitsTab ? HabitCalendarsPage.bottomBarClearance : 40,
+            widget.isHabitsTab
+                ? HabitCalendarsPage.bottomBarClearance
+                : 40 + MediaQuery.viewPaddingOf(context).bottom,
           ),
           children: [
             if (widget.isHabitsTab) ...[

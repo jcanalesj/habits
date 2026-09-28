@@ -606,6 +606,293 @@ service cloud.firestore {
       }
     }
 
+    // ------------------------------------------ users/{uid}/tareas/{taskId}
+    // Herramienta Tareas (sección Herramientas). No interviene en hábitos ni
+    // en rachas: ninguna herramienta escribe en registros. Se admiten fechas
+    // pasadas y futuras porque no hay racha que falsear.
+    match /users/{uid}/tareas/{taskId} {
+      allow read: if isOwner(uid);
+
+      allow create: if isOwner(uid)
+        && validTask(incoming())
+        && isServerTime(incoming().createdAt);
+
+      allow update: if isOwner(uid)
+        && validTask(incoming())
+        && unchanged('createdAt');
+
+      allow delete: if isOwner(uid);
+
+      function validTask(d) {
+        return d.keys().hasOnly([
+            'titulo', 'nota', 'fecha', 'hora', 'prioridad', 'orden',
+            'completadaEn', 'arrastradaDesde', 'createdAt', 'updatedAt'
+          ])
+          && d.keys().hasAll([
+            'titulo', 'nota', 'fecha', 'hora', 'prioridad', 'orden',
+            'completadaEn', 'arrastradaDesde', 'createdAt', 'updatedAt'
+          ])
+          && isShortText(d.titulo, 120)
+          && (d.nota == null || (d.nota is string && d.nota.size() <= 500))
+          && (d.fecha == null || isDia(d.fecha))
+          // La hora solo tiene sentido con fecha.
+          && (d.hora == null || (d.fecha != null && isHora(d.hora)))
+          && d.prioridad in ['low', 'normal', 'high']
+          && isNonNegInt(d.orden)
+          && isNullOrTimestamp(d.completadaEn)
+          && (d.arrastradaDesde == null || isDia(d.arrastradaDesde))
+          && d.createdAt is timestamp
+          && isServerTime(d.updatedAt);
+      }
+    }
+
+    // ---------------------------------------- users/{uid}/pomodoro/{docId}
+    // Herramienta Pomodoro: `config` (ajustes) y `sesiones/items/{id}` (una
+    // por fase de concentración completada). No toca hábitos ni rachas.
+    match /users/{uid}/pomodoro/{docId} {
+      allow read: if isOwner(uid);
+
+      allow create, update: if isOwner(uid)
+        && docId == 'config'
+        && validPomodoroConfig(incoming());
+
+      allow delete: if isOwner(uid) && docId == 'config';
+
+      function validPomodoroConfig(d) {
+        return d.keys().hasOnly([
+            'trabajoMin', 'descansoCortoMin', 'descansoLargoMin',
+            'pomodorosPorCiclo', 'autoDescanso', 'autoTrabajo', 'sonido',
+            'vibracion', 'updatedAt'
+          ])
+          && d.keys().hasAll([
+            'trabajoMin', 'descansoCortoMin', 'descansoLargoMin',
+            'pomodorosPorCiclo', 'autoDescanso', 'autoTrabajo', 'sonido',
+            'vibracion', 'updatedAt'
+          ])
+          && d.trabajoMin is int && d.trabajoMin >= 15 && d.trabajoMin <= 60
+          && d.descansoCortoMin is int && d.descansoCortoMin >= 3 && d.descansoCortoMin <= 15
+          && d.descansoLargoMin is int && d.descansoLargoMin >= 10 && d.descansoLargoMin <= 30
+          && d.pomodorosPorCiclo is int && d.pomodorosPorCiclo >= 2 && d.pomodorosPorCiclo <= 6
+          && d.autoDescanso is bool && d.autoTrabajo is bool
+          && d.sonido is bool && d.vibracion is bool
+          && isServerTime(d.updatedAt);
+      }
+
+      match /items/{sessionId} {
+        allow read: if isOwner(uid) && docId == 'sesiones';
+
+        // Una sesión no se edita: se crea al completar la fase y, como
+        // mucho, se borra ("Borrar historial").
+        allow create: if isOwner(uid)
+          && docId == 'sesiones'
+          && validPomodoroSession(incoming());
+
+        allow update: if false;
+        allow delete: if isOwner(uid) && docId == 'sesiones';
+
+        function validPomodoroSession(d) {
+          return d.keys().hasOnly(['dia', 'inicio', 'duracionMin', 'etiqueta', 'createdAt'])
+            && d.keys().hasAll(['dia', 'inicio', 'duracionMin', 'etiqueta', 'createdAt'])
+            && isDia(d.dia)
+            && d.inicio is timestamp
+            && d.inicio <= request.time + duration.value(5, 'm')
+            && d.duracionMin is int && d.duracionMin >= 1 && d.duracionMin <= 60
+            && d.etiqueta is string && d.etiqueta.size() <= 60
+            && isServerTime(d.createdAt);
+        }
+      }
+    }
+
+    // ------------------------------- users/{uid}/listasCompra/{listaId}/items
+    // Herramienta Lista de la compra. Solo personal (sin compartir). En v2
+    // existe una única lista, `principal`; el documento de lista es opcional.
+    match /users/{uid}/listasCompra/{listaId} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validShoppingList(incoming());
+      allow delete: if isOwner(uid);
+
+      function validShoppingList(d) {
+        return d.keys().hasOnly(['nombre', 'createdAt', 'updatedAt'])
+          && isShortText(d.nombre, 60)
+          && isServerTime(d.updatedAt);
+      }
+
+      match /items/{itemId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && validShoppingItem(incoming())
+          && isServerTime(incoming().createdAt);
+
+        allow update: if isOwner(uid)
+          && validShoppingItem(incoming())
+          && unchanged('createdAt');
+
+        allow delete: if isOwner(uid);
+
+        function validShoppingItem(d) {
+          return d.keys().hasOnly(['nombre', 'cantidad', 'nota', 'compradoEn', 'createdAt', 'updatedAt'])
+            && d.keys().hasAll(['nombre', 'cantidad', 'nota', 'compradoEn', 'createdAt', 'updatedAt'])
+            && isShortText(d.nombre, 80)
+            && (d.cantidad == null || (d.cantidad is int && d.cantidad >= 1 && d.cantidad <= 999))
+            && (d.nota == null || (d.nota is string && d.nota.size() <= 120))
+            && isNullOrTimestamp(d.compradoEn)
+            && d.createdAt is timestamp
+            && isServerTime(d.updatedAt);
+        }
+      }
+    }
+
+    // -------------------------------------------- users/{uid}/finanzas/{docId}
+    // Herramienta Finanzas. Un único nodo para exportar y borrar de una vez:
+    //   config, movimientos/items, gastosFijos/items, inversiones/items y
+    //   comprasPendientes/items. Importes en CÉNTIMOS ENTEROS; la moneda
+    //   (ISO 4217) vive en config. No toca hábitos ni rachas.
+    match /users/{uid}/finanzas/{docId} {
+      allow read: if isOwner(uid);
+
+      allow create, update: if isOwner(uid)
+        && docId == 'config'
+        && validFinanceConfig(incoming());
+
+      allow delete: if isOwner(uid) && docId == 'config';
+
+      function validFinanceConfig(d) {
+        return d.keys().hasOnly(['moneda', 'diaInicioMes', 'updatedAt'])
+          && d.keys().hasAll(['moneda', 'diaInicioMes', 'updatedAt'])
+          && d.moneda is string && d.moneda.matches('^[A-Z]{3}$')
+          && d.diaInicioMes is int && d.diaInicioMes >= 1 && d.diaInicioMes <= 28
+          && isServerTime(d.updatedAt);
+      }
+
+      function isCents(value) {
+        return value is int && value > 0 && value <= 100000000;
+      }
+      function isCentsOrZero(value) {
+        return value is int && value >= 0 && value <= 100000000;
+      }
+      function isCategoria(value) {
+        return value in ['home', 'food', 'transport', 'leisure', 'health', 'clothes',
+          'subscriptions', 'gifts', 'salary', 'investment', 'other'];
+      }
+      function isNullOrId(value) {
+        return value == null || (value is string && value.size() > 0 && value.size() <= 64);
+      }
+
+      match /items/{itemId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && validItem(docId, incoming())
+          && isServerTime(incoming().createdAt);
+
+        allow update: if isOwner(uid)
+          && validItem(docId, incoming())
+          && unchanged('createdAt');
+
+        allow delete: if isOwner(uid);
+
+        function validItem(group, d) {
+          return (group == 'movimientos' && validMovimiento(d))
+            || (group == 'gastosFijos' && validGastoFijo(d))
+            || (group == 'inversiones' && validInversion(d))
+            || (group == 'comprasPendientes' && validCompraPendiente(d));
+        }
+
+        function validMovimiento(d) {
+          return d.keys().hasOnly(['tipo', 'importeCents', 'concepto', 'categoria', 'fecha', 'nota',
+              'gastoFijoId', 'inversionId', 'compraPendienteId', 'createdAt', 'updatedAt'])
+            && d.keys().hasAll(['tipo', 'importeCents', 'concepto', 'categoria', 'fecha', 'nota',
+              'gastoFijoId', 'inversionId', 'compraPendienteId', 'createdAt', 'updatedAt'])
+            && d.tipo in ['gasto', 'ingreso']
+            && isCents(d.importeCents)
+            && isShortText(d.concepto, 80)
+            && isCategoria(d.categoria)
+            && isDia(d.fecha)
+            && (d.nota == null || (d.nota is string && d.nota.size() <= 200))
+            && isNullOrId(d.gastoFijoId) && isNullOrId(d.inversionId) && isNullOrId(d.compraPendienteId)
+            && d.createdAt is timestamp
+            && isServerTime(d.updatedAt);
+        }
+
+        function validGastoFijo(d) {
+          return d.keys().hasOnly(['nombre', 'importeCents', 'diaDelMes', 'categoria', 'activo',
+              'registradoMeses', 'createdAt', 'updatedAt'])
+            && d.keys().hasAll(['nombre', 'importeCents', 'diaDelMes', 'categoria', 'activo',
+              'registradoMeses', 'createdAt', 'updatedAt'])
+            && isShortText(d.nombre, 80)
+            && isCents(d.importeCents)
+            && d.diaDelMes is int && d.diaDelMes >= 1 && d.diaDelMes <= 28
+            && isCategoria(d.categoria)
+            && d.activo is bool
+            && d.registradoMeses is list && d.registradoMeses.size() <= 240
+            && d.createdAt is timestamp
+            && isServerTime(d.updatedAt);
+        }
+
+        function validInversion(d) {
+          return d.keys().hasOnly(['nombre', 'tipo', 'aportadoCents', 'valorActualCents',
+              'valorActualizadoEn', 'createdAt', 'updatedAt'])
+            && d.keys().hasAll(['nombre', 'tipo', 'aportadoCents', 'valorActualCents',
+              'valorActualizadoEn', 'createdAt', 'updatedAt'])
+            && isShortText(d.nombre, 80)
+            && d.tipo in ['funds', 'stocks', 'crypto', 'deposit', 'property', 'other']
+            && isCentsOrZero(d.aportadoCents)
+            && isCentsOrZero(d.valorActualCents)
+            && d.valorActualizadoEn is timestamp
+            && d.createdAt is timestamp
+            && isServerTime(d.updatedAt);
+        }
+
+        function validCompraPendiente(d) {
+          return d.keys().hasOnly(['nombre', 'importeEstimadoCents', 'prioridad', 'fechaObjetivo',
+              'compradaEn', 'movimientoId', 'createdAt', 'updatedAt'])
+            && d.keys().hasAll(['nombre', 'importeEstimadoCents', 'prioridad', 'fechaObjetivo',
+              'compradaEn', 'movimientoId', 'createdAt', 'updatedAt'])
+            && isShortText(d.nombre, 80)
+            && isCents(d.importeEstimadoCents)
+            && d.prioridad in ['low', 'normal', 'high']
+            && (d.fechaObjetivo == null || isDia(d.fechaObjetivo))
+            && isNullOrTimestamp(d.compradaEn)
+            && isNullOrId(d.movimientoId)
+            && d.createdAt is timestamp
+            && isServerTime(d.updatedAt);
+        }
+      }
+    }
+
+    // ------------------------------------------- users/{uid}/pasos/{docId}
+    // Herramienta Pasos: `config` (objetivo y consentimiento) y un documento
+    // por día lógico con el total del contador nativo del dispositivo (Core
+    // Motion / sensor de pasos). Es el histórico completo desde que se usa
+    // Constanza. Son datos de salud: el usuario puede borrarlos cuando quiera.
+    match /users/{uid}/pasos/{docId} {
+      allow read: if isOwner(uid);
+
+      allow create, update: if isOwner(uid)
+        && ((docId == 'config' && validStepsConfig(incoming()))
+          || (docId != 'config' && isDia(docId) && validStepsDay(incoming())));
+
+      allow delete: if isOwner(uid);
+
+      function validStepsConfig(d) {
+        return d.keys().hasOnly(['objetivo', 'consentimientoSalud', 'updatedAt'])
+          && d.keys().hasAll(['objetivo', 'consentimientoSalud', 'updatedAt'])
+          && d.objetivo is int && d.objetivo >= 500 && d.objetivo <= 30000
+          && d.consentimientoSalud is bool
+          && isServerTime(d.updatedAt);
+      }
+
+      function validStepsDay(d) {
+        return d.keys().hasOnly(['pasos', 'distanciaM', 'fuente', 'updatedAt'])
+          && d.keys().hasAll(['pasos', 'distanciaM', 'fuente', 'updatedAt'])
+          && d.pasos is int && d.pasos >= 0 && d.pasos <= 200000
+          && (d.distanciaM == null || (d.distanciaM is int && d.distanciaM >= 0 && d.distanciaM <= 500000))
+          && d.fuente in ['pedometer', 'healthkit', 'healthconnect']
+          && isServerTime(d.updatedAt);
+      }
+    }
+
     // -------------------------------------------------- users/{uid}/cache/rachas
     // ÚNICO documento con datos derivados que el cliente puede escribir.
     //

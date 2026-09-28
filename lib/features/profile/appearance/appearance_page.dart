@@ -105,7 +105,12 @@ class AppearancePage extends ConsumerWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 48),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          8,
+          20,
+          48 + MediaQuery.viewPaddingOf(context).bottom,
+        ),
         children: [
           _MotivationPreview(
             message: messages.isEmpty

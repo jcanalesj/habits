@@ -472,6 +472,112 @@ const saldo = (over = {}) => ({
   await check('peso: bob no borra mediciones de alice', false, () => deleteDoc(P(bob, 'm1')));
   await check('peso: config no se borra', false, () => deleteDoc(P(alice, 'config')));
 
+  // ---------------- tareas (Herramientas)
+  const T = (db, id) => doc(db, 'users', 'alice', 'tareas', id);
+  const tarea = (over = {}) => ({
+    titulo: 'Llamar al médico', nota: null, fecha: HOY, hora: '10:30', prioridad: 'normal', orden: 1,
+    completadaEn: null, arrastradaDesde: null, createdAt: ts(), updatedAt: ts(), ...over,
+  });
+  await check('tareas: crear válida', true, () => setDoc(T(alice, 't1'), tarea()));
+  await check('tareas: fecha pasada se admite (no hay racha)', true, () => setDoc(T(alice, 't2'), tarea({ fecha: '2024-01-15', hora: null })));
+  await check('tareas: sin fecha ni hora', true, () => setDoc(T(alice, 't3'), tarea({ fecha: null, hora: null })));
+  await check('tareas: hora sin fecha falla', false, () => setDoc(T(alice, 't4'), tarea({ fecha: null })));
+  await check('tareas: título vacío falla', false, () => setDoc(T(alice, 't5'), tarea({ titulo: '' })));
+  await check('tareas: prioridad desconocida falla', false, () => setDoc(T(alice, 't6'), tarea({ prioridad: 'urgente' })));
+  await check('tareas: campo extra falla', false, () => setDoc(T(alice, 't7'), tarea({ extra: 1 })));
+  await check('tareas: createdAt de cliente falla', false, () => setDoc(T(alice, 't8'), tarea({ createdAt: Timestamp.now() })));
+  await check('tareas: completar', true, () => updateDoc(T(alice, 't1'), { completadaEn: ts(), updatedAt: ts() }));
+  await check('tareas: reabrir', true, () => updateDoc(T(alice, 't1'), { completadaEn: null, updatedAt: ts() }));
+  await check('tareas: arrastrar a hoy', true, () => updateDoc(T(alice, 't2'), { fecha: HOY, arrastradaDesde: '2024-01-15', updatedAt: ts() }));
+  await check('tareas: actualizar sin updatedAt de servidor falla', false, () => updateDoc(T(alice, 't1'), { titulo: 'Otra' }));
+  await check('tareas: cambiar createdAt falla', false, () => updateDoc(T(alice, 't1'), { createdAt: Timestamp.now(), updatedAt: ts() }));
+  await check('tareas: bob no lee las de alice', false, () => getDoc(T(bob, 't1')));
+  await check('tareas: borrar propia', true, () => deleteDoc(T(alice, 't3')));
+
+  // ---------------- pomodoro (Herramientas)
+  const PC = (db) => doc(db, 'users', 'alice', 'pomodoro', 'config');
+  const PS = (db, id) => doc(db, 'users', 'alice', 'pomodoro', 'sesiones', 'items', id);
+  const pomodoroConfig = (over = {}) => ({
+    trabajoMin: 25, descansoCortoMin: 5, descansoLargoMin: 15, pomodorosPorCiclo: 4,
+    autoDescanso: false, autoTrabajo: false, sonido: true, vibracion: true, updatedAt: ts(), ...over,
+  });
+  const sesion = (over = {}) => ({ dia: HOY, inicio: Timestamp.now(), duracionMin: 25, etiqueta: 'Tesis', createdAt: ts(), ...over });
+  await check('pomodoro: config válida', true, () => setDoc(PC(alice), pomodoroConfig()));
+  await check('pomodoro: concentración de 90 min falla', false, () => setDoc(PC(alice), pomodoroConfig({ trabajoMin: 90 })));
+  await check('pomodoro: config con id distinto falla', false, () => setDoc(doc(alice, 'users', 'alice', 'pomodoro', 'otra'), pomodoroConfig()));
+  await check('pomodoro: sesión válida', true, () => setDoc(PS(alice, 's1'), sesion()));
+  await check('pomodoro: sesión sin etiqueta (vacía)', true, () => setDoc(PS(alice, 's2'), sesion({ etiqueta: '' })));
+  await check('pomodoro: sesión futura falla', false, () => setDoc(PS(alice, 's3'), sesion({ inicio: Timestamp.fromMillis(Date.now() + 3600000) })));
+  await check('pomodoro: sesión de 0 min falla', false, () => setDoc(PS(alice, 's4'), sesion({ duracionMin: 0 })));
+  await check('pomodoro: sesión no se edita', false, () => updateDoc(PS(alice, 's1'), { etiqueta: 'Otra' }));
+  await check('pomodoro: sesión se borra', true, () => deleteDoc(PS(alice, 's2')));
+  await check('pomodoro: bob no lee sesiones de alice', false, () => getDoc(PS(bob, 's1')));
+
+  // ---------------- lista de la compra (Herramientas)
+  const SI = (db, id) => doc(db, 'users', 'alice', 'listasCompra', 'principal', 'items', id);
+  const articulo = (over = {}) => ({ nombre: 'Leche', cantidad: 2, nota: null, compradoEn: null, createdAt: ts(), updatedAt: ts(), ...over });
+  await check('compra: artículo válido', true, () => setDoc(SI(alice, 'i1'), articulo()));
+  await check('compra: sin cantidad ni nota', true, () => setDoc(SI(alice, 'i2'), articulo({ cantidad: null })));
+  await check('compra: cantidad 0 falla', false, () => setDoc(SI(alice, 'i3'), articulo({ cantidad: 0 })));
+  await check('compra: nombre vacío falla', false, () => setDoc(SI(alice, 'i4'), articulo({ nombre: '' })));
+  await check('compra: marcar comprado', true, () => updateDoc(SI(alice, 'i1'), { compradoEn: ts(), updatedAt: ts() }));
+  await check('compra: devolver a la lista', true, () => updateDoc(SI(alice, 'i1'), { compradoEn: null, updatedAt: ts() }));
+  await check('compra: bob no lee la lista de alice', false, () => getDoc(SI(bob, 'i1')));
+  await check('compra: borrar artículo', true, () => deleteDoc(SI(alice, 'i2')));
+
+  // ---------------- finanzas (Herramientas)
+  const FC = (db) => doc(db, 'users', 'alice', 'finanzas', 'config');
+  const FI = (db, grupo, id) => doc(db, 'users', 'alice', 'finanzas', grupo, 'items', id);
+  const movimiento = (over = {}) => ({
+    tipo: 'gasto', importeCents: 1250, concepto: 'Café', categoria: 'food', fecha: HOY, nota: null,
+    gastoFijoId: null, inversionId: null, compraPendienteId: null, createdAt: ts(), updatedAt: ts(), ...over,
+  });
+  const gastoFijo = (over = {}) => ({
+    nombre: 'Alquiler', importeCents: 85000, diaDelMes: 1, categoria: 'home', activo: true,
+    registradoMeses: [], createdAt: ts(), updatedAt: ts(), ...over,
+  });
+  const inversion = (over = {}) => ({
+    nombre: 'Indexado', tipo: 'funds', aportadoCents: 100000, valorActualCents: 112000,
+    valorActualizadoEn: ts(), createdAt: ts(), updatedAt: ts(), ...over,
+  });
+  const compra = (over = {}) => ({
+    nombre: 'Bici', importeEstimadoCents: 45000, prioridad: 'normal', fechaObjetivo: null,
+    compradaEn: null, movimientoId: null, createdAt: ts(), updatedAt: ts(), ...over,
+  });
+  await check('finanzas: config válida', true, () => setDoc(FC(alice), { moneda: 'EUR', diaInicioMes: 1, updatedAt: ts() }));
+  await check('finanzas: moneda en minúsculas falla', false, () => setDoc(FC(alice), { moneda: 'eur', diaInicioMes: 1, updatedAt: ts() }));
+  await check('finanzas: día de inicio 31 falla', false, () => setDoc(FC(alice), { moneda: 'EUR', diaInicioMes: 31, updatedAt: ts() }));
+  await check('finanzas: movimiento válido', true, () => setDoc(FI(alice, 'movimientos', 'm1'), movimiento()));
+  await check('finanzas: importe decimal falla', false, () => setDoc(FI(alice, 'movimientos', 'm2'), movimiento({ importeCents: 12.5 })));
+  await check('finanzas: importe 0 falla', false, () => setDoc(FI(alice, 'movimientos', 'm3'), movimiento({ importeCents: 0 })));
+  await check('finanzas: categoría desconocida falla', false, () => setDoc(FI(alice, 'movimientos', 'm4'), movimiento({ categoria: 'mascotas' })));
+  await check('finanzas: movimiento en grupo equivocado falla', false, () => setDoc(FI(alice, 'gastosFijos', 'm5'), movimiento()));
+  await check('finanzas: grupo desconocido falla', false, () => setDoc(FI(alice, 'deudas', 'x'), movimiento()));
+  await check('finanzas: gasto fijo válido', true, () => setDoc(FI(alice, 'gastosFijos', 'f1'), gastoFijo()));
+  await check('finanzas: gasto fijo día 30 falla', false, () => setDoc(FI(alice, 'gastosFijos', 'f2'), gastoFijo({ diaDelMes: 30 })));
+  await check('finanzas: registrar mes en gasto fijo', true, () => updateDoc(FI(alice, 'gastosFijos', 'f1'), { registradoMeses: ['2026-09'], updatedAt: ts() }));
+  await check('finanzas: inversión válida', true, () => setDoc(FI(alice, 'inversiones', 'i1'), inversion()));
+  await check('finanzas: inversión con aportado negativo falla', false, () => setDoc(FI(alice, 'inversiones', 'i2'), inversion({ aportadoCents: -1 })));
+  await check('finanzas: actualizar valor de inversión', true, () => updateDoc(FI(alice, 'inversiones', 'i1'), { valorActualCents: 120000, valorActualizadoEn: ts(), updatedAt: ts() }));
+  await check('finanzas: compra pendiente válida', true, () => setDoc(FI(alice, 'comprasPendientes', 'c1'), compra()));
+  await check('finanzas: compra con fecha objetivo', true, () => setDoc(FI(alice, 'comprasPendientes', 'c2'), compra({ fechaObjetivo: '2027-01-15' })));
+  await check('finanzas: marcar compra hecha', true, () => updateDoc(FI(alice, 'comprasPendientes', 'c1'), { compradaEn: ts(), movimientoId: 'm1', updatedAt: ts() }));
+  await check('finanzas: bob no lee las finanzas de alice', false, () => getDoc(FI(bob, 'movimientos', 'm1')));
+  await check('finanzas: borrar movimiento', true, () => deleteDoc(FI(alice, 'movimientos', 'm1')));
+
+  // ---------------- pasos (Herramientas)
+  const ST = (db, id) => doc(db, 'users', 'alice', 'pasos', id);
+  await check('pasos: config válida', true, () => setDoc(ST(alice, 'config'), { objetivo: 8000, consentimientoSalud: true, updatedAt: ts() }));
+  await check('pasos: objetivo mínimo 500 válido', true, () => setDoc(ST(alice, 'config'), { objetivo: 500, consentimientoSalud: true, updatedAt: ts() }));
+  await check('pasos: objetivo menor que 500 falla', false, () => setDoc(ST(alice, 'config'), { objetivo: 499, consentimientoSalud: true, updatedAt: ts() }));
+  await check('pasos: día válido', true, () => setDoc(ST(alice, HOY), { pasos: 6240, distanciaM: 4618, fuente: 'pedometer', updatedAt: ts() }));
+  await check('pasos: día sin distancia', true, () => setDoc(ST(alice, AYER), { pasos: 10, distanciaM: null, fuente: 'healthconnect', updatedAt: ts() }));
+  await check('pasos: id que no es un día falla', false, () => setDoc(ST(alice, 'resumen'), { pasos: 10, distanciaM: null, fuente: 'healthkit', updatedAt: ts() }));
+  await check('pasos: fuente desconocida falla', false, () => setDoc(ST(alice, ANTEAYER), { pasos: 10, distanciaM: null, fuente: 'fitbit', updatedAt: ts() }));
+  await check('pasos: pasos negativos falla', false, () => setDoc(ST(alice, ANTEAYER), { pasos: -1, distanciaM: null, fuente: 'healthkit', updatedAt: ts() }));
+  await check('pasos: bob no lee los de alice', false, () => getDoc(ST(bob, HOY)));
+  await check('pasos: borrar un día', true, () => deleteDoc(ST(alice, AYER)));
+
   // ---------------- fuera del modelo
   await check('colección raíz desconocida falla', false, () => setDoc(doc(alice, 'global', 'x'), { a: 1 }));
   await check('subcolección desconocida falla', false, () => setDoc(U(alice, 'otros', 'x'), { a: 1 }));

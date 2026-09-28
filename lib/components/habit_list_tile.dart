@@ -119,80 +119,100 @@ class HabitListTile extends StatelessWidget {
             highlightColor: color.withValues(alpha: 0.07),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 68,
-                    height: 68,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: palette.surface.withValues(
-                        alpha: palette.isDark ? 1 : 0.58,
+                  Row(
+                    children: [
+                      Container(
+                        width: 68,
+                        height: 68,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: palette.surface.withValues(
+                            alpha: palette.isDark ? 1 : 0.58,
+                          ),
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: HabitIcon(
+                          iconId: habit.iconId,
+                          legacyEmoji: habit.emoji,
+                          size: 46,
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: HabitIcon(
-                      iconId: habit.iconId,
-                      legacyEmoji: habit.emoji,
-                      size: 46,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              habit.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textTheme.titleMedium?.copyWith(
+                                fontSize: AppDimensions.cardTitleFontSize,
+                                color: palette.textPrimary,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              PeriodicityLabel.of(
+                                l10n,
+                                habit.periodicityOn(today),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textTheme.bodySmall?.copyWith(
+                                fontSize: 13,
+                                color: palette.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      if (repetitions)
                         Text(
-                          habit.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          '${_completedCountToday()} / ${_targetCountToday()}',
                           style: textTheme.titleMedium?.copyWith(
                             fontSize: AppDimensions.cardTitleFontSize,
-                            color: palette.textPrimary,
-                            fontWeight: FontWeight.w800,
+                            color: palette.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      else ...[
+                        Text(
+                          goal == null
+                              ? (completedToday ? '1 / 1' : '0 / 1')
+                              : '${goal.completed} / ${goal.goal}',
+                          style: textTheme.titleMedium?.copyWith(
+                            fontSize: AppDimensions.cardTitleFontSize,
+                            color: palette.textSecondary,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 5),
-                        Text(
-                          PeriodicityLabel.of(l10n, habit.periodicityOn(today)),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: textTheme.bodySmall?.copyWith(
-                            fontSize: 13,
-                            color: palette.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        const SizedBox(width: 12),
+                        _TrackToggle(
+                          key: ValueKey('habit-track-${habit.id}'),
+                          habitName: habit.name,
+                          completed: completedToday,
+                          color: color,
+                          compact: true,
+                          onPressed: onToggleToday,
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  if (repetitions)
-                    _CompactRepetitionAction(
+                  if (repetitions) ...[
+                    const SizedBox(height: 12),
+                    _RepetitionProgress(
                       habit: habit.copyWith(targetCount: _targetCountToday()),
                       count: _completedCountToday(),
-                      onChanged: onSetDailyCount,
-                    )
-                  else ...[
-                    Text(
-                      goal == null
-                          ? (completedToday ? '1 / 1' : '0 / 1')
-                          : '${goal.completed} / ${goal.goal}',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontSize: AppDimensions.cardTitleFontSize,
-                        color: palette.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    _TrackToggle(
-                      key: ValueKey('habit-track-${habit.id}'),
-                      habitName: habit.name,
-                      completed: completedToday,
-                      color: color,
                       compact: true,
-                      onPressed: onToggleToday,
+                      onChanged: onSetDailyCount,
                     ),
                   ],
                 ],
@@ -585,89 +605,82 @@ class _RepetitionProgress extends StatelessWidget {
         ],
       );
     }
-    return Wrap(
-      spacing: compact ? 5 : 8,
-      runSpacing: 6,
-      children: List.generate(target, (index) {
-        final done = index < safeCount;
-        final nextCount = done ? safeCount - 1 : safeCount + 1;
-        final label = done
-            ? l10n.habitRepetitionItemCompleted(
-                habit.unit ?? habit.name,
-                index + 1,
-                target,
-              )
-            : l10n.habitRepetitionItemPending(
-                habit.unit ?? habit.name,
-                index + 1,
-                target,
-              );
-        return Semantics(
-          button: onChanged != null,
-          checked: done,
-          label: label,
-          child: InkWell(
-            onTap: onChanged == null ? null : () => onChanged!(nextCount),
-            borderRadius: BorderRadius.circular(15),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOutCubic,
-              width: compact ? 42 : 52,
-              height: compact ? 42 : 52,
-              decoration: BoxDecoration(
-                color: context.palette.surfaceMuted,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: HabitProgressIcon(
-                iconId: habit.progressIconId,
-                completed: done,
-                size: compact ? 30 : 38,
-              ),
+    Widget item(double itemSize, int index) {
+      final done = index < safeCount;
+      final nextCount = done ? safeCount - 1 : safeCount + 1;
+      final label = done
+          ? l10n.habitRepetitionItemCompleted(
+              habit.unit ?? habit.name,
+              index + 1,
+              target,
+            )
+          : l10n.habitRepetitionItemPending(
+              habit.unit ?? habit.name,
+              index + 1,
+              target,
+            );
+      return Semantics(
+        button: onChanged != null,
+        checked: done,
+        label: label,
+        child: InkWell(
+          onTap: onChanged == null ? null : () => onChanged!(nextCount),
+          borderRadius: BorderRadius.circular(15),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            width: itemSize,
+            height: itemSize,
+            decoration: BoxDecoration(
+              color: context.palette.surfaceMuted,
+              borderRadius: BorderRadius.circular(itemSize * .36),
+            ),
+            child: HabitProgressIcon(
+              iconId: habit.progressIconId,
+              completed: done,
+              size: itemSize * .72,
             ),
           ),
+        ),
+      );
+    }
+
+    if (!compact) {
+      return Wrap(
+        spacing: 8,
+        runSpacing: 6,
+        children: List.generate(target, (index) => item(52, index)),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 5.0;
+        const minSize = 30.0;
+        const maxSize = 42.0;
+        final availableForItems =
+            constraints.maxWidth - (spacing * (target - 1));
+        final fittedSize = availableForItems / target;
+        final itemSize = fittedSize.clamp(minSize, maxSize).toDouble();
+        final row = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var index = 0; index < target; index++) ...[
+              if (index > 0) const SizedBox(width: spacing),
+              item(itemSize, index),
+            ],
+          ],
         );
-      }),
-    );
-  }
-}
 
-class _CompactRepetitionAction extends StatelessWidget {
-  const _CompactRepetitionAction({
-    required this.habit,
-    required this.count,
-    required this.onChanged,
-  });
-
-  final Habit habit;
-  final int count;
-  final ValueChanged<int>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final target = habit.targetCount.clamp(1, 999);
-    final safeCount = count.clamp(0, target);
-    final textTheme = Theme.of(context).textTheme;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          '$safeCount / $target',
-          style: textTheme.titleMedium?.copyWith(
-            fontSize: AppDimensions.cardTitleFontSize,
-            color: context.palette.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        _RepetitionProgress(
-          habit: habit,
-          count: safeCount,
-          compact: true,
-          onChanged: onChanged,
-        ),
-      ],
+        if (fittedSize < minSize) {
+          return SingleChildScrollView(
+            key: ValueKey('habit-repetitions-scroll-${habit.id}'),
+            scrollDirection: Axis.horizontal,
+            child: row,
+          );
+        }
+        return Align(alignment: Alignment.centerLeft, child: row);
+      },
     );
   }
 }

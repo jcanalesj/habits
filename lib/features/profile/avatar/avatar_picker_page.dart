@@ -209,7 +209,14 @@ class _AvatarPickerPageState extends ConsumerState<AvatarPickerPage> {
           ),
           Expanded(
             child: GridView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
+              // El padding explícito anula el área segura inferior: se suma
+              // a mano para que la última fila no quede bajo el indicador.
+              padding: EdgeInsets.fromLTRB(
+                20,
+                4,
+                20,
+                40 + MediaQuery.viewPaddingOf(context).bottom,
+              ),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,

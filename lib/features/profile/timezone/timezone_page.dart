@@ -196,7 +196,12 @@ class _TimezonePageState extends ConsumerState<TimezonePage> {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 42),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          8,
+          20,
+          42 + MediaQuery.viewPaddingOf(context).bottom,
+        ),
         children: [
           _Hero(),
           const SizedBox(height: 18),

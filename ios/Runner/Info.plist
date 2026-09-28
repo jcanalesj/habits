@@ -10,6 +10,8 @@
 	<string>Constanza</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Constanza cuenta tus pasos con el sensor de movimiento del iPhone para mostrarte cuánto caminas cada día. El recuento no se comparte con nadie.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>mailto</string>

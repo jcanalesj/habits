@@ -1,10 +1,19 @@
 package com.jcanales.constanza
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
@@ -19,8 +28,94 @@ class MainActivity : FlutterActivity() {
         getSharedPreferences("app_icon", Context.MODE_PRIVATE)
     }
 
+    // ------------------------------------------------------------ Pasos
+    // Contador de pasos nativo: TYPE_STEP_COUNTER es acumulado desde el
+    // último arranque y el hardware lo actualiza aunque la app esté cerrada.
+    // Dart guarda el último valor leído y reparte la diferencia por días.
+    private val sensorManager by lazy { getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    private val stepSensor by lazy { sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) }
+    private var stepListener: SensorEventListener? = null
+    private var permissionRequest: MethodChannel.Result? = null
+
+    private fun pedometerPermissionStatus(): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return "granted"
+        val granted = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.ACTIVITY_RECOGNITION,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) return "granted"
+        val asked = preferences.getBoolean(PEDOMETER_ASKED_KEY, false)
+        return if (asked) "denied" else "notDetermined"
+    }
+
+    private fun registerPedometerChannels(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "constanza/pedometer")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "isAvailable" -> result.success(stepSensor != null)
+                    "permissionStatus" -> result.success(pedometerPermissionStatus())
+                    "requestPermission" -> {
+                        if (pedometerPermissionStatus() == "granted") {
+                            result.success("granted")
+                        } else {
+                            permissionRequest?.success("denied")
+                            permissionRequest = result
+                            preferences.edit().putBoolean(PEDOMETER_ASKED_KEY, true).apply()
+                            ActivityCompat.requestPermissions(
+                                this,
+                                arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
+                                PEDOMETER_PERMISSION_CODE,
+                            )
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "constanza/pedometer/updates")
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    val sensor = stepSensor
+                    if (sensor == null || events == null) {
+                        events?.error("unavailable", "Sin sensor de pasos", null)
+                        return
+                    }
+                    val listener = object : SensorEventListener {
+                        override fun onSensorChanged(event: SensorEvent) {
+                            events.success(
+                                mapOf(
+                                    "counter" to event.values[0].toLong(),
+                                    "atMs" to System.currentTimeMillis(),
+                                ),
+                            )
+                        }
+
+                        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+                    }
+                    stepListener = listener
+                    sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    stepListener?.let { sensorManager.unregisterListener(it) }
+                    stepListener = null
+                }
+            })
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != PEDOMETER_PERMISSION_CODE) return
+        val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+        permissionRequest?.success(if (granted) "granted" else "denied")
+        permissionRequest = null
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        registerPedometerChannels(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "constanza/app_icon")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -87,5 +182,7 @@ class MainActivity : FlutterActivity() {
 
     private companion object {
         const val PENDING_KEY = "pending_icon"
+        const val PEDOMETER_ASKED_KEY = "pedometer_permission_asked"
+        const val PEDOMETER_PERMISSION_CODE = 7301
     }
 }

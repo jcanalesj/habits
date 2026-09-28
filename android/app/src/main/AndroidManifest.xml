@@ -8,6 +8,11 @@
          para alarmas y calendarios, y un recordatorio de hábito tolera de
          sobra unos minutos de margen (ver AndroidScheduleMode.inexact...). -->
 
+    <!-- Herramienta Pasos: sensor de pasos del propio dispositivo
+         (TYPE_STEP_COUNTER). Android 10+ exige este permiso en ejecución. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-feature android:name="android.hardware.sensor.stepcounter" android:required="false" />
+
     <application
         android:label="Constanza"
         android:name="${applicationName}"
