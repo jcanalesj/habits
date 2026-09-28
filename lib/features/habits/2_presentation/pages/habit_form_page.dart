@@ -45,6 +45,14 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     '🧠',
     '✍️',
     '🌿',
+    '🚶',
+    '🚴',
+    '💊',
+    '🪥',
+    '💻',
+    '🎨',
+    '💰',
+    '🐾',
   ];
   static const _quitEmojis = [
     '🚭',
@@ -66,7 +74,15 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
     AppColors.green,
     AppColors.orange,
     AppColors.blue,
-    AppColors.primary,
+    Color(0xFF06B6D4),
+    Color(0xFF14B8A6),
+    Color(0xFF84CC16),
+    Color(0xFFEAB308),
+    Color(0xFFEF4444),
+    Color(0xFFEC4899),
+    Color(0xFF6366F1),
+    Color(0xFF8B5A2B),
+    Color(0xFF64748B),
   ];
   final _nameController = TextEditingController();
   final _emojiController = TextEditingController(text: '💧');
@@ -88,6 +104,35 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
   bool _saving = false;
   bool _prefilled = false;
   Set<HabitValidationError> _errors = const {};
+
+  Future<void> _createAmbito() async {
+    final draft = await showDialog<AmbitoDraft>(
+      context: context,
+      builder: (_) => const _CreateAmbitoDialog(),
+    );
+    if (draft == null || !mounted) return;
+
+    final result = await ref.read(createAmbitoUsecaseProvider).execute(draft);
+    if (!mounted) return;
+    switch (result) {
+      case CreateAmbitoSuccess(:final ambito):
+        setState(() => _ambitoId = ambito.id);
+        _notify(
+          Localizations.localeOf(context).languageCode == 'es'
+              ? 'Ámbito creado'
+              : 'Area created',
+        );
+      case CreateAmbitoValidationFailed():
+        _notify(
+          Localizations.localeOf(context).languageCode == 'es'
+              ? 'Escribe un nombre y elige un emoji'
+              : 'Enter a name and choose an emoji',
+          type: AppNoticeType.error,
+        );
+      case CreateAmbitoFailed():
+        _notify(context.l10n.errorSaveFailed, type: AppNoticeType.error);
+    }
+  }
 
   static String? _nullableText(String value) {
     final trimmed = value.trim();
@@ -509,6 +554,16 @@ class _HabitFormPageState extends ConsumerState<HabitFormPage> {
                           onSelected: (_) =>
                               setState(() => _ambitoId = ambito.id),
                         ),
+                      ActionChip(
+                        key: const ValueKey('create-custom-ambito'),
+                        avatar: const Icon(Icons.add_rounded, size: 18),
+                        label: Text(
+                          Localizations.localeOf(context).languageCode == 'es'
+                              ? 'Nuevo ámbito'
+                              : 'New area',
+                        ),
+                        onPressed: _createAmbito,
+                      ),
                     ],
                   ),
                 ],
@@ -891,6 +946,104 @@ class _Label extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
+    );
+  }
+}
+
+class _CreateAmbitoDialog extends StatefulWidget {
+  const _CreateAmbitoDialog();
+
+  @override
+  State<_CreateAmbitoDialog> createState() => _CreateAmbitoDialogState();
+}
+
+class _CreateAmbitoDialogState extends State<_CreateAmbitoDialog> {
+  final _nameController = TextEditingController();
+  String _emoji = '✨';
+  int _colorValue = AppColors.green.toARGB32();
+  bool _showNameError = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_nameController.text.trim().isEmpty) {
+      setState(() => _showNameError = true);
+      return;
+    }
+    Navigator.of(context).pop(
+      AmbitoDraft(
+        name: _nameController.text,
+        emoji: _emoji,
+        colorValue: _colorValue,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final spanish = Localizations.localeOf(context).languageCode == 'es';
+    return AlertDialog(
+      key: const ValueKey('create-ambito-dialog'),
+      title: Text(spanish ? 'Crear ámbito' : 'Create area'),
+      content: SizedBox(
+        width: 460,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                key: const ValueKey('ambito-name-field'),
+                controller: _nameController,
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _submit(),
+                onChanged: (_) {
+                  if (_showNameError) setState(() => _showNameError = false);
+                },
+                decoration: InputDecoration(
+                  labelText: spanish ? 'Nombre' : 'Name',
+                  hintText: spanish ? 'Ej. Familia' : 'E.g. Family',
+                  errorText: _showNameError
+                      ? (spanish ? 'Escribe un nombre' : 'Enter a name')
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _Label(spanish ? 'Emoji' : 'Emoji'),
+              _EmojiPicker(
+                emojis: _HabitFormPageState._quickEmojis,
+                includeQuitEmojis: true,
+                selected: _emoji,
+                onSelected: (value) => setState(() => _emoji = value),
+              ),
+              const SizedBox(height: 16),
+              _Label(spanish ? 'Color' : 'Color'),
+              _ColorPicker(
+                palette: _HabitFormPageState._palette,
+                selected: _colorValue,
+                onSelected: (value) => setState(() => _colorValue = value),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(spanish ? 'Cancelar' : 'Cancel'),
+        ),
+        FilledButton(
+          key: const ValueKey('save-custom-ambito'),
+          onPressed: _submit,
+          child: Text(spanish ? 'Crear' : 'Create'),
+        ),
+      ],
     );
   }
 }

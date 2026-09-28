@@ -35,6 +35,7 @@ export 'app_form_dialog.dart';
 export 'app_text_field.dart';
 export 'confirm_delete_dialog.dart';
 export 'day_strip.dart';
+export 'delete_habit_dialog.dart';
 export 'empty_state_block.dart';
 export 'metric_tile.dart';
 export 'progress_ring.dart';

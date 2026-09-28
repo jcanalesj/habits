@@ -129,4 +129,26 @@ void main() {
     );
     expect(find.text('Continuar'), findsOneWidget);
   });
+
+  testWidgets('deslizar a la izquierda permite eliminar el hábito', (
+    tester,
+  ) async {
+    await tester.pumpWidget(appWith());
+    await tester.pumpAndSettle();
+
+    await tester.drag(
+      find.byKey(const ValueKey('habit-edit-agua')),
+      const Offset(-700, 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('¿Eliminar este hábito?'), findsOneWidget);
+    expect(find.byKey(const ValueKey('confirm-swipe-delete')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('confirm-swipe-delete')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Beber agua'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

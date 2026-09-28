@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
+import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/profile/premium/premium_gate.dart';
@@ -321,6 +322,35 @@ class _Content extends ConsumerWidget {
   void _openEditor(BuildContext context, Habit habit) =>
       HabitsListPage.openEditHabit(context, habit);
 
+  Future<void> _deleteHabit(
+    BuildContext context,
+    WidgetRef ref,
+    Habit habit,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: context.palette.scrim,
+      builder: (_) => DeleteHabitDialog(
+        habitName: habit.name,
+        emoji: habit.emoji,
+        confirmKey: const ValueKey('confirm-swipe-delete'),
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final result = await ref.read(deleteHabitUsecaseProvider).execute(habit.id);
+    if (!context.mounted) return;
+    AppNotice.show(
+      context,
+      message: result is DeleteHabitSuccess
+          ? context.l10n.habitDeleted
+          : context.l10n.errorActionFailed,
+      type: result is DeleteHabitSuccess
+          ? AppNoticeType.success
+          : AppNoticeType.error,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -337,6 +367,7 @@ class _Content extends ConsumerWidget {
         activeHabitCount: allHabits.length,
         standalone: standalone,
         onKindChanged: onKindChanged,
+        onDelete: (habit) => _deleteHabit(context, ref, habit),
       );
     }
 
@@ -439,6 +470,7 @@ class _Content extends ConsumerWidget {
             ],
             today: summary.today,
             onEdit: (habit) => _openEditor(context, habit),
+            onDelete: (habit) => _deleteHabit(context, ref, habit),
             onReorder: (oldIndex, newIndex) async {
               final saved = await ref
                   .read(homeControllerProvider.notifier)
@@ -496,12 +528,14 @@ class _QuitHabitsContent extends ConsumerWidget {
     required this.activeHabitCount,
     required this.standalone,
     required this.onKindChanged,
+    required this.onDelete,
   });
 
   final List<Habit> habits;
   final int activeHabitCount;
   final bool standalone;
   final ValueChanged<HabitKind> onKindChanged;
+  final Future<void> Function(Habit) onDelete;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -541,7 +575,11 @@ class _QuitHabitsContent extends ConsumerWidget {
           )
         else
           for (final habit in habits) ...[
-            _QuitHabitCard(habit: habit),
+            _SwipeToDeleteHabit(
+              habit: habit,
+              onDelete: () => onDelete(habit),
+              child: _QuitHabitCard(habit: habit),
+            ),
             const SizedBox(height: 12),
           ],
       ],
@@ -865,12 +903,14 @@ class _ManageHabitsGroup extends StatelessWidget {
     required this.habits,
     required this.today,
     required this.onEdit,
+    required this.onDelete,
     required this.onReorder,
   });
 
   final List<Habit> habits;
   final LogicalDate today;
   final ValueChanged<Habit> onEdit;
+  final Future<void> Function(Habit) onDelete;
   final ReorderCallback onReorder;
 
   @override
@@ -889,24 +929,28 @@ class _ManageHabitsGroup extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final habit = habits[index];
-        return Padding(
+        return _SwipeToDeleteHabit(
           key: ValueKey('habit-edit-${habit.id}'),
-          padding: const EdgeInsets.only(bottom: 10),
-          child: _ManageHabitCard(
-            habit: habit,
-            today: today,
-            onTap: () => onEdit(habit),
-            dragHandle: ReorderableDragStartListener(
-              index: index,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 16,
-                ),
-                child: Icon(
-                  Icons.drag_indicator_rounded,
-                  color: context.palette.textSecondary,
-                  size: 28,
+          habit: habit,
+          onDelete: () => onDelete(habit),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _ManageHabitCard(
+              habit: habit,
+              today: today,
+              onTap: () => onEdit(habit),
+              dragHandle: ReorderableDragStartListener(
+                index: index,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 16,
+                  ),
+                  child: Icon(
+                    Icons.drag_indicator_rounded,
+                    color: context.palette.textSecondary,
+                    size: 28,
+                  ),
                 ),
               ),
             ),
@@ -915,6 +959,54 @@ class _ManageHabitsGroup extends StatelessWidget {
       },
     );
   }
+}
+
+class _SwipeToDeleteHabit extends StatelessWidget {
+  const _SwipeToDeleteHabit({
+    super.key,
+    required this.habit,
+    required this.onDelete,
+    required this.child,
+  });
+
+  final Habit habit;
+  final Future<void> Function() onDelete;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Dismissible(
+    key: ValueKey('habit-swipe-${habit.id}'),
+    direction: DismissDirection.endToStart,
+    confirmDismiss: (_) async {
+      await onDelete();
+      return false;
+    },
+    background: Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      alignment: Alignment.centerRight,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE05262),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.delete_outline_rounded, color: Colors.white),
+          const SizedBox(height: 4),
+          Text(
+            context.l10n.deleteHabit,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    ),
+    child: child,
+  );
 }
 
 class _ManageHabitCard extends StatelessWidget {

@@ -176,6 +176,35 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('crea un ámbito personalizado y lo deja seleccionado', (
+    tester,
+  ) async {
+    await tester.pumpWidget(appWith(const HabitFormPage()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('create-custom-ambito')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('create-ambito-dialog')), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('ambito-name-field')),
+      'Familia',
+    );
+    await tester.tap(find.byKey(const ValueKey('habit-emoji-🐾')).last);
+    await tester.tap(find.byKey(const ValueKey('save-custom-ambito')));
+    await tester.pumpAndSettle();
+
+    final ambitos = await env.habits.watchAmbitos().first;
+    final created = ambitos.firstWhere((ambito) => ambito.name == 'Familia');
+    expect(created.emoji, '🐾');
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Familia'))
+          .selected,
+      isTrue,
+    );
+  });
+
   testWidgets(
     'cambiar el objetivo avisa de la fecha efectiva antes de guardar',
     (tester) async {
