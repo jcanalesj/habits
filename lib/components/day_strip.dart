@@ -15,6 +15,7 @@ class DayStrip extends StatefulWidget {
     required this.today,
     required this.onSelected,
     this.markers = const {},
+    this.inverted = false,
   });
 
   final LogicalDate selected;
@@ -23,6 +24,7 @@ class DayStrip extends StatefulWidget {
 
   /// Días con contenido (p. ej. tareas pendientes): muestran un punto.
   final Set<LogicalDate> markers;
+  final bool inverted;
 
   @override
   State<DayStrip> createState() => _DayStripState();
@@ -84,6 +86,7 @@ class _DayStripState extends State<DayStrip> {
                     selected: monday.addDays(offset) == widget.selected,
                     isToday: monday.addDays(offset) == widget.today,
                     marked: widget.markers.contains(monday.addDays(offset)),
+                    inverted: widget.inverted,
                     locale: locale,
                     onTap: () => widget.onSelected(monday.addDays(offset)),
                   ),
@@ -102,6 +105,7 @@ class _DayChip extends StatelessWidget {
     required this.selected,
     required this.isToday,
     required this.marked,
+    required this.inverted,
     required this.locale,
     required this.onTap,
   });
@@ -110,6 +114,7 @@ class _DayChip extends StatelessWidget {
   final bool selected;
   final bool isToday;
   final bool marked;
+  final bool inverted;
   final String locale;
   final VoidCallback onTap;
 
@@ -124,7 +129,7 @@ class _DayChip extends StatelessWidget {
         ? palette.onPrimary
         : isToday
         ? palette.primary
-        : palette.textSecondary;
+        : (inverted ? const Color(0xFF90899F) : palette.textSecondary);
 
     return Semantics(
       button: true,
@@ -142,11 +147,29 @@ class _DayChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               color: selected
-                  ? palette.primary
+                  ? (inverted ? null : palette.primary)
                   : isToday
-                  ? palette.tint(palette.primary, .08)
+                  ? (inverted
+                        ? palette.primary.withValues(alpha: .08)
+                        : palette.tint(palette.primary, .08))
                   : Colors.transparent,
+              gradient: selected && inverted
+                  ? const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppColors.gradientStart, AppColors.gradientEnd],
+                    )
+                  : null,
               borderRadius: BorderRadius.circular(18),
+              boxShadow: selected && inverted
+                  ? [
+                      BoxShadow(
+                        color: AppColors.gradientEnd.withValues(alpha: .28),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -163,7 +186,11 @@ class _DayChip extends StatelessWidget {
                 Text(
                   '${date.day}',
                   style: TextStyle(
-                    color: selected ? palette.onPrimary : palette.textPrimary,
+                    color: selected
+                        ? palette.onPrimary
+                        : (inverted
+                              ? const Color(0xFF666076)
+                              : palette.textPrimary),
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
                   ),
@@ -175,7 +202,11 @@ class _DayChip extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: marked
-                        ? (selected ? palette.onPrimary : palette.primary)
+                        ? (inverted
+                              ? (selected ? Colors.white : palette.primary)
+                              : (selected
+                                    ? palette.onPrimary
+                                    : palette.primary))
                         : Colors.transparent,
                   ),
                 ),

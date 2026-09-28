@@ -38,7 +38,7 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
       ? widget.defaultDate
       : widget.initial!.date;
   late String? _time = widget.initial?.time;
-  late TaskPriority _priority = widget.initial?.priority ?? TaskPriority.normal;
+  late TaskPriority _priority = widget.initial?.priority ?? TaskPriority.medium;
 
   @override
   void dispose() {
@@ -108,10 +108,16 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
 
     return AppFormDialog(
       key: const ValueKey('task-form-dialog'),
-      hero: const AppDialogHero.icon(
-        icon: PhosphorIconsFill.checkSquare,
-        color: AppColors.pink,
-      ),
+      hero: editing
+          ? const AppDialogHero.cat(
+              badge: PhosphorIconsBold.pencilSimple,
+              color: AppColors.pink,
+              asset: 'assets/images/edit.png',
+            )
+          : const AppDialogHero.icon(
+              icon: PhosphorIconsFill.checkSquare,
+              color: AppColors.pink,
+            ),
       title: editing ? l10n.tasksEditTask : l10n.tasksNewTask,
       helper: l10n.tasksFormHelper,
       primaryLabel: l10n.tasksSave,
@@ -203,18 +209,66 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
           ),
         const SizedBox(height: 14),
         _FieldLabel(l10n.tasksPriorityLabel),
-        SegmentedPill<TaskPriority>(
-          options: TaskPriority.values,
+        TaskPriorityPicker(
           selected: _priority,
-          expand: true,
-          keyOf: (priority) => ValueKey('task-priority-${priority.name}'),
-          labelOf: (priority) => switch (priority) {
-            TaskPriority.low => l10n.tasksPriorityLow,
-            TaskPriority.normal => l10n.tasksPriorityNormal,
-            TaskPriority.high => l10n.tasksPriorityHigh,
-          },
           onSelected: (priority) => setState(() => _priority = priority),
         ),
+      ],
+    );
+  }
+}
+
+class TaskPriorityPicker extends StatelessWidget {
+  const TaskPriorityPicker({
+    super.key,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final TaskPriority selected;
+  final ValueChanged<TaskPriority> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final palette = context.palette;
+    String label(TaskPriority priority) => switch (priority) {
+      TaskPriority.low => l10n.tasksPriorityLow,
+      TaskPriority.medium => l10n.tasksPriorityMedium,
+      TaskPriority.high => l10n.tasksPriorityHigh,
+      TaskPriority.urgent => l10n.tasksPriorityUrgent,
+    };
+
+    Color color(TaskPriority priority) => switch (priority) {
+      TaskPriority.low => AppColors.green,
+      TaskPriority.medium => const Color(0xFFE5B700),
+      TaskPriority.high => AppColors.orange,
+      TaskPriority.urgent => const Color(0xFFE5484D),
+    };
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final priority in TaskPriority.values)
+          ChoiceChip(
+            key: ValueKey('task-priority-${priority.name}'),
+            selected: selected == priority,
+            onSelected: (_) => onSelected(priority),
+            avatar: Icon(
+              PhosphorIconsFill.flag,
+              size: 15,
+              color: selected == priority ? Colors.white : color(priority),
+            ),
+            label: Text(label(priority)),
+            labelStyle: TextStyle(
+              color: selected == priority ? Colors.white : color(priority),
+              fontWeight: FontWeight.w800,
+            ),
+            backgroundColor: palette.tint(color(priority), .08),
+            selectedColor: color(priority),
+            side: BorderSide(color: color(priority).withValues(alpha: .22)),
+          ),
       ],
     );
   }

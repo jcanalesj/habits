@@ -49,7 +49,7 @@ void main() {
 
     expect(find.text('Llamar al médico'), findsOneWidget);
     expect(find.text('Leer 20 páginas'), findsOneWidget);
-    expect(find.text('10:30'), findsOneWidget);
+    expect(find.textContaining('10:30'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('task-toggle-task-1')));
     await tester.pumpAndSettle();
@@ -62,25 +62,34 @@ void main() {
     expect(find.text('Completadas · 1'), findsOneWidget);
   });
 
-  testWidgets('crea una tarea desde el diálogo', (tester) async {
+  testWidgets('crea una tarea desde la pantalla de alta', (tester) async {
     final (_, repository) = await pumpTasks(tester);
     expect(find.text('Nada pendiente para este día'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('tasks-new')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('task-form-dialog')), findsOneWidget);
+    expect(find.byKey(const ValueKey('task-form-page')), findsOneWidget);
 
     await tester.enterText(
       find.byKey(const ValueKey('task-title-field')),
       'Regar las plantas',
     );
+    tester.testTextInput.hide();
     await tester.pumpAndSettle();
-    await tester.ensureVisible(
+    await tester.scrollUntilVisible(
       find.byKey(const ValueKey('task-priority-high')),
+      220,
+      scrollable: find.byType(Scrollable).last,
     );
+    await tester.drag(find.byType(ListView).last, const Offset(0, -120));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('task-priority-high')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const ValueKey('task-form-save')));
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('task-form-save')),
+      220,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.byKey(const ValueKey('task-form-save')));
     await tester.pumpAndSettle();
 

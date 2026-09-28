@@ -52,6 +52,21 @@ void main() {
     expect(find.text('2 pendientes hoy'), findsOneWidget);
   });
 
+  testWidgets('las cinco herramientas caben sin desplazar en un móvil', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await pumpPanel(tester);
+
+    final lastCard = find.byKey(const ValueKey('tool-card-steps'));
+    expect(lastCard, findsOneWidget);
+    expect(tester.getBottomLeft(lastCard).dy, lessThan(844));
+  });
+
   testWidgets('en web no aparece Pasos', (tester) async {
     await pumpPanel(tester, isWeb: true);
     expect(find.byKey(const ValueKey('tool-card-steps')), findsNothing);

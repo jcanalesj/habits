@@ -55,11 +55,11 @@ void main() {
     expect(again.rolledFrom, today.addDays(-3));
   });
 
-  test('orden: hora antes que sin hora, alta antes que normal', () {
+  test('orden: hora antes que sin hora, urgente antes que alta y media', () {
     const base = TaskItem(
       id: 'a',
       title: 'a',
-      priority: TaskPriority.normal,
+      priority: TaskPriority.medium,
       order: 1,
       date: today,
     );
@@ -78,7 +78,28 @@ void main() {
       order: 3,
       date: today,
     );
-    final sorted = [base, high, withTime]..sort(compareTasks);
-    expect(sorted.map((task) => task.id), ['b', 'c', 'a']);
+    const urgent = TaskItem(
+      id: 'd',
+      title: 'd',
+      priority: TaskPriority.urgent,
+      order: 4,
+      date: today,
+    );
+    final sorted = [base, high, urgent, withTime]..sort(compareTasks);
+    expect(sorted.map((task) => task.id), ['b', 'd', 'c', 'a']);
+  });
+
+  test('migra prioridad normal y lee urgente desde Firestore', () {
+    final medium = FirestoreTasksRepository.fromData('a', {
+      'titulo': 'Antigua',
+      'prioridad': 'normal',
+    });
+    final urgent = FirestoreTasksRepository.fromData('b', {
+      'titulo': 'Ahora',
+      'prioridad': 'urgent',
+    });
+
+    expect(medium?.priority, TaskPriority.medium);
+    expect(urgent?.priority, TaskPriority.urgent);
   });
 }

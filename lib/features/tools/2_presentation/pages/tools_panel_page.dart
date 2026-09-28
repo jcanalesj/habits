@@ -74,14 +74,7 @@ class _ToolsPanelPageState extends ConsumerState<ToolsPanelPage> {
             AppBottomNavBar.contentClearance + bottomInset,
           ),
           children: [
-            SectionHeader(title: l10n.toolsTitle),
-            const SizedBox(height: 4),
-            Text(
-              l10n.toolsSubtitle,
-              style: textTheme.bodyMedium?.copyWith(
-                color: palette.textSecondary,
-              ),
-            ),
+            _ToolsHeader(title: l10n.toolsTitle, subtitle: l10n.toolsSubtitle),
             if (!_noticeHidden) ...[
               const SizedBox(height: 14),
               SurfaceCard(
@@ -119,16 +112,17 @@ class _ToolsPanelPageState extends ConsumerState<ToolsPanelPage> {
             const SizedBox(height: 18),
             LayoutBuilder(
               builder: (context, constraints) {
-                const gap = 12.0;
+                const gap = 10.0;
                 final width = (constraints.maxWidth - gap) / 2;
                 return Wrap(
+                  alignment: WrapAlignment.center,
                   spacing: gap,
                   runSpacing: gap,
                   children: [
                     for (final tool in tools)
                       SizedBox(
                         width: width,
-                        height: width * 1.05,
+                        height: 148,
                         child: ToolCard(
                           key: ValueKey('tool-card-${tool.id.name}'),
                           icon: tool.icon,
@@ -137,6 +131,18 @@ class _ToolsPanelPageState extends ConsumerState<ToolsPanelPage> {
                           subtitle: tool.id.subtitle(l10n),
                           value: summaries[tool.id],
                           locked: tool.premium && !hasAccess,
+                          backgroundAsset: switch (tool.id) {
+                            ToolId.tasks =>
+                              'assets/images/cards/card_tareas_v2.png',
+                            ToolId.pomodoro =>
+                              'assets/images/cards/card_pomodoro_v2.png',
+                            ToolId.shopping =>
+                              'assets/images/cards/card_compra_v2.png',
+                            ToolId.finance =>
+                              'assets/images/cards/card_finanzas_v2.png',
+                            ToolId.steps =>
+                              'assets/images/cards/card_pasos_v2.png',
+                          },
                           onTap: () => _open(tool),
                         ),
                       ),
@@ -146,6 +152,84 @@ class _ToolsPanelPageState extends ConsumerState<ToolsPanelPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ToolsHeader extends StatelessWidget {
+  const _ToolsHeader({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      height: 104,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette.tint(AppColors.gradientStart, .13),
+            palette.tint(AppColors.gradientEnd, .06),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: palette.tint(AppColors.gradientStart, .16)),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -22,
+            top: -34,
+            child: Container(
+              width: 126,
+              height: 126,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: palette.tint(
+                  AppColors.gradientStart,
+                  palette.isDark ? .16 : .10,
+                ),
+              ),
+            ),
+          ),
+          Positioned(right: 14, bottom: -10, child: CatMascot(size: 76)),
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 17, 104, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: palette.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: palette.textSecondary,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

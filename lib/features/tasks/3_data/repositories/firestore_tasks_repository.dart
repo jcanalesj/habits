@@ -119,8 +119,10 @@ class FirestoreTasksRepository implements TasksRepository {
       time: data[_hora] as String?,
       priority: switch (data[_prioridad]) {
         'low' => TaskPriority.low,
+        'medium' || 'normal' => TaskPriority.medium,
         'high' => TaskPriority.high,
-        _ => TaskPriority.normal,
+        'urgent' => TaskPriority.urgent,
+        _ => TaskPriority.medium,
       },
       order: (data[_orden] as num?)?.toInt() ?? 0,
       completedAt: (data[_completadaEn] as Timestamp?)?.toDate(),

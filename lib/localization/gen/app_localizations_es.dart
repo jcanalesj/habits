@@ -2430,10 +2430,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tasksPriorityLow => 'Baja';
 
   @override
-  String get tasksPriorityNormal => 'Normal';
+  String get tasksPriorityNormal => 'Media';
+
+  @override
+  String get tasksPriorityMedium => 'Media';
 
   @override
   String get tasksPriorityHigh => 'Alta';
+
+  @override
+  String get tasksPriorityUrgent => 'Urgente';
 
   @override
   String get tasksSave => 'Guardar tarea';
@@ -2517,6 +2523,18 @@ class AppLocalizationsEs extends AppLocalizations {
       other: '$count pendientes hoy',
       one: '1 pendiente hoy',
       zero: 'Nada pendiente hoy',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String tasksPendingWithCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tareas pendientes',
+      one: '1 tarea pendiente',
+      zero: 'Nada pendiente',
     );
     return '$_temp0';
   }

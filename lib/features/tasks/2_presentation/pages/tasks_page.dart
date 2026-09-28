@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/components/components.dart';
@@ -7,6 +9,7 @@ import 'package:habits/features/habits/2_presentation/notifications/reminder_per
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/tasks/0_entity/entity.dart';
 import 'package:habits/features/tasks/2_presentation/providers/tasks_providers.dart';
+import 'package:habits/features/tasks/2_presentation/pages/task_form_page.dart';
 import 'package:habits/features/tasks/2_presentation/widgets/task_date_label.dart';
 import 'package:habits/features/tasks/2_presentation/widgets/task_form_dialog.dart';
 import 'package:habits/features/tasks/2_presentation/widgets/task_rollover_sheet.dart';
@@ -14,6 +17,7 @@ import 'package:habits/features/tasks/2_presentation/widgets/task_tile.dart';
 import 'package:habits/local_preferences.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
+import 'package:intl/intl.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
 
 enum _TasksView { day, upcoming, undated }
@@ -61,26 +65,15 @@ class _TasksPageState extends ConsumerState<TasksPage> {
 
   Future<void> _create() async {
     final today = ref.read(todayProvider);
-    final draft = await showTaskFormDialog(
-      context,
-      today: today,
-      defaultDate: _view == _TasksView.undated ? null : _day,
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => TaskFormPage(
+          today: today,
+          defaultDate: _view == _TasksView.undated ? null : _day,
+        ),
+      ),
     );
-    if (draft == null || !mounted) return;
-    try {
-      await ref.read(tasksRepositoryProvider).create(draft);
-    } catch (_) {
-      if (!mounted) return;
-      AppNotice.show(
-        context,
-        message: context.l10n.tasksSaveError,
-        type: AppNoticeType.error,
-      );
-      return;
-    }
-    if (!mounted) return;
-    if (draft.time != null) await ensureReminderPermission(context, ref);
-    if (!mounted) return;
+    if (created != true || !mounted) return;
     AppNotice.show(
       context,
       message: context.l10n.tasksCreated,
@@ -128,6 +121,18 @@ class _TasksPageState extends ConsumerState<TasksPage> {
     ref.read(tasksRepositoryProvider).setCompleted(task.id, !task.isCompleted);
   }
 
+  String _plannerDateLabel(
+    BuildContext context,
+    LogicalDate day,
+    LogicalDate today,
+  ) {
+    final locale = Localizations.localeOf(context).toString();
+    final date = DateTime.utc(day.year, day.month, day.day);
+    final shortDate = DateFormat("d 'de' MMMM", locale).format(date);
+    if (day == today) return '${context.l10n.tasksToday}, $shortDate';
+    return DateFormat("EEEE, d 'de' MMMM", locale).format(date);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -161,6 +166,9 @@ class _TasksPageState extends ConsumerState<TasksPage> {
     final markers = {
       for (final task in pending.value ?? const <TaskItem>[]) ?task.date,
     };
+    final selectedPending = (pending.value ?? const <TaskItem>[])
+        .where((task) => task.date == day)
+        .length;
 
     return Scaffold(
       appBar: AppBar(
@@ -174,94 +182,246 @@ class _TasksPageState extends ConsumerState<TasksPage> {
           error: error,
           onRetry: () => ref.invalidate(pendingTasksProvider),
         ),
-        _ => ListView(
-          key: const ValueKey('tasks-page'),
-          padding: EdgeInsets.fromLTRB(
-            20,
-            8,
-            20,
-            40 + MediaQuery.viewPaddingOf(context).bottom,
-          ),
+        _ => Column(
           children: [
-            DayStrip(
-              selected: day,
-              today: today,
-              markers: markers,
-              onSelected: (date) => setState(() {
-                _selectedDay = date;
-                _view = _TasksView.day;
-              }),
-            ),
-            const SizedBox(height: 12),
-            SegmentedPill<_TasksView>(
-              options: _TasksView.values,
-              selected: _view,
-              expand: true,
-              keyOf: (view) => ValueKey('tasks-view-${view.name}'),
-              labelOf: (view) => switch (view) {
-                _TasksView.day =>
-                  _selectedDay == null || day == today
-                      ? l10n.tasksViewDay
-                      : taskDayLabel(
+            Expanded(
+              child: ListView(
+                key: const ValueKey('tasks-page'),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                children: [
+                  _PlannerCard(
+                    dateLabel: _plannerDateLabel(context, day, today),
+                    summary: l10n.tasksPendingWithCount(selectedPending),
+                    day: day,
+                    today: today,
+                    markers: markers,
+                    onSelected: (date) => setState(() {
+                      _selectedDay = date;
+                      _view = _TasksView.day;
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                  SegmentedPill<_TasksView>(
+                    options: _TasksView.values,
+                    selected: _view,
+                    expand: true,
+                    keyOf: (view) => ValueKey('tasks-view-${view.name}'),
+                    labelOf: (view) => switch (view) {
+                      _TasksView.day => l10n.tasksViewDay,
+                      _TasksView.upcoming => l10n.tasksViewUpcoming,
+                      _TasksView.undated => l10n.tasksViewUndated,
+                    },
+                    onSelected: (view) => setState(() => _view = view),
+                  ),
+                  const SizedBox(height: 24),
+                  if (_view == _TasksView.day)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 10),
+                      child: Text(
+                        taskDayLabel(
                           l10n,
                           Localizations.localeOf(context).toString(),
                           day,
                           today,
                         ),
-                _TasksView.upcoming => l10n.tasksViewUpcoming,
-                _TasksView.undated => l10n.tasksViewUndated,
-              },
-              onSelected: (view) => setState(() => _view = view),
-            ),
-            const SizedBox(height: 16),
-            switch (_view) {
-              _TasksView.day => _DayView(
-                day: day,
-                today: today,
-                onToggle: _toggle,
-                onTap: _edit,
-                onDelete: _delete,
-              ),
-              _TasksView.upcoming => _UpcomingView(
-                pending: pending.value ?? const [],
-                today: today,
-                onToggle: _toggle,
-                onTap: _edit,
-                onDelete: _delete,
-              ),
-              _TasksView.undated => _UndatedView(
-                today: today,
-                onToggle: _toggle,
-                onTap: _edit,
-                onDelete: _delete,
-              ),
-            },
-            const SizedBox(height: 22),
-            FilledButton.icon(
-              key: const ValueKey('tasks-new'),
-              onPressed: _create,
-              icon: const Icon(PhosphorIconsBold.plus),
-              label: Text(l10n.tasksNewTask),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 17),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                ),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  switch (_view) {
+                    _TasksView.day => _DayView(
+                      day: day,
+                      today: today,
+                      onToggle: _toggle,
+                      onTap: _edit,
+                      onDelete: _delete,
+                    ),
+                    _TasksView.upcoming => _UpcomingView(
+                      pending: pending.value ?? const [],
+                      today: today,
+                      onToggle: _toggle,
+                      onTap: _edit,
+                      onDelete: _delete,
+                    ),
+                    _TasksView.undated => _UndatedView(
+                      today: today,
+                      onToggle: _toggle,
+                      onTap: _edit,
+                      onDelete: _delete,
+                    ),
+                  },
+                  if (pending.isLoading) ...[
+                    const SizedBox(height: 24),
+                    Center(
+                      child: CircularProgressIndicator(color: palette.primary),
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (pending.isLoading) ...[
-              const SizedBox(height: 24),
-              Center(child: CircularProgressIndicator(color: palette.primary)),
-            ],
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                child: GradientButton(
+                  key: const ValueKey('tasks-new'),
+                  label: l10n.tasksNewTask,
+                  onPressed: _create,
+                  trailingArrow: false,
+                ),
+              ),
+            ),
           ],
         ),
       },
     );
   }
+}
+
+class _PlannerCard extends StatelessWidget {
+  const _PlannerCard({
+    required this.dateLabel,
+    required this.summary,
+    required this.day,
+    required this.today,
+    required this.markers,
+    required this.onSelected,
+  });
+
+  final String dateLabel;
+  final String summary;
+  final LogicalDate day;
+  final LogicalDate today;
+  final Set<LogicalDate> markers;
+  final ValueChanged<LogicalDate> onSelected;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final width = constraints.maxWidth;
+      final compactViewport = MediaQuery.sizeOf(context).height < 700;
+      final height = compactViewport
+          ? 170.0
+          : (width / 1.96).clamp(205.0, 460.0);
+      final large = width >= 560 && !compactViewport;
+      final calendarHeight = compactViewport ? 76.0 : (large ? 92.0 : 82.0);
+      final outerInset = large ? 15.0 : 9.0;
+
+      return Container(
+        height: height,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.gradientEnd.withValues(alpha: .20),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // El PNG lleva aire transparente alrededor. Se compensa en cada
+            // eje para eliminarlo sin aplicar un zoom que corte al gato o la
+            // estantería en pantallas estrechas.
+            Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.diagonal3Values(1.08, 1.24, 1),
+              child: Image.asset(
+                'assets/images/cards/tareas.png',
+                fit: BoxFit.fill,
+                alignment: Alignment.center,
+              ),
+            ),
+            // Aclara únicamente la zona del título para conservar el paisaje
+            // y asegurar contraste sobre cualquier recorte de pantalla.
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  stops: [0, .48, .78],
+                  colors: [
+                    Color(0xD9FFF6EF),
+                    Color(0x38FFF6EF),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: large ? 40 : 22,
+              top: compactViewport ? 16 : (large ? 40 : 22),
+              right: large ? 220 : 96,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    dateLabel,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: const Color(0xFF211B1A),
+                      fontSize: large ? 29 : 19,
+                      height: 1.08,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SizedBox(height: large ? 7 : 4),
+                  Text(
+                    summary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: const Color(0xFF746E7D),
+                      fontSize: large ? 20 : 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              left: outerInset,
+              right: outerInset,
+              bottom: outerInset,
+              height: calendarHeight,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDF8F6).withValues(alpha: .88),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .72),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: large ? 12 : 6,
+                        vertical: compactViewport ? 0 : (large ? 4 : 2),
+                      ),
+                      child: DayStrip(
+                        selected: day,
+                        today: today,
+                        markers: markers,
+                        inverted: true,
+                        onSelected: onSelected,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 typedef _TaskAction = void Function(TaskItem task);
@@ -353,31 +513,43 @@ class _CompletedSectionState extends State<_CompletedSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 14),
-        InkWell(
-          key: const ValueKey('tasks-completed-toggle'),
-          onTap: () => setState(() => _expanded = !_expanded),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-            child: Row(
-              children: [
-                Text(
-                  '${l10n.tasksCompletedSection} · ${widget.tasks.length}',
-                  style: TextStyle(
-                    color: palette.textSecondary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
+        Container(
+          decoration: BoxDecoration(
+            color: palette.tint(palette.primary, .06),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: InkWell(
+            key: const ValueKey('tasks-completed-toggle'),
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+              child: Row(
+                children: [
+                  Icon(
+                    PhosphorIconsFill.checkCircle,
+                    size: 24,
+                    color: palette.primary,
                   ),
-                ),
-                const Spacer(),
-                Icon(
-                  _expanded
-                      ? PhosphorIconsBold.caretUp
-                      : PhosphorIconsBold.caretDown,
-                  size: 16,
-                  color: palette.textSecondary,
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  Text(
+                    '${l10n.tasksCompletedSection} · ${widget.tasks.length}',
+                    style: TextStyle(
+                      color: palette.textSecondary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    _expanded
+                        ? PhosphorIconsBold.caretUp
+                        : PhosphorIconsBold.caretDown,
+                    size: 16,
+                    color: palette.textSecondary,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -421,10 +593,10 @@ class _DayView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (pending.isEmpty)
-          EmptyStateBlock(
-            icon: PhosphorIconsRegular.checkSquare,
+          _TasksEmptyState(
+            icon: PhosphorIconsFill.checkCircle,
             text: l10n.tasksEmptyDay,
-            color: AppColors.pink,
+            color: AppColors.green,
           )
         else
           _TaskListCard(
@@ -475,10 +647,10 @@ class _UpcomingView extends StatelessWidget {
           return byDate != 0 ? byDate : compareTasks(a, b);
         });
     if (upcoming.isEmpty) {
-      return EmptyStateBlock(
-        icon: PhosphorIconsRegular.calendarBlank,
+      return _TasksEmptyState(
+        icon: PhosphorIconsFill.calendarBlank,
         text: l10n.tasksEmptyUpcoming,
-        color: AppColors.pink,
+        color: AppColors.orange,
       );
     }
     final groups = <LogicalDate, List<TaskItem>>{};
@@ -537,10 +709,10 @@ class _UndatedView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (pending.isEmpty)
-          EmptyStateBlock(
-            icon: PhosphorIconsRegular.tray,
+          _TasksEmptyState(
+            icon: PhosphorIconsFill.tray,
             text: l10n.tasksEmptyUndated,
-            color: AppColors.pink,
+            color: AppColors.lilac,
           )
         else
           _TaskListCard(
@@ -558,6 +730,87 @@ class _UndatedView extends ConsumerWidget {
           onDelete: onDelete,
         ),
       ],
+    );
+  }
+}
+
+class _TasksEmptyState extends StatelessWidget {
+  const _TasksEmptyState({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final surface = Color.alphaBlend(
+      color.withValues(alpha: palette.isDark ? .14 : .055),
+      palette.surface,
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 22, 18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [surface, palette.surface],
+        ),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: color.withValues(alpha: .16)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: .08),
+            blurRadius: 18,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withValues(alpha: .18),
+                  color.withValues(alpha: .08),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(19),
+            ),
+            child: Icon(icon, color: color, size: 29),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: palette.textPrimary,
+                fontSize: 15,
+                height: 1.28,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Icon(
+            PhosphorIconsFill.sparkle,
+            size: 18,
+            color: color.withValues(alpha: .68),
+          ),
+        ],
+      ),
     );
   }
 }

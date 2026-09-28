@@ -4259,14 +4259,26 @@ abstract class AppLocalizations {
   /// No description provided for @tasksPriorityNormal.
   ///
   /// In en, this message translates to:
-  /// **'Normal'**
+  /// **'Medium'**
   String get tasksPriorityNormal;
+
+  /// No description provided for @tasksPriorityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get tasksPriorityMedium;
 
   /// No description provided for @tasksPriorityHigh.
   ///
   /// In en, this message translates to:
   /// **'High'**
   String get tasksPriorityHigh;
+
+  /// No description provided for @tasksPriorityUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get tasksPriorityUrgent;
 
   /// No description provided for @tasksSave.
   ///
@@ -4399,6 +4411,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{Nothing pending today} =1{1 pending today} other{{count} pending today}}'**
   String tasksPendingTodayWithCount(int count);
+
+  /// No description provided for @tasksPendingWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing pending} =1{1 task pending} other{{count} tasks pending}}'**
+  String tasksPendingWithCount(int count);
 
   /// No description provided for @tasksSaveError.
   ///

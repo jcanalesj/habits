@@ -1,3 +1,4 @@
+export 'pages/task_form_page.dart';
 export 'pages/tasks_page.dart';
 export 'providers/tasks_providers.dart';
 export 'routes/routes.dart';

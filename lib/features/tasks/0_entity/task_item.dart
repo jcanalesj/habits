@@ -1,6 +1,6 @@
 import 'package:habits/features/habits/0_entity/logical_date.dart';
 
-enum TaskPriority { low, normal, high }
+enum TaskPriority { low, medium, high, urgent }
 
 /// Una tarea: título, nota, día lógico opcional, hora opcional y prioridad.
 ///
@@ -109,7 +109,7 @@ class TaskDraft {
     this.note,
     this.date,
     this.time,
-    this.priority = TaskPriority.normal,
+    this.priority = TaskPriority.medium,
   });
 
   final String title;

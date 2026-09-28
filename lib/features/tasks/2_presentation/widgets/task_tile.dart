@@ -33,6 +33,18 @@ class TaskTile extends StatelessWidget {
     final locale = Localizations.localeOf(context).toString();
     final done = task.isCompleted;
     final overdue = !done && task.date != null && task.date!.isBefore(today);
+    final priorityColor = switch (task.priority) {
+      TaskPriority.low => AppColors.green,
+      TaskPriority.medium => const Color(0xFFE5B700),
+      TaskPriority.high => AppColors.orange,
+      TaskPriority.urgent => const Color(0xFFE5484D),
+    };
+    final priorityLabel = switch (task.priority) {
+      TaskPriority.low => l10n.tasksPriorityLow,
+      TaskPriority.medium => l10n.tasksPriorityMedium,
+      TaskPriority.high => l10n.tasksPriorityHigh,
+      TaskPriority.urgent => l10n.tasksPriorityUrgent,
+    };
 
     final details = <InlineSpan>[];
     void addDetail(String text, {Color? color, FontWeight? weight}) {
@@ -56,13 +68,7 @@ class TaskTile extends StatelessWidget {
       addDetail(taskDayLabel(l10n, locale, task.date!, today));
     }
     if (task.time != null) addDetail(task.time!);
-    if (task.priority == TaskPriority.high) {
-      addDetail(
-        l10n.tasksPriorityHigh,
-        color: AppColors.flame,
-        weight: FontWeight.w800,
-      );
-    }
+    addDetail(priorityLabel, color: priorityColor, weight: FontWeight.w800);
     if (overdue) {
       addDetail(
         l10n.tasksOverdueBadge,
@@ -118,6 +124,20 @@ class TaskTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: palette.tint(priorityColor, .1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  PhosphorIconsBold.flag,
+                  size: 21,
+                  color: priorityColor,
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,8 +173,8 @@ class TaskTile extends StatelessWidget {
               ),
               Icon(
                 PhosphorIconsBold.caretRight,
-                color: palette.textSecondary,
-                size: 16,
+                color: palette.primary,
+                size: 18,
               ),
             ],
           ),
