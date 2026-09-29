@@ -12,13 +12,25 @@ final shoppingRepositoryProvider = Provider.autoDispose<ShoppingRepository>((
   return FirestoreShoppingRepository(userId: userId);
 });
 
-final shoppingItemsProvider = StreamProvider.autoDispose<List<ShoppingItem>>(
-  (ref) => ref.watch(shoppingRepositoryProvider).watchItems(),
-);
+final shoppingListsProvider =
+    StreamProvider.autoDispose<List<ShoppingListInfo>>(
+      (ref) => ref.watch(shoppingRepositoryProvider).watchLists(),
+    );
+
+final shoppingItemsProvider = StreamProvider.autoDispose
+    .family<List<ShoppingItem>, String>(
+      (ref, listId) => ref.watch(shoppingRepositoryProvider).watchItems(listId),
+    );
 
 /// Artículos por comprar (dato vivo del panel).
 final shoppingPendingCountProvider = Provider.autoDispose<int?>((ref) {
-  final items = ref.watch(shoppingItemsProvider);
-  if (!items.hasValue) return null;
-  return items.value!.where((item) => !item.isBought).length;
+  final lists = ref.watch(shoppingListsProvider);
+  if (!lists.hasValue) return null;
+  var total = 0;
+  for (final list in lists.value!) {
+    final items = ref.watch(shoppingItemsProvider(list.id));
+    if (!items.hasValue) return null;
+    total += items.value!.where((item) => !item.isBought).length;
+  }
+  return total;
 });

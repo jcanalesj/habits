@@ -2725,6 +2725,46 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shoppingTitle => 'Lista de la compra';
 
   @override
+  String get shoppingListsTitle => 'Mis listas';
+
+  @override
+  String get shoppingNewList => 'Nueva lista';
+
+  @override
+  String get shoppingCreateList => 'Crear una lista';
+
+  @override
+  String get shoppingRenameList => 'Cambiar nombre';
+
+  @override
+  String get shoppingListName => 'Nombre de la lista';
+
+  @override
+  String get shoppingDeleteList => 'Eliminar lista';
+
+  @override
+  String get shoppingDeleteListTitle => '¿Eliminar esta lista?';
+
+  @override
+  String shoppingDeleteListBody(String name) {
+    return 'Se eliminarán $name y todos sus artículos.';
+  }
+
+  @override
+  String shoppingProgress(int bought, int total) {
+    return '$bought de $total comprados';
+  }
+
+  @override
+  String get shoppingShare => 'Compartir lista';
+
+  @override
+  String get shoppingShareImage => 'Imagen';
+
+  @override
+  String get shoppingShareText => 'Texto';
+
+  @override
   String get shoppingAddHint => 'Añadir artículo…';
 
   @override

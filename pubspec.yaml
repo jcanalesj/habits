@@ -28,7 +28,9 @@ dependencies:
   intl: ^0.20.2
   json_annotation: 4.9.0
   phosphor_icons: ^3.0.1
+  path_provider: ^2.1.6
   purchases_flutter: ^10.13.2
+  share_plus: ^11.1.0
   shared_preferences: ^2.5.5
   timezone: ^0.11.1
   url_launcher: ^6.3.2
@@ -69,5 +71,6 @@ flutter:
     - assets/images/avatars/
     - assets/images/cards/
     - assets/images/pomodoro/
+    - assets/images/shopping/
     - assets/audio/
     - assets/logo/

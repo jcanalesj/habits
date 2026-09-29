@@ -4700,6 +4700,78 @@ abstract class AppLocalizations {
   /// **'Shopping list'**
   String get shoppingTitle;
 
+  /// No description provided for @shoppingListsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My lists'**
+  String get shoppingListsTitle;
+
+  /// No description provided for @shoppingNewList.
+  ///
+  /// In en, this message translates to:
+  /// **'New list'**
+  String get shoppingNewList;
+
+  /// No description provided for @shoppingCreateList.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a list'**
+  String get shoppingCreateList;
+
+  /// No description provided for @shoppingRenameList.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename list'**
+  String get shoppingRenameList;
+
+  /// No description provided for @shoppingListName.
+  ///
+  /// In en, this message translates to:
+  /// **'List name'**
+  String get shoppingListName;
+
+  /// No description provided for @shoppingDeleteList.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete list'**
+  String get shoppingDeleteList;
+
+  /// No description provided for @shoppingDeleteListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this list?'**
+  String get shoppingDeleteListTitle;
+
+  /// No description provided for @shoppingDeleteListBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} and all its items will be deleted.'**
+  String shoppingDeleteListBody(String name);
+
+  /// No description provided for @shoppingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{bought} of {total} bought'**
+  String shoppingProgress(int bought, int total);
+
+  /// No description provided for @shoppingShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share list'**
+  String get shoppingShare;
+
+  /// No description provided for @shoppingShareImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get shoppingShareImage;
+
+  /// No description provided for @shoppingShareText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get shoppingShareText;
+
   /// No description provided for @shoppingAddHint.
   ///
   /// In en, this message translates to:

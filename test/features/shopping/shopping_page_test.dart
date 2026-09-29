@@ -71,4 +71,68 @@ void main() {
     expect(repository.all.single.name, 'pan');
     expect(find.text('En el carrito · 1'), findsNothing);
   });
+
+  testWidgets(
+    'crea listas independientes y permite previsualizar su exportación',
+    (tester) async {
+      final env = AuthTestEnv(initialUser: verifiedUser);
+      final repository = InMemoryShoppingRepository(now: () => testInstant);
+      addTearDown(repository.dispose);
+      await tester.pumpWidget(
+        localizedApp(
+          const ShoppingPage(),
+          overrides: [
+            ...env.overrides,
+            shoppingRepositoryProvider.overrideWithValue(repository),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('shopping-new-list')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('shopping-list-name')),
+        'Cumple de Ana',
+      );
+      await tester.tap(find.byKey(const ValueKey('shopping-list-save')));
+      await tester.pumpAndSettle();
+
+      expect(repository.lists.length, 2);
+      expect(find.text('Cumple de Ana'), findsWidgets);
+      await tester.enterText(
+        find.byKey(const ValueKey('shopping-quick-input')),
+        'Velas',
+      );
+      await tester.tap(find.byKey(const ValueKey('shopping-quick-add')));
+      await tester.pumpAndSettle();
+      expect(find.text('Velas'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('shopping-list-principal')));
+      await tester.pumpAndSettle();
+      expect(find.text('Velas'), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('shopping-list-list-1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('shopping-share')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('shopping-share-dialog')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('shopping-share-image')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('shopping-share-text')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('shopping-share-dialog')),
+          matching: find.text('Velas'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 }

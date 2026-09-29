@@ -36,11 +36,11 @@ final toolSummaryProvider = Provider.autoDispose
           null => null,
         },
         ToolId.steps => switch (ref.watch(todayStepsSummaryProvider)) {
-      final summary? => l10n.stepsSummary(
-        NumberFormat.decimalPattern(l10n.localeName).format(summary.steps),
-        NumberFormat.decimalPattern(l10n.localeName).format(summary.goal),
-      ),
-      null => null,
-    },
+          final summary? => l10n.stepsSummary(
+            NumberFormat.decimalPattern(l10n.localeName).format(summary.steps),
+            NumberFormat.decimalPattern(l10n.localeName).format(summary.goal),
+          ),
+          null => null,
+        },
       };
     });

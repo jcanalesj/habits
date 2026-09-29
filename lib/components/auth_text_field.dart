@@ -15,6 +15,12 @@ class AuthTextField extends StatefulWidget {
     this.errorText,
     this.textInputAction,
     this.onSubmitted,
+    this.onChanged,
+    this.maxLength,
+    this.maxLines = 1,
+    this.minLines,
+    this.autofocus = false,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final TextEditingController controller;
@@ -25,6 +31,12 @@ class AuthTextField extends StatefulWidget {
   final String? errorText;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
+  final ValueChanged<String>? onChanged;
+  final int? maxLength;
+  final int maxLines;
+  final int? minLines;
+  final bool autofocus;
+  final TextCapitalization textCapitalization;
 
   @override
   State<AuthTextField> createState() => _AuthTextFieldState();
@@ -72,9 +84,16 @@ class _AuthTextFieldState extends State<AuthTextField> {
                   keyboardType: widget.keyboardType,
                   textInputAction: widget.textInputAction,
                   onSubmitted: widget.onSubmitted,
+                  onChanged: widget.onChanged,
+                  maxLength: widget.maxLength,
+                  maxLines: widget.obscurable ? 1 : widget.maxLines,
+                  minLines: widget.obscurable ? null : widget.minLines,
+                  autofocus: widget.autofocus,
+                  textCapitalization: widget.textCapitalization,
                   autocorrect: !widget.obscurable,
                   decoration: InputDecoration(
                     hintText: widget.hint,
+                    counterText: '',
                     labelText: widget.errorText,
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelStyle: textTheme.bodySmall?.copyWith(

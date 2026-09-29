@@ -704,8 +704,8 @@ service cloud.firestore {
     }
 
     // ------------------------------- users/{uid}/listasCompra/{listaId}/items
-    // Herramienta Lista de la compra. Solo personal (sin compartir). En v2
-    // existe una única lista, `principal`; el documento de lista es opcional.
+    // Herramienta Lista de la compra. Cada usuario puede crear varias listas;
+    // `principal` conserva los artículos existentes de versiones anteriores.
     match /users/{uid}/listasCompra/{listaId} {
       allow read: if isOwner(uid);
       allow create, update: if isOwner(uid) && validShoppingList(incoming());
