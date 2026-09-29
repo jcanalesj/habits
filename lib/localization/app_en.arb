@@ -1080,6 +1080,7 @@
   "financeTabFixed": "Fixed",
   "financeTabInvestments": "Investments",
   "financeTabPending": "Wishlist",
+  "financeRecentMovements": "Recent movements",
   "financeMovementsEmpty": "No movements this month. Log the first one.",
   "financeFixedEmpty": "No fixed costs yet. Add the ones that repeat every month.",
   "financeInvestmentsEmpty": "No investments yet. Log what you have invested and update its value whenever you like.",

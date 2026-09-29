@@ -2895,6 +2895,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get financeTabPending => 'Wishlist';
 
   @override
+  String get financeRecentMovements => 'Recent movements';
+
+  @override
   String get financeMovementsEmpty =>
       'No movements this month. Log the first one.';
 

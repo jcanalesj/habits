@@ -5000,6 +5000,12 @@ abstract class AppLocalizations {
   /// **'Wishlist'**
   String get financeTabPending;
 
+  /// No description provided for @financeRecentMovements.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent movements'**
+  String get financeRecentMovements;
+
   /// No description provided for @financeMovementsEmpty.
   ///
   /// In en, this message translates to:

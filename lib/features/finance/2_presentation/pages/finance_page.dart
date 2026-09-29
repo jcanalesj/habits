@@ -237,9 +237,10 @@ class _FinancePageState extends ConsumerState<FinancePage> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 72,
         title: Text(
           l10n.financeTitle,
-          style: const TextStyle(fontWeight: FontWeight.w900),
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
         ),
         actions: [
           IconButton(
@@ -254,7 +255,7 @@ class _FinancePageState extends ConsumerState<FinancePage> {
         key: const ValueKey('finance-page'),
         padding: EdgeInsets.fromLTRB(
           20,
-          8,
+          4,
           20,
           40 + MediaQuery.viewPaddingOf(context).bottom,
         ),
@@ -282,7 +283,7 @@ class _FinancePageState extends ConsumerState<FinancePage> {
             },
             onSelected: (tab) => setState(() => _tab = tab),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           switch (_tab) {
             _FinanceTab.movements => _MovementsView(
               period: period,
@@ -407,141 +408,270 @@ class _MonthHero extends StatelessWidget {
         ? dangerColor
         : AppColors.green;
 
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            palette.tint(palette.primary, .06),
-            palette.tint(AppColors.lilac, .06),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: palette.border),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 12, 10, 0),
-            child: Row(
-              children: [
-                IconButton(
-                  key: const ValueKey('finance-previous-month'),
-                  tooltip: l10n.financePreviousMonth,
-                  onPressed: onPrevious,
-                  icon: const Icon(PhosphorIconsBold.caretLeft),
-                ),
-                Expanded(
-                  child: Text(
-                    title[0].toUpperCase() + title.substring(1),
-                    key: const ValueKey('finance-month-title'),
-                    textAlign: TextAlign.center,
-                    style: textTheme.headlineSmall?.copyWith(
-                      color: palette.textPrimary,
-                      fontWeight: FontWeight.w900,
-                      height: 1.05,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  key: const ValueKey('finance-next-month'),
-                  tooltip: l10n.financeNextMonth,
-                  onPressed: isCurrent ? null : onNext,
-                  icon: const Icon(PhosphorIconsBold.caretRight),
-                ),
-              ],
+    return Column(
+      children: [
+        Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: palette.primarySoft.withValues(
+              alpha: palette.isDark ? .72 : .58,
             ),
+            borderRadius: BorderRadius.circular(25),
           ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-            padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-            decoration: BoxDecoration(
-              color: palette.surface.withValues(alpha: palette.isDark ? 1 : .9),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.financeMonthBalance,
-                  style: TextStyle(color: palette.textSecondary, fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  balance == null
-                      ? '—'
-                      : formatSignedMoney(balance, currency, locale),
-                  key: const ValueKey('finance-balance'),
-                  style: TextStyle(
-                    color: balanceColor,
-                    fontSize: 30,
+          child: Row(
+            children: [
+              IconButton(
+                key: const ValueKey('finance-previous-month'),
+                tooltip: l10n.financePreviousMonth,
+                onPressed: onPrevious,
+                icon: const Icon(PhosphorIconsBold.caretLeft),
+              ),
+              Expanded(
+                child: Text(
+                  title[0].toUpperCase() + title.substring(1),
+                  key: const ValueKey('finance-month-title'),
+                  textAlign: TextAlign.center,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: palette.textPrimary,
                     fontWeight: FontWeight.w900,
-                    height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 12),
-                Row(
+              ),
+              IconButton(
+                key: const ValueKey('finance-next-month'),
+                tooltip: l10n.financeNextMonth,
+                onPressed: isCurrent ? null : onNext,
+                icon: const Icon(PhosphorIconsBold.caretRight),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+          decoration: BoxDecoration(
+            color: palette.surface,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: palette.border),
+            boxShadow: [
+              BoxShadow(
+                color: palette.shadow.withValues(alpha: .14),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: 142,
+                child: Stack(
                   children: [
-                    Expanded(
-                      child: _HeroValue(
-                        label: l10n.financeIncome,
-                        value: summary == null
-                            ? '—'
-                            : formatMoney(
-                                summary!.incomeCents,
-                                currency,
-                                locale,
+                    Positioned.fill(
+                      right: 112,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            l10n.financeMonthBalance,
+                            style: TextStyle(
+                              color: palette.textSecondary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              balance == null
+                                  ? '—'
+                                  : formatSignedMoney(
+                                      balance,
+                                      currency,
+                                      locale,
+                                    ),
+                              key: const ValueKey('finance-balance'),
+                              style: TextStyle(
+                                color: balanceColor,
+                                fontSize: 34,
+                                fontWeight: FontWeight.w900,
+                                height: 1,
+                                letterSpacing: -1,
                               ),
-                        color: AppColors.green,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Container(
-                      width: 1,
-                      height: 34,
-                      margin: const EdgeInsets.symmetric(horizontal: 14),
-                      color: palette.divider,
-                    ),
-                    Expanded(
-                      child: _HeroValue(
-                        label: l10n.financeExpenses,
-                        value: summary == null
-                            ? '—'
-                            : formatMoney(
-                                summary!.expenseCents,
-                                currency,
-                                locale,
-                              ),
-                        color: palette.textPrimary,
+                    Positioned(
+                      right: -4,
+                      top: 0,
+                      bottom: 0,
+                      child: Image.asset(
+                        'assets/images/finance/finance_balance_cat.png',
+                        width: 120,
+                        fit: BoxFit.contain,
+                        excludeFromSemantics: true,
                       ),
                     ),
                   ],
                 ),
-                if (summary != null && summary!.fixedTotal > 0) ...[
-                  const SizedBox(height: 14),
-                  Text(
-                    l10n.financeFixedProgress(
-                      summary!.fixedLogged,
-                      summary!.fixedTotal,
-                    ),
-                    style: TextStyle(
-                      color: palette.textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _FinanceMetric(
+                      icon: PhosphorIconsBold.arrowUp,
+                      label: l10n.financeIncome,
+                      value: summary == null
+                          ? '—'
+                          : formatMoney(summary!.incomeCents, currency, locale),
+                      color: AppColors.green,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      value: summary!.fixedLogged / summary!.fixedTotal,
-                      minHeight: 8,
-                      backgroundColor: palette.tint(palette.primary, .10),
-                      color: palette.primary,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _FinanceMetric(
+                      icon: PhosphorIconsBold.arrowDown,
+                      label: l10n.financeExpenses,
+                      value: summary == null
+                          ? '—'
+                          : formatMoney(
+                              summary!.expenseCents,
+                              currency,
+                              locale,
+                            ),
+                      color: dangerColor,
                     ),
                   ),
                 ],
+              ),
+              if (summary != null && summary!.fixedTotal > 0) ...[
+                const SizedBox(height: 16),
+                Divider(height: 1, color: palette.divider),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: palette.primarySoft,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        PhosphorIconsBold.calendarCheck,
+                        color: palette.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 11),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.financeFixedProgress(
+                              summary!.fixedLogged,
+                              summary!.fixedTotal,
+                            ),
+                            style: TextStyle(
+                              color: palette.textPrimary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(999),
+                            child: LinearProgressIndicator(
+                              value: summary!.fixedLogged / summary!.fixedTotal,
+                              minHeight: 7,
+                              backgroundColor: palette.primarySoft,
+                              color: palette.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FinanceMetric extends StatelessWidget {
+  const _FinanceMetric({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: palette.tint(color, .07),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: palette.tint(color, .14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: palette.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -857,6 +987,18 @@ class _MovementsView extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
+          child: Text(
+            l10n.financeRecentMovements,
+            style: TextStyle(
+              color: palette.textPrimary,
+              fontSize: 21,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -.4,
+            ),
+          ),
+        ),
         for (final entry in groups.entries) ...[
           _SectionLabel(dayLabel(entry.key)),
           _ListCard(

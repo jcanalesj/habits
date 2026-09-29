@@ -86,6 +86,7 @@ void main() {
     expect(find.text('Alquiler'), findsOneWidget);
     final log = find.byKey(const ValueKey('fixed-log-fix-3'));
     await tester.ensureVisible(log);
+    await tester.pumpAndSettle();
     await tester.tap(log);
     await tester.pumpAndSettle();
 
@@ -104,6 +105,7 @@ void main() {
       200,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('finance-new')));
     await tester.pumpAndSettle();
     expect(
@@ -148,6 +150,7 @@ void main() {
     await tester.pumpAndSettle();
     final bought = find.byKey(const ValueKey('purchase-bought-buy-4'));
     await tester.ensureVisible(bought);
+    await tester.pumpAndSettle();
     await tester.tap(bought);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('finance-amount-dialog')), findsOneWidget);

@@ -910,6 +910,7 @@
   "financeTabFixed": "Fijos",
   "financeTabInvestments": "Inversiones",
   "financeTabPending": "Pendientes",
+  "financeRecentMovements": "Últimos movimientos",
   "financeMovementsEmpty": "Sin movimientos este mes. Apunta el primero.",
   "financeFixedEmpty": "Sin gastos fijos. Añade los que se repiten cada mes.",
   "financeInvestmentsEmpty": "Sin inversiones. Apunta lo que tienes invertido y actualiza su valor cuando quieras.",

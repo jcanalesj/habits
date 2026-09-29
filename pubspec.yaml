@@ -70,6 +70,7 @@ flutter:
     - assets/images/app_icons/
     - assets/images/avatars/
     - assets/images/cards/
+    - assets/images/finance/
     - assets/images/pomodoro/
     - assets/images/shopping/
     - assets/audio/

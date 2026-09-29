@@ -2901,6 +2901,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get financeTabPending => 'Pendientes';
 
   @override
+  String get financeRecentMovements => 'Últimos movimientos';
+
+  @override
   String get financeMovementsEmpty =>
       'Sin movimientos este mes. Apunta el primero.';
 
