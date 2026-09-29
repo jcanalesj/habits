@@ -4802,6 +4802,30 @@ abstract class AppLocalizations {
   /// **'Your list is empty. Type what you need above.'**
   String get shoppingEmpty;
 
+  /// No description provided for @shoppingEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your list is empty'**
+  String get shoppingEmptyTitle;
+
+  /// No description provided for @shoppingEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add what you need and it will appear here.'**
+  String get shoppingEmptyBody;
+
+  /// No description provided for @shoppingCompletedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Great, you\'ve got everything!'**
+  String get shoppingCompletedTitle;
+
+  /// No description provided for @shoppingCompletedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have completed every item on this list.'**
+  String get shoppingCompletedBody;
+
   /// No description provided for @shoppingClearBought.
   ///
   /// In en, this message translates to:

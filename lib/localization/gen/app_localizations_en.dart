@@ -2775,6 +2775,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingEmpty => 'Your list is empty. Type what you need above.';
 
   @override
+  String get shoppingEmptyTitle => 'Your list is empty';
+
+  @override
+  String get shoppingEmptyBody => 'Add what you need and it will appear here.';
+
+  @override
+  String get shoppingCompletedTitle => 'Great, you\'ve got everything!';
+
+  @override
+  String get shoppingCompletedBody =>
+      'You have completed every item on this list.';
+
+  @override
   String get shoppingClearBought => 'Clear bought items';
 
   @override

@@ -29,9 +29,24 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
   final _focus = FocusNode();
   String _selectedListId = FirestoreShoppingRepository.defaultListId;
   bool _cartExpanded = false;
+  bool _listsExpanded = true;
+  bool _completionDialogVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(_collapseListsWhileEditing);
+  }
+
+  void _collapseListsWhileEditing() {
+    if (_focus.hasFocus && _listsExpanded) {
+      setState(() => _listsExpanded = false);
+    }
+  }
 
   @override
   void dispose() {
+    _focus.removeListener(_collapseListsWhileEditing);
     _input.dispose();
     _focus.dispose();
     super.dispose();
@@ -72,6 +87,44 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
     );
     if (!confirmed || !mounted) return;
     await ref.read(shoppingRepositoryProvider).delete(_selectedListId, item.id);
+  }
+
+  Future<void> _markAsBought(
+    ShoppingListInfo list,
+    ShoppingItem item,
+    int pendingCount,
+  ) async {
+    final completesList = pendingCount == 1;
+    await ref
+        .read(shoppingRepositoryProvider)
+        .setBought(list.id, item.id, true);
+    if (!completesList || !mounted || _completionDialogVisible) return;
+
+    _completionDialogVisible = true;
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierColor: context.palette.scrim,
+        builder: (dialogContext) => AppFormDialog(
+          key: const ValueKey('shopping-completed-dialog'),
+          hero: const AppDialogHero.cat(
+            badge: PhosphorIconsBold.check,
+            color: AppColors.green,
+            asset: 'assets/images/shopping/shopping_share_cat.png',
+          ),
+          title: context.l10n.shoppingCompletedTitle,
+          helper: context.l10n.shoppingCompletedBody,
+          primaryLabel: context.l10n.continueLabel,
+          primaryIcon: PhosphorIconsBold.sparkle,
+          primaryColor: AppColors.green,
+          primaryKey: const ValueKey('shopping-completed-ok'),
+          onPrimary: () => Navigator.pop(dialogContext),
+          secondaryLabel: context.l10n.cancel,
+        ),
+      );
+    } finally {
+      _completionDialogVisible = false;
+    }
   }
 
   Future<String?> _askListName({String? initial}) async {
@@ -117,7 +170,11 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
     final name = await _askListName();
     if (name == null || !mounted) return;
     final id = await ref.read(shoppingRepositoryProvider).createList(name);
-    if (mounted) setState(() => _selectedListId = id);
+    if (mounted) {
+      setState(() {
+        _selectedListId = id;
+      });
+    }
   }
 
   Future<void> _onMenu(
@@ -179,9 +236,40 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.shoppingListsTitle,
-          style: const TextStyle(fontWeight: FontWeight.w900),
+        toolbarHeight: 72,
+        title: Semantics(
+          button: true,
+          expanded: _listsExpanded,
+          child: InkWell(
+            key: const ValueKey('shopping-lists-toggle'),
+            onTap: () => setState(() => _listsExpanded = !_listsExpanded),
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.shoppingListsTitle,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  AnimatedRotation(
+                    turns: _listsExpanded ? .5 : 0,
+                    duration: const Duration(milliseconds: 180),
+                    child: Icon(
+                      PhosphorIconsBold.caretDown,
+                      size: 17,
+                      color: palette.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
         actions: [
           IconButton.filled(
@@ -189,41 +277,52 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
             onPressed: _createList,
             tooltip: l10n.shoppingCreateList,
             icon: const Icon(PhosphorIconsBold.plus),
+            style: IconButton.styleFrom(
+              minimumSize: const Size.square(52),
+              iconSize: 25,
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 20),
         ],
       ),
       body: Column(
         children: [
-          SizedBox(
-            height: 176,
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
-              scrollDirection: Axis.horizontal,
-              itemCount: lists.length + 1,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                if (index == lists.length) {
-                  return _NewListCard(onTap: _createList);
-                }
-                final list = lists[index];
-                return _ShoppingListCard(
-                  list: list,
-                  selected: list.id == selected.id,
-                  onTap: () => setState(() {
-                    _selectedListId = list.id;
-                    _cartExpanded = false;
-                  }),
-                );
-              },
-            ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: _listsExpanded
+                ? SizedBox(
+                    height: 190,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: lists.length + 1,
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        if (index == lists.length) {
+                          return _NewListCard(onTap: _createList);
+                        }
+                        final list = lists[index];
+                        return _ShoppingListCard(
+                          list: list,
+                          selected: list.id == selected.id,
+                          onTap: () => setState(() {
+                            _selectedListId = list.id;
+                            _cartExpanded = false;
+                          }),
+                        );
+                      },
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
           Expanded(
             child: ListView(
               key: const ValueKey('shopping-page'),
               padding: EdgeInsets.fromLTRB(
                 20,
-                2,
+                8,
                 20,
                 32 + MediaQuery.viewPaddingOf(context).bottom,
               ),
@@ -236,7 +335,11 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w900),
+                            ?.copyWith(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -.7,
+                            ),
                       ),
                     ),
                     IconButton.filledTonal(
@@ -245,6 +348,7 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
                           ? null
                           : () => showDialog<void>(
                               context: context,
+                              barrierColor: context.palette.scrim,
                               builder: (_) => _ShareListDialog(
                                 list: selected,
                                 items: items,
@@ -293,31 +397,36 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
                   style: TextStyle(
                     color: palette.textSecondary,
                     fontWeight: FontWeight.w700,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(99),
-                  child: LinearProgressIndicator(
-                    minHeight: 7,
-                    value: progress,
-                    backgroundColor: palette.primarySoft,
-                    color: palette.primary,
-                  ),
+                const SizedBox(height: 16),
+                _ShoppingProgress(
+                  progress: progress,
+                  label: items.isEmpty
+                      ? l10n.shoppingPendingWithCount(0)
+                      : l10n.shoppingProgress(bought.length, items.length),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
-                      child: AppTextField(
-                        key: const ValueKey('shopping-quick-input'),
-                        controller: _input,
-                        focusNode: _focus,
-                        hint: l10n.shoppingAddHint,
-                        prefixIcon: PhosphorIconsBold.plus,
-                        maxLength: ShoppingItem.maxNameLength + 4,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _addQuick(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: palette.surface,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: palette.border),
+                        ),
+                        child: AppTextField(
+                          key: const ValueKey('shopping-quick-input'),
+                          controller: _input,
+                          focusNode: _focus,
+                          hint: l10n.shoppingAddHint,
+                          prefixIcon: PhosphorIconsBold.plus,
+                          maxLength: ShoppingItem.maxNameLength + 4,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _addQuick(),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -325,29 +434,27 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
                       key: const ValueKey('shopping-quick-add'),
                       onPressed: _addQuick,
                       style: FilledButton.styleFrom(
-                        minimumSize: const Size(58, 56),
+                        minimumSize: const Size(64, 64),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(22),
                         ),
                       ),
-                      child: const Icon(PhosphorIconsBold.arrowUp),
+                      child: const Icon(PhosphorIconsBold.arrowUp, size: 26),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 if (items.isEmpty && !itemsAsync.isLoading)
-                  EmptyStateBlock(
-                    icon: PhosphorIconsRegular.shoppingCart,
-                    text: l10n.shoppingEmpty,
-                    color: AppColors.blue,
+                  _ShoppingEmptyState(
+                    title: l10n.shoppingEmptyTitle,
+                    body: l10n.shoppingEmptyBody,
                   ),
                 if (pending.isNotEmpty) ...[
                   _SectionLabel('${l10n.shoppingToBuy} · ${pending.length}'),
                   _ItemsCard(
                     items: pending,
-                    onToggle: (item) => ref
-                        .read(shoppingRepositoryProvider)
-                        .setBought(selected.id, item.id, true),
+                    onToggle: (item) =>
+                        _markAsBought(selected, item, pending.length),
                     onTap: _edit,
                     onDelete: _delete,
                   ),
@@ -400,6 +507,117 @@ class _ShoppingPageState extends ConsumerState<ShoppingPage> {
   }
 }
 
+class _ShoppingProgress extends StatelessWidget {
+  const _ShoppingProgress({required this.progress, required this.label});
+
+  final double progress;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: palette.primarySoft.withValues(alpha: palette.isDark ? .55 : .5),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          SizedBox.square(
+            dimension: 30,
+            child: CircularProgressIndicator(
+              value: progress,
+              strokeWidth: 4,
+              strokeCap: StrokeCap.round,
+              backgroundColor: palette.divider,
+              color: palette.primary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: palette.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            '${(progress * 100).round()}%',
+            style: TextStyle(
+              color: palette.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShoppingEmptyState extends StatelessWidget {
+  const _ShoppingEmptyState({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(22, 20, 22, 24),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: palette.border),
+        boxShadow: [
+          BoxShadow(
+            color: palette.shadow.withValues(alpha: .12),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Image.asset(
+            'assets/images/shopping/shopping_empty_cart_cat.png',
+            height: 132,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: palette.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: palette.textSecondary,
+              fontSize: 14,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ShoppingListCard extends ConsumerWidget {
   const _ShoppingListCard({
     required this.list,
@@ -433,15 +651,24 @@ class _ShoppingListCard extends ConsumerWidget {
       borderRadius: BorderRadius.circular(26),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        width: 176,
-        padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+        width: 184,
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
         decoration: BoxDecoration(
           color: palette.tint(accent, selected ? .16 : .09),
           borderRadius: BorderRadius.circular(26),
           border: Border.all(
             color: selected ? palette.primary : palette.tint(accent, .28),
-            width: selected ? 2.5 : 1,
+            width: selected ? 3 : 1,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: palette.primary.withValues(alpha: .12),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,7 +680,7 @@ class _ShoppingListCard extends ConsumerWidget {
               list.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
             ),
             const SizedBox(height: 2),
             Text(
@@ -573,21 +800,28 @@ class _ShareListDialogState extends State<_ShareListDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
     return Dialog(
       key: const ValueKey('shopping-share-dialog'),
-      backgroundColor: Colors.transparent,
+      backgroundColor: palette.dialogSurface,
       insetPadding: const EdgeInsets.all(20),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 430),
         child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              RepaintBoundary(
-                key: _boundaryKey,
-                child: _ExportCard(list: widget.list, items: widget.items),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: RepaintBoundary(
+                  key: _boundaryKey,
+                  child: _ExportCard(list: widget.list, items: widget.items),
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
@@ -601,6 +835,13 @@ class _ShareListDialogState extends State<_ShareListDialog> {
                             )
                           : const Icon(PhosphorIconsBold.image),
                       label: Text(l10n.shoppingShareImage),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(54),
+                        foregroundColor: palette.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -610,13 +851,27 @@ class _ShareListDialogState extends State<_ShareListDialog> {
                       onPressed: _shareText,
                       icon: const Icon(PhosphorIconsBold.textT),
                       label: Text(l10n.shoppingShareText),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(54),
+                        foregroundColor: palette.textPrimary,
+                        backgroundColor: palette.primarySoft,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text(l10n.cancel),
+                style: TextButton.styleFrom(
+                  foregroundColor: palette.primaryDeep,
+                ),
+                child: Text(
+                  l10n.cancel,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
               ),
             ],
           ),

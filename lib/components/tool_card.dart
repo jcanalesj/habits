@@ -34,6 +34,8 @@ class ToolCard extends StatelessWidget {
     final panelColor = palette.isDark
         ? palette.surface
         : Color.alphaBlend(accent.withValues(alpha: .05), Colors.white);
+    final panelTopOpacity = palette.isDark ? .86 : .58;
+    final panelBottomOpacity = palette.isDark ? .96 : .80;
     return Semantics(
       button: true,
       label: title,
@@ -107,8 +109,8 @@ class ToolCard extends StatelessWidget {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              panelColor.withValues(alpha: .58),
-                              panelColor.withValues(alpha: .80),
+                              panelColor.withValues(alpha: panelTopOpacity),
+                              panelColor.withValues(alpha: panelBottomOpacity),
                             ],
                           ),
                         ),
@@ -128,7 +130,12 @@ class ToolCard extends StatelessWidget {
                             height: illustrated ? 32 : 36,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: palette.tint(accent, .14),
+                              color: illustrated && palette.isDark
+                                  ? Color.alphaBlend(
+                                      accent.withValues(alpha: .24),
+                                      palette.surface.withValues(alpha: .92),
+                                    )
+                                  : palette.tint(accent, .14),
                               borderRadius: BorderRadius.circular(
                                 illustrated ? 11 : 12,
                               ),
@@ -185,12 +192,16 @@ class ToolCard extends StatelessWidget {
                               height: 24,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: panelColor.withValues(alpha: .72),
+                                color: panelColor.withValues(
+                                  alpha: palette.isDark ? .94 : .72,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 PhosphorIconsBold.caretRight,
-                                color: palette.textSecondary,
+                                color: palette.isDark
+                                    ? palette.textPrimary
+                                    : palette.textSecondary,
                                 size: 14,
                               ),
                             ),

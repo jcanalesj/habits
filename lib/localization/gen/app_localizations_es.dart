@@ -2781,6 +2781,19 @@ class AppLocalizationsEs extends AppLocalizations {
       'Tu lista está vacía. Escribe arriba lo que necesitas.';
 
   @override
+  String get shoppingEmptyTitle => 'Tu lista está vacía';
+
+  @override
+  String get shoppingEmptyBody => 'Añade lo que necesitas y aparecerá aquí.';
+
+  @override
+  String get shoppingCompletedTitle => '¡Genial, ya lo tienes todo!';
+
+  @override
+  String get shoppingCompletedBody =>
+      'Has completado todos los artículos de esta lista.';
+
+  @override
   String get shoppingClearBought => 'Vaciar comprados';
 
   @override
