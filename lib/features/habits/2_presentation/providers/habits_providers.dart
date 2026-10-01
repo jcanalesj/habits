@@ -9,6 +9,7 @@ import 'package:habits/features/habits/1_domain/domain.dart';
 // Los ficheros de providers son la capa de inyección de dependencias:
 // son el único punto de 2_presentation autorizado a importar 3_data.
 import 'package:habits/features/habits/3_data/data.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
 
 /// Reloj de la app. Inyectable para poder fijar el instante en los tests
 /// (§34): 23:59, 00:00, cambio de mes, cambio de año o un cambio de horario
@@ -78,12 +79,33 @@ final goalProgressCalculatorProvider =
 /// provider se invalida "fuera de banda" por el stream de sesión, lo que en
 /// Riverpod 3 provoca reconstrucciones perezosas durante el build de la Home
 /// ("markNeedsBuild called during build").
-final habitsRepositoryProvider = Provider.autoDispose<HabitsRepository>((ref) {
+/// Repositorio de hábitos de la cuenta (Firestore). Es el que sustituyen
+/// los tests; la app lo consume a través de [habitsRepositoryProvider].
+final realHabitsRepositoryProvider = Provider.autoDispose<HabitsRepository>((
+  ref,
+) {
   final userId = ref.read(authControllerProvider).value?.id;
   return FirestoreHabitsRepository(
     userId: userId ?? FirestoreHabitsRepository.anonymousUserId,
     timezone: ref.watch(profileTimezoneProvider).value,
   );
+});
+
+/// Repositorio que ve la app. Durante el recorrido guiado sobre una cuenta
+/// vacía sirve hábitos y registros de ejemplo en memoria, para que Inicio,
+/// calendarios y estadísticas tengan algo que enseñar; al terminar vuelve
+/// el de la cuenta.
+final habitsRepositoryProvider = Provider.autoDispose<HabitsRepository>((ref) {
+  if (ref.watch(guidedTourDemoDataProvider)) {
+    final clock = ref.watch(clockProvider);
+    final demo = InMemoryHabitsRepository(
+      now: () => clock.nowUtc().toLocal(),
+      today: ref.watch(todayProvider),
+    );
+    ref.onDispose(demo.dispose);
+    return demo;
+  }
+  return ref.watch(realHabitsRepositoryProvider);
 });
 
 /// Repositorio de comodines, separado a propósito del de hábitos: tiene un

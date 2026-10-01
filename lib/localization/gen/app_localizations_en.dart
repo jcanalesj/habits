@@ -3454,18 +3454,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingToolsBody =>
-      'Tasks, Pomodoro, Shopping, Finances and Steps. They are separate utilities: they don\'t affect your streak.';
+      'Tasks, Pomodoro, shopping list, finances and more. They are separate utilities: they don\'t affect your streak.';
 
   @override
   String get onboardingStatsTitle => 'Your stats';
 
   @override
   String get onboardingStatsBody =>
-      'Here you see your consistency: completion, streaks and progress per habit. That\'s it! You can repeat this tour from Profile.';
+      'Here you see your consistency: each habit with its completion bar, plus streaks and weekly activity.';
 
   @override
   String get profileTutorial => 'View the tutorial';
 
   @override
   String get profileTutorialSubtitle => 'Repeat the tour of the app';
+
+  @override
+  String get onboardingIntroTitle => 'Welcome to Constanza!';
+
+  @override
+  String get onboardingIntroBody =>
+      'In a minute we\'ll show you what you can do here. You can skip it whenever you like and repeat it from your profile.';
+
+  @override
+  String get onboardingStart => 'Start';
+
+  @override
+  String get onboardingPrevious => 'Back';
+
+  @override
+  String get onboardingCheckHabitTitle => 'Check off what you do today';
+
+  @override
+  String get onboardingCheckHabitBody =>
+      'Tap a habit\'s circle when you complete it. If it has several repetitions, each tap adds one.';
+
+  @override
+  String get onboardingFinishTitle => 'That\'s it!';
+
+  @override
+  String get onboardingFinishBody =>
+      'You know the essentials now. You can repeat this tour any time from Profile.';
+
+  @override
+  String get onboardingFinishFirstHabitTitle => 'Your turn';
+
+  @override
+  String get onboardingFinishFirstHabitBody =>
+      'What you\'ve seen was sample data. Start with a single habit: small, concrete and something you can do today.';
+
+  @override
+  String get onboardingCreateFirstHabit => 'Create my first habit';
+
+  @override
+  String get statsHabitsEmpty =>
+      'Once you create habits, their progress will show up here.';
+
+  @override
+  String get onboardingDemoData => 'Sample data';
 }

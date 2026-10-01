@@ -9,6 +9,7 @@ import 'package:habits/components/habit_icon_catalog.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -313,26 +314,52 @@ class _StatisticsContent extends StatelessWidget {
           onTap: () => context.go('/habits/manage'),
         ),
         const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(
-            color: palette.surface.withValues(alpha: palette.isDark ? 1 : .72),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            children: [
-              for (final habit in summary.habits)
-                _HabitProgressRow(
-                  habit: habit,
-                  completed: _completedFor(habit.id),
-                  target: _targetFor(habit),
-                ),
-            ],
+        TutorialAnchor(
+          target: TutorialTarget.statsHabitsProgress,
+          child: Container(
+            key: const ValueKey('stats-habits-progress'),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            decoration: BoxDecoration(
+              color: palette.surface.withValues(
+                alpha: palette.isDark ? 1 : .72,
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: summary.habits.isEmpty
+                ? const _EmptyHabitsProgress()
+                : Column(
+                    children: [
+                      for (final habit in summary.habits)
+                        _HabitProgressRow(
+                          habit: habit,
+                          completed: _completedFor(habit.id),
+                          target: _targetFor(habit),
+                        ),
+                    ],
+                  ),
           ),
         ),
       ],
     );
   }
+}
+
+/// Sección de hábitos cuando aún no hay ninguno.
+class _EmptyHabitsProgress extends StatelessWidget {
+  const _EmptyHabitsProgress();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    key: const ValueKey('stats-habits-empty'),
+    padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+    child: Text(
+      context.l10n.statsHabitsEmpty,
+      textAlign: TextAlign.center,
+      style: Theme.of(
+        context,
+      ).textTheme.bodyMedium?.copyWith(color: context.palette.textSecondary),
+    ),
+  );
 }
 
 class _QuitHabitStatsCard extends StatelessWidget {
@@ -1222,14 +1249,47 @@ class _HabitProgressRow extends StatelessWidget {
   final int target;
 
   @override
+  Widget build(BuildContext context) => _ProgressRow(
+    key: ValueKey('habit-stat-${habit.id}'),
+    progressKey: ValueKey('habit-stat-progress-${habit.id}'),
+    name: habit.name,
+    iconId: habit.iconId,
+    legacyEmoji: habit.emoji,
+    color: Color(habit.colorValue),
+    completed: completed,
+    target: target,
+  );
+}
+
+/// Fila de progreso con datos sueltos: la usan los hábitos reales y las
+/// filas de ejemplo del recorrido.
+class _ProgressRow extends StatelessWidget {
+  const _ProgressRow({
+    super.key,
+    required this.name,
+    required this.color,
+    required this.completed,
+    required this.target,
+    this.iconId,
+    this.legacyEmoji,
+    this.progressKey,
+  });
+
+  final String name;
+  final String? iconId;
+  final String? legacyEmoji;
+  final Color color;
+  final int completed;
+  final int target;
+  final Key? progressKey;
+
+  @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final color = Color(habit.colorValue);
     final fraction = target == 0 ? 0.0 : (completed / target).clamp(0.0, 1.0);
     final percent = (fraction * 100).round();
 
     return Padding(
-      key: ValueKey('habit-stat-${habit.id}'),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       child: Row(
         children: [
@@ -1242,8 +1302,8 @@ class _HabitProgressRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
             ),
             child: HabitIcon(
-              iconId: habit.iconId,
-              legacyEmoji: habit.emoji,
+              iconId: iconId,
+              legacyEmoji: legacyEmoji,
               size: 30,
             ),
           ),
@@ -1253,7 +1313,7 @@ class _HabitProgressRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  habit.name,
+                  name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w800),
@@ -1262,7 +1322,7 @@ class _HabitProgressRow extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(5),
                   child: LinearProgressIndicator(
-                    key: ValueKey('habit-stat-progress-${habit.id}'),
+                    key: progressKey,
                     value: fraction,
                     minHeight: 7,
                     color: color,

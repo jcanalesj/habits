@@ -208,7 +208,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     // visto, y siempre se puede repetir desde Perfil.
     await ref.read(onboardingTourPreferencesProvider).markSeen(userId);
     if (!mounted) return;
-    ref.read(guidedTourProvider.notifier).start();
+    ref
+        .read(guidedTourProvider.notifier)
+        .start(
+          hasHabits:
+              (ref.read(activeHabitsProvider).value ?? const []).isNotEmpty,
+        );
   }
 
   Future<void> _maybeShowStreakLossPrompt() async {
@@ -578,6 +583,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
                 weekLogs: summary.weekLogs,
                 today: summary.today,
                 progressOf: summary.progressOf,
+                anchorFirstTile: true,
                 onToggleToday: (habitId) {
                   _toggleHabit(context, controller, habitId);
                 },

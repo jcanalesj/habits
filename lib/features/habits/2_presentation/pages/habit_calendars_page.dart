@@ -5,6 +5,7 @@ import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -140,14 +141,30 @@ class _HabitCalendarsPageState extends ConsumerState<HabitCalendarsPage> {
                 ),
               )
             else
-              for (final habit in summary.habits) ...[
-                _HabitMonthCard(
-                  habit: habit,
-                  month: month,
-                  logs: monthLogs
-                      .where((log) => log.habitId == habit.id && log.isActivity)
-                      .toList(),
-                ),
+              for (final (index, habit) in summary.habits.indexed) ...[
+                if (index == 0)
+                  TutorialAnchor(
+                    target: TutorialTarget.firstCalendarCard,
+                    child: _HabitMonthCard(
+                      habit: habit,
+                      month: month,
+                      logs: monthLogs
+                          .where(
+                            (log) => log.habitId == habit.id && log.isActivity,
+                          )
+                          .toList(),
+                    ),
+                  )
+                else
+                  _HabitMonthCard(
+                    habit: habit,
+                    month: month,
+                    logs: monthLogs
+                        .where(
+                          (log) => log.habitId == habit.id && log.isActivity,
+                        )
+                        .toList(),
+                  ),
                 const SizedBox(height: 14),
               ],
           ],

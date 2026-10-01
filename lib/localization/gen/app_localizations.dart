@@ -5969,7 +5969,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingToolsBody.
   ///
   /// In en, this message translates to:
-  /// **'Tasks, Pomodoro, Shopping, Finances and Steps. They are separate utilities: they don\'t affect your streak.'**
+  /// **'Tasks, Pomodoro, shopping list, finances and more. They are separate utilities: they don\'t affect your streak.'**
   String get onboardingToolsBody;
 
   /// No description provided for @onboardingStatsTitle.
@@ -5981,7 +5981,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStatsBody.
   ///
   /// In en, this message translates to:
-  /// **'Here you see your consistency: completion, streaks and progress per habit. That\'s it! You can repeat this tour from Profile.'**
+  /// **'Here you see your consistency: each habit with its completion bar, plus streaks and weekly activity.'**
   String get onboardingStatsBody;
 
   /// No description provided for @profileTutorial.
@@ -5995,6 +5995,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Repeat the tour of the app'**
   String get profileTutorialSubtitle;
+
+  /// No description provided for @onboardingIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Constanza!'**
+  String get onboardingIntroTitle;
+
+  /// No description provided for @onboardingIntroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In a minute we\'ll show you what you can do here. You can skip it whenever you like and repeat it from your profile.'**
+  String get onboardingIntroBody;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get onboardingStart;
+
+  /// No description provided for @onboardingPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get onboardingPrevious;
+
+  /// No description provided for @onboardingCheckHabitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check off what you do today'**
+  String get onboardingCheckHabitTitle;
+
+  /// No description provided for @onboardingCheckHabitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a habit\'s circle when you complete it. If it has several repetitions, each tap adds one.'**
+  String get onboardingCheckHabitBody;
+
+  /// No description provided for @onboardingFinishTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s it!'**
+  String get onboardingFinishTitle;
+
+  /// No description provided for @onboardingFinishBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You know the essentials now. You can repeat this tour any time from Profile.'**
+  String get onboardingFinishBody;
+
+  /// No description provided for @onboardingFinishFirstHabitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your turn'**
+  String get onboardingFinishFirstHabitTitle;
+
+  /// No description provided for @onboardingFinishFirstHabitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'What you\'ve seen was sample data. Start with a single habit: small, concrete and something you can do today.'**
+  String get onboardingFinishFirstHabitBody;
+
+  /// No description provided for @onboardingCreateFirstHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Create my first habit'**
+  String get onboardingCreateFirstHabit;
+
+  /// No description provided for @statsHabitsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Once you create habits, their progress will show up here.'**
+  String get statsHabitsEmpty;
+
+  /// No description provided for @onboardingDemoData.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample data'**
+  String get onboardingDemoData;
 }
 
 class _AppLocalizationsDelegate

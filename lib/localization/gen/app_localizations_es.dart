@@ -3460,18 +3460,61 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboardingToolsBody =>
-      'Tareas, Pomodoro, Compra, Finanzas y Pasos. Son utilidades aparte: no afectan a tu racha.';
+      'Tareas, Pomodoro, lista de la compra, finanzas y más. Son utilidades aparte: no afectan a tu racha.';
 
   @override
   String get onboardingStatsTitle => 'Tus estadísticas';
 
   @override
   String get onboardingStatsBody =>
-      'Aquí ves tu constancia: cumplimiento, rachas y progreso por hábito. ¡Eso es todo! Puedes repetir este recorrido desde Perfil.';
+      'Aquí ves tu constancia: cada hábito con su barra de cumplimiento, además de rachas y actividad semanal.';
 
   @override
   String get profileTutorial => 'Ver el tutorial';
 
   @override
   String get profileTutorialSubtitle => 'Repite el recorrido por la app';
+
+  @override
+  String get onboardingIntroTitle => '¡Bienvenido a Constanza!';
+
+  @override
+  String get onboardingIntroBody =>
+      'Te enseñamos en un minuto lo que puedes hacer aquí. Puedes saltarlo cuando quieras y repetirlo desde tu perfil.';
+
+  @override
+  String get onboardingStart => 'Empezar';
+
+  @override
+  String get onboardingPrevious => 'Anterior';
+
+  @override
+  String get onboardingCheckHabitTitle => 'Marca lo que hagas hoy';
+
+  @override
+  String get onboardingCheckHabitBody =>
+      'Toca el círculo de un hábito cuando lo completes. Si tiene varias repeticiones, cada toque suma una.';
+
+  @override
+  String get onboardingFinishTitle => '¡Eso es todo!';
+
+  @override
+  String get onboardingFinishBody =>
+      'Ya conoces lo esencial. Puedes repetir este recorrido cuando quieras desde Perfil.';
+
+  @override
+  String get onboardingFinishFirstHabitTitle => 'Tu turno';
+
+  @override
+  String get onboardingFinishFirstHabitBody =>
+      'Lo que has visto eran datos de ejemplo. Empieza por un solo hábito: pequeño, concreto y que puedas hacer hoy mismo.';
+
+  @override
+  String get onboardingCreateFirstHabit => 'Crear mi primer hábito';
+
+  @override
+  String get statsHabitsEmpty => 'Cuando crees hábitos verás aquí su progreso.';
+
+  @override
+  String get onboardingDemoData => 'Datos de ejemplo';
 }

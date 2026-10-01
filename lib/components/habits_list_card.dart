@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
 import 'package:habits/components/habit_list_tile.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/localization/l10n.dart';
@@ -19,7 +20,12 @@ class HabitsListCard extends StatelessWidget {
     this.mode = HabitTileMode.manage,
     this.emptyMessage,
     this.onSetDailyCount,
+    this.anchorFirstTile = false,
   });
+
+  /// Registra la primera fila como ancla del recorrido guiado (solo la
+  /// lista de pendientes de Inicio: una única fila señalada en la app).
+  final bool anchorFirstTile;
 
   final List<Habit> habits;
   final List<HabitLog> weekLogs;
@@ -90,20 +96,23 @@ class HabitsListCard extends StatelessWidget {
               ],
             ),
           ),
-        for (final habit in habits)
+        for (final (index, habit) in habits.indexed)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
-            child: HabitListTile(
-              habit: habit,
-              weekLogs: weekLogs,
-              today: today,
-              progress: progressOf?.call(habit.id),
-              mode: mode,
-              onToggleToday: () => onToggleToday(habit.id),
-              onTap: onHabitTap == null ? null : () => onHabitTap!(habit),
-              onSetDailyCount: onSetDailyCount == null
-                  ? null
-                  : (count) => onSetDailyCount!(habit.id, count),
+            child: _maybeAnchor(
+              anchorFirstTile && index == 0,
+              HabitListTile(
+                habit: habit,
+                weekLogs: weekLogs,
+                today: today,
+                progress: progressOf?.call(habit.id),
+                mode: mode,
+                onToggleToday: () => onToggleToday(habit.id),
+                onTap: onHabitTap == null ? null : () => onHabitTap!(habit),
+                onSetDailyCount: onSetDailyCount == null
+                    ? null
+                    : (count) => onSetDailyCount!(habit.id, count),
+              ),
             ),
           ),
         // Texto flexible en vez de TextButton.icon: la etiqueta larga
@@ -137,4 +146,8 @@ class HabitsListCard extends StatelessWidget {
       ],
     );
   }
+
+  static Widget _maybeAnchor(bool anchor, Widget child) => anchor
+      ? TutorialAnchor(target: TutorialTarget.firstHabitTile, child: child)
+      : child;
 }

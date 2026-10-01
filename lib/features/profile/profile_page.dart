@@ -248,7 +248,13 @@ class ProfilePage extends ConsumerWidget {
                   color: AppColors.lilac,
                   title: l10n.profileTutorial,
                   subtitle: l10n.profileTutorialSubtitle,
-                  onTap: () => ref.read(guidedTourProvider.notifier).start(),
+                  onTap: () => ref
+                      .read(guidedTourProvider.notifier)
+                      .start(
+                        hasHabits:
+                            (ref.read(activeHabitsProvider).value ?? const [])
+                                .isNotEmpty,
+                      ),
                   showDivider: false,
                 ),
               ],

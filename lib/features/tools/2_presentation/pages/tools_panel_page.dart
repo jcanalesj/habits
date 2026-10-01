@@ -9,6 +9,7 @@ import 'package:habits/features/tools/2_presentation/providers/tools_providers.d
 import 'package:habits/features/tools/2_presentation/providers/tool_summaries.dart';
 import 'package:habits/features/tools/2_presentation/widgets/premium_tools_dialog.dart';
 import 'package:habits/local_preferences.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 
@@ -119,31 +120,34 @@ class _ToolsPanelPageState extends ConsumerState<ToolsPanelPage> {
                   spacing: gap,
                   runSpacing: gap,
                   children: [
-                    for (final tool in tools)
+                    for (final (index, tool) in tools.indexed)
                       SizedBox(
                         width: width,
                         height: 148,
-                        child: ToolCard(
-                          key: ValueKey('tool-card-${tool.id.name}'),
-                          icon: tool.icon,
-                          accent: tool.accent,
-                          title: tool.id.title(l10n),
-                          subtitle: tool.id.subtitle(l10n),
-                          value: summaries[tool.id],
-                          locked: tool.premium && !hasAccess,
-                          backgroundAsset: switch (tool.id) {
-                            ToolId.tasks =>
-                              'assets/images/cards/card_tareas_v2.png',
-                            ToolId.pomodoro =>
-                              'assets/images/cards/card_pomodoro_v2.png',
-                            ToolId.shopping =>
-                              'assets/images/cards/card_compra_v2.png',
-                            ToolId.finance =>
-                              'assets/images/cards/card_finanzas_v2.png',
-                            ToolId.steps =>
-                              'assets/images/cards/card_pasos_v2.png',
-                          },
-                          onTap: () => _open(tool),
+                        child: _maybeAnchor(
+                          index == 0,
+                          ToolCard(
+                            key: ValueKey('tool-card-${tool.id.name}'),
+                            icon: tool.icon,
+                            accent: tool.accent,
+                            title: tool.id.title(l10n),
+                            subtitle: tool.id.subtitle(l10n),
+                            value: summaries[tool.id],
+                            locked: tool.premium && !hasAccess,
+                            backgroundAsset: switch (tool.id) {
+                              ToolId.tasks =>
+                                'assets/images/cards/card_tareas_v2.png',
+                              ToolId.pomodoro =>
+                                'assets/images/cards/card_pomodoro_v2.png',
+                              ToolId.shopping =>
+                                'assets/images/cards/card_compra_v2.png',
+                              ToolId.finance =>
+                                'assets/images/cards/card_finanzas_v2.png',
+                              ToolId.steps =>
+                                'assets/images/cards/card_pasos_v2.png',
+                            },
+                            onTap: () => _open(tool),
+                          ),
                         ),
                       ),
                   ],
@@ -155,6 +159,10 @@ class _ToolsPanelPageState extends ConsumerState<ToolsPanelPage> {
       ),
     );
   }
+
+  static Widget _maybeAnchor(bool anchor, Widget child) => anchor
+      ? TutorialAnchor(target: TutorialTarget.firstToolCard, child: child)
+      : child;
 }
 
 class _ToolsHeader extends StatelessWidget {

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/pages/home_page.dart';
+import 'package:habits/features/habits/2_presentation/pages/statistics_page.dart';
 import 'package:habits/features/onboarding/guided_tour.dart';
 import 'package:habits/features/onboarding/onboarding_tour_preferences.dart';
 import 'package:habits/features/profile/weight/in_memory_weight_repository.dart';
@@ -26,6 +27,7 @@ Future<void> _pumpApp(
   WidgetTester tester, {
   required OnboardingTourPreferences tourPreferences,
   bool weightConfigured = false,
+  bool seededHabits = true,
 }) async {
   tester.view.physicalSize = const Size(390, 900);
   tester.view.devicePixelRatio = 1;
@@ -36,7 +38,10 @@ Future<void> _pumpApp(
   addTearDown(tester.platformDispatcher.clearLocaleTestValue);
   addTearDown(tester.platformDispatcher.clearLocalesTestValue);
 
-  final env = AuthTestEnv(initialUser: verifiedUser);
+  final env = AuthTestEnv(
+    initialUser: verifiedUser,
+    seededHabits: seededHabits,
+  );
   // Con peso registrado no aparece la invitación de peso, que taparía la
   // pantalla en los tests que no arrancan el recorrido.
   final weightRepository = InMemoryWeightRepository();
@@ -114,26 +119,40 @@ void main() {
   });
 
   group('GuidedTourController', () {
-    test('avanza por los pasos y termina tras el último', () {
+    test('sin hábitos usa datos de ejemplo y termina tras el último', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       final controller = container.read(guidedTourProvider.notifier);
 
       expect(container.read(guidedTourProvider), isNull);
+      expect(container.read(guidedTourDemoDataProvider), isFalse);
       controller.next();
       expect(container.read(guidedTourProvider), isNull);
 
-      controller.start();
-      for (var i = 0; i < GuidedTourStep.values.length - 1; i++) {
+      controller.start(hasHabits: true);
+      expect(controller.usesDemoData, isFalse);
+      expect(container.read(guidedTourDemoDataProvider), isFalse);
+      controller.finish();
+
+      controller.start(hasHabits: false);
+      expect(controller.usesDemoData, isTrue);
+      expect(container.read(guidedTourDemoDataProvider), isTrue);
+      expect(controller.steps, GuidedTourStep.values);
+      expect(controller.isFirst, isTrue);
+
+      controller.previous();
+      expect(container.read(guidedTourProvider), 0);
+      for (var i = 0; i < controller.steps.length - 1; i++) {
         expect(container.read(guidedTourProvider), i);
         controller.next();
       }
-      expect(
-        container.read(guidedTourProvider),
-        GuidedTourStep.values.length - 1,
-      );
+      expect(controller.isLast, isTrue);
+      controller.previous();
+      expect(container.read(guidedTourProvider), controller.steps.length - 2);
+      controller.next();
       controller.next();
       expect(container.read(guidedTourProvider), isNull);
+      expect(container.read(guidedTourDemoDataProvider), isFalse);
     });
   });
 
@@ -144,11 +163,12 @@ void main() {
       final preferences = MemoryOnboardingTourPreferences();
       await _pumpApp(tester, tourPreferences: preferences);
 
-      // Primer paso sobre la Home, con el botón de nuevo hábito como foco.
+      // Bienvenida centrada, sin foco todavía.
       expect(_tour, findsOneWidget);
-      expect(find.text('1 de 7'), findsOneWidget);
-      expect(find.text('Crea tus hábitos'), findsOneWidget);
-      expect(find.byKey(const ValueKey('home-new-habit')), findsOneWidget);
+      expect(find.text('1 de 10'), findsOneWidget);
+      expect(find.text('¡Bienvenido a Constanza!'), findsOneWidget);
+      expect(find.text('Empezar'), findsOneWidget);
+      expect(find.byKey(const ValueKey('guided-tour-previous')), findsNothing);
       expect(preferences.isSeen(verifiedUser.id), isTrue);
       // El recorrido ya presenta el peso: la invitación no se encadena.
       expect(
@@ -156,9 +176,36 @@ void main() {
         findsNothing,
       );
 
+      // Crear hábitos: foco en el botón de Inicio. Tocar el foco avanza.
       await tester.tap(_next);
       await tester.pumpAndSettle();
-      expect(find.text('2 de 7'), findsOneWidget);
+      expect(find.text('2 de 10'), findsOneWidget);
+      expect(find.text('Crea tus hábitos'), findsOneWidget);
+      expect(find.byKey(const ValueKey('home-new-habit')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('guided-tour-focus')));
+      await tester.pumpAndSettle();
+
+      // Marcar un hábito: solo porque la cuenta ya tiene hábitos.
+      expect(find.text('3 de 10'), findsOneWidget);
+      expect(find.text('Marca lo que hagas hoy'), findsOneWidget);
+
+      // "Anterior" y el botón atrás del sistema retroceden un paso.
+      await tester.tap(find.byKey(const ValueKey('guided-tour-previous')));
+      await tester.pumpAndSettle();
+      expect(find.text('2 de 10'), findsOneWidget);
+      await tester.tap(_next);
+      await tester.pumpAndSettle();
+      expect(find.text('3 de 10'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('2 de 10'), findsOneWidget);
+      expect(_tour, findsOneWidget);
+      await tester.tap(_next);
+      await tester.pumpAndSettle();
+
+      await tester.tap(_next);
+      await tester.pumpAndSettle();
+      expect(find.text('4 de 10'), findsOneWidget);
       expect(find.text('Tu racha y tus protectores'), findsOneWidget);
 
       // Calendarios: navega a la pestaña Mis hábitos.
@@ -185,19 +232,87 @@ void main() {
       expect(find.text('Herramientas para tu día a día'), findsOneWidget);
       expect(find.byKey(const ValueKey('tools-panel')), findsOneWidget);
 
-      // Estadísticas: último paso, sin "Saltar" y con botón de cierre.
+      // Estadísticas: foco en las barras de progreso por hábito, reales.
       await tester.tap(_next);
       await tester.pumpAndSettle();
-      expect(find.text('7 de 7'), findsOneWidget);
+      expect(find.text('9 de 10'), findsOneWidget);
       expect(find.text('Tus estadísticas'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('stats-habits-progress')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('guided-tour-demo')), findsNothing);
+      expect(find.byKey(const ValueKey('guided-tour-focus')), findsOneWidget);
+
+      // Cierre en Inicio: con hábitos no hay CTA de crear, solo "Listo".
+      await tester.tap(_next);
+      await tester.pumpAndSettle();
+      expect(find.text('10 de 10'), findsOneWidget);
+      expect(find.text('¡Eso es todo!'), findsOneWidget);
       expect(_skip, findsNothing);
       expect(find.text('¡Listo!'), findsOneWidget);
+      expect(find.byKey(const ValueKey('home-new-habit')), findsOneWidget);
 
       await tester.tap(_next);
       await tester.pumpAndSettle();
       expect(_tour, findsNothing);
       expect(find.text('Racha general'), findsOneWidget);
     });
+
+    testWidgets(
+      'en una cuenta nueva enseña datos de ejemplo y termina creando el '
+      'primer hábito',
+      (tester) async {
+        await _pumpApp(
+          tester,
+          tourPreferences: MemoryOnboardingTourPreferences(),
+          seededHabits: false,
+        );
+        expect(find.text('1 de 10'), findsOneWidget);
+        // La bienvenida no lleva el aviso; los pasos sobre pantallas, sí.
+        expect(find.byKey(const ValueKey('guided-tour-demo')), findsNothing);
+
+        // Inicio con hábitos de ejemplo: hay fila que marcar.
+        await tester.tap(_next);
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('guided-tour-demo')), findsOneWidget);
+        expect(find.text('Datos de ejemplo'), findsOneWidget);
+        await tester.tap(_next);
+        await tester.pumpAndSettle();
+        expect(find.text('Marca lo que hagas hoy'), findsOneWidget);
+        expect(find.text('Beber agua'), findsWidgets);
+
+        for (var i = 0; i < 6; i++) {
+          await tester.tap(_next);
+          await tester.pumpAndSettle();
+        }
+        // Estadísticas con las barras de los hábitos de ejemplo.
+        expect(find.text('9 de 10'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('stats-habits-progress')),
+          findsOneWidget,
+        );
+        expect(find.byKey(const ValueKey('stats-habits-empty')), findsNothing);
+
+        await tester.tap(_next);
+        await tester.pumpAndSettle();
+        expect(find.text('10 de 10'), findsOneWidget);
+        expect(find.text('Tu turno'), findsOneWidget);
+        expect(find.text('Crear mi primer hábito'), findsOneWidget);
+
+        await tester.tap(_next);
+        await tester.pumpAndSettle();
+        expect(_tour, findsNothing);
+        // Se abre el formulario de nuevo hábito directamente.
+        expect(find.text('Nuevo hábito'), findsWidgets);
+        expect(find.byKey(const ValueKey('guided-tour-next')), findsNothing);
+        // Al cerrar vuelven los datos reales.
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(HabitsApp)),
+        );
+        expect(container.read(guidedTourDemoDataProvider), isFalse);
+      },
+    );
 
     testWidgets('saltar cierra el recorrido y vuelve a Inicio', (tester) async {
       await _pumpApp(
@@ -210,7 +325,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(_next);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('edit-habits-action')), findsOneWidget);
+      expect(find.text('Marca lo que hagas hoy'), findsOneWidget);
 
       await tester.tap(_skip);
       await tester.pumpAndSettle();
@@ -249,8 +364,37 @@ void main() {
 
       // Arranca en Inicio, sea cual sea la pestaña desde la que se pida.
       expect(_tour, findsOneWidget);
-      expect(find.text('Crea tus hábitos'), findsOneWidget);
+      expect(find.text('¡Bienvenido a Constanza!'), findsOneWidget);
       expect(find.byKey(const ValueKey('home-new-habit')), findsOneWidget);
+
+      // Perfil se quedó desplazado al final al pulsar el enlace: al volver
+      // en el paso del peso, la fila tiene que estar construida y con foco.
+      for (var i = 0; i < 6; i++) {
+        await tester.tap(_next);
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('Registra tu peso'), findsOneWidget);
+      expect(find.text('Peso y objetivos'), findsOneWidget);
+      expect(find.byKey(const ValueKey('guided-tour-focus')), findsOneWidget);
+    });
+  });
+
+  group('StatisticsPage', () {
+    testWidgets('sin hábitos y sin recorrido muestra el estado vacío', (
+      tester,
+    ) async {
+      final env = AuthTestEnv(initialUser: verifiedUser, seededHabits: false);
+      await tester.pumpWidget(
+        localizedApp(const StatisticsPage(), overrides: env.overrides),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('stats-habits-empty')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.byKey(const ValueKey('stats-habits-empty')), findsOneWidget);
     });
   });
 

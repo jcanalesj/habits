@@ -79,7 +79,7 @@ class AuthTestEnv {
     authRepositoryProvider.overrideWithValue(auth),
     userProfileRepositoryProvider.overrideWithValue(profiles),
     deviceInfoRepositoryProvider.overrideWithValue(device),
-    habitsRepositoryProvider.overrideWithValue(habits),
+    realHabitsRepositoryProvider.overrideWithValue(habits),
     wildcardsRepositoryProvider.overrideWithValue(wildcards),
     notificationsRepositoryProvider.overrideWithValue(notifications),
     // Reloj y zona fijos: el "día lógico" de los tests es determinista.

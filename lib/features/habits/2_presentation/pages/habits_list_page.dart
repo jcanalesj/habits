@@ -9,6 +9,7 @@ import 'package:habits/features/habits/1_domain/domain.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/profile/premium/premium_gate.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_dimensions.dart';
 import 'package:habits/theme/app_theme.dart';
@@ -547,7 +548,13 @@ class _QuitHabitsContent extends ConsumerWidget {
         standalone ? 32 + MediaQuery.viewPaddingOf(context).bottom : 120,
       ),
       children: [
-        _HabitKindSelector(value: HabitKind.quit, onChanged: onKindChanged),
+        TutorialAnchor(
+          target: TutorialTarget.habitKindSelector,
+          child: _HabitKindSelector(
+            value: HabitKind.quit,
+            onChanged: onKindChanged,
+          ),
+        ),
         const SizedBox(height: 20),
         Row(
           children: [
