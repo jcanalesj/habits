@@ -10,6 +10,7 @@ import 'package:habits/features/pomodoro/2_presentation/providers/pomodoro_provi
 import 'package:habits/features/premium/2_presentation/premium_providers.dart';
 import 'package:habits/features/profile/appearance/app_icon.dart';
 import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
+import 'package:habits/features/steps/2_presentation/providers/steps_providers.dart';
 import 'package:habits/firebase_setup.dart';
 import 'package:habits/local_preferences.dart';
 
@@ -30,6 +31,9 @@ class SessionCleanup {
   Future<void> beforeSignOut() async {
     await _safely('cancelar avisos', () async {
       await _ref.read(notificationsRepositoryProvider).cancelAll();
+    });
+    await _safely('apagar pasos en directo', () async {
+      await _ref.read(stepsLiveNotificationProvider).stop();
     });
     await _safely('restaurar icono', () async {
       final icon = _ref.read(appIconProvider).value;

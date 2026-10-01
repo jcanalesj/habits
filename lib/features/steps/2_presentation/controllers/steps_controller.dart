@@ -189,9 +189,26 @@ class StepsController extends Notifier<StepsState> {
         state = state.copyWith(status: StepsStatus.noPermission);
         return;
       }
+      await _reloadLedger();
       _subscribe();
     } catch (_) {
       state = state.copyWith(status: StepsStatus.unavailable, error: true);
+    }
+  }
+
+  /// El servicio de pasos en directo (Android) escribe el mismo libro desde
+  /// código nativo mientras la app está cerrada: antes de contar se toma
+  /// su versión, que siempre va por delante.
+  Future<void> _reloadLedger() async {
+    await _ledgerStore.reload();
+    final saved = _ledgerStore.load();
+    if (saved == null) return;
+    _ledger = StepLedgerState.fromJson(saved);
+    if (_ledger.dayKey == state.today.key &&
+        _ledger.todaySteps > state.todaySteps) {
+      state = state.copyWith(todaySteps: _ledger.todaySteps);
+      _latest = StepsDay(day: state.today, steps: _ledger.todaySteps);
+      _scheduleSave();
     }
   }
 

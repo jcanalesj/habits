@@ -320,6 +320,18 @@ Podómetro propio de Constanza: cuenta los pasos con el **sensor del dispositivo
 ### 10.3 Felicitación
 Al cruzar el objetivo del día aparece el **gato del gimnasio** (`gatogym.png`) en un `AppFormDialog` («¡Objetivo cumplido! Has dado N pasos hoy…», botón «¡Genial!») acompañado del confeti de `HabitCelebration`. Una sola vez por día lógico (flag local `steps_celebrated_<uid>`).
 
+### 10.3b Pasos en directo (notificación fija, solo Android)
+
+Interruptor «Pasos en la barra de notificaciones» en la pantalla de Pasos (visible solo donde existe el canal `constanza/steps_notification`, es decir, Android con sensor). Al activarlo se pide el permiso de notificaciones y arranca `StepsNotificationService`, un **servicio en primer plano de tipo `health`** (`FOREGROUND_SERVICE_HEALTH`, Android 14+) que:
+
+- escucha `TYPE_STEP_COUNTER` con la app cerrada y mantiene una notificación silenciosa y fija con diseño propio (`RemoteViews` + `DecoratedCustomViewStyle`, layouts `notification_steps_collapsed/expanded.xml`): el gato del gimnasio a color (`drawable-nodpi/steps_cat.png`), el número de pasos en grande, «🔥 kcal · km», objetivo y barra de progreso; el icono de estado sigue siendo la silueta monocroma del gato (`ic_stat_constanza`, lo exige Android);
+- es el **único** que convierte el contador en pasos del día mientras está activo: escribe el mismo libro que Dart (`flutter.pedometer_ledger_<uid>` en `FlutterSharedPreferences`, misma regla que `StepLedger`), y `MainActivity` entrega a Dart el total ya calculado (lectura absoluta, como iOS) en vez del sensor en bruto. Así no se cuenta dos veces; al apagarlo, Dart recarga el libro (`StepLedgerStore.reload`) y sigue desde ahí;
+- apunta el total de cada día cerrado (14 días) y lo sirve por `query`, con lo que `_backfillHistory` rellena también en Android los días en que la app no se abrió;
+- a medianoche (zona del perfil) pone la notificación a cero aunque nadie camine; se relanza tras reinicio (`StepsNotificationBootReceiver`) y al abrir la app;
+- recibe objetivo, zancada, peso, zona e idioma desde Dart (`StepsLiveNotificationConfig`) y se reconfigura cuando cambian; se apaga al cerrar sesión.
+
+Google Play: el tipo `health` exige justificar el servicio en la ficha de la consola (vídeo + descripción) antes de publicar.
+
 ### 10.4 Estimaciones (`StepsEstimator`)
 - Zancada = 41,4 % de la altura del perfil de peso; 0,74 m si no hay perfil. En iOS se prefiere la distancia medida por Core Motion.
 - Calorías = km × peso (kg) × 0,57; 70 kg si no hay perfil. Siempre marcadas como estimación.

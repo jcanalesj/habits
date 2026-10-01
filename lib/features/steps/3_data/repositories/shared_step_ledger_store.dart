@@ -25,4 +25,7 @@ class SharedStepLedgerStore implements StepLedgerStore {
   @override
   Future<void> save(Map<String, Object?> json) =>
       _preferences.setString(_key, jsonEncode(json));
+
+  @override
+  Future<void> reload() => _preferences.reload();
 }

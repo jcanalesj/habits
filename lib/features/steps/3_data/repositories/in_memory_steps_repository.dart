@@ -66,4 +66,13 @@ class InMemoryStepLedgerStore implements StepLedgerStore {
 
   @override
   Future<void> save(Map<String, Object?> json) async => this.json = json;
+
+  /// Lo que "hay en disco" para el próximo [reload], si se quiere simular
+  /// que otro proceso (el servicio nativo) ha escrito el libro.
+  Map<String, Object?>? onDisk;
+
+  @override
+  Future<void> reload() async {
+    if (onDisk != null) json = onDisk;
+  }
 }

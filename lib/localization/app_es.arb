@@ -1105,5 +1105,12 @@
   "onboardingFinishFirstHabitBody": "Lo que has visto eran datos de ejemplo. Empieza por un solo hábito: pequeño, concreto y que puedas hacer hoy mismo.",
   "onboardingCreateFirstHabit": "Crear mi primer hábito",
   "statsHabitsEmpty": "Cuando crees hábitos verás aquí su progreso.",
-  "onboardingDemoData": "Datos de ejemplo"
+  "onboardingDemoData": "Datos de ejemplo",
+  "stepsLiveNotificationTitle": "Pasos en la barra de notificaciones",
+  "stepsLiveNotificationHint": "Una notificación fija con tus pasos y calorías de hoy, también con la app cerrada.",
+  "stepsLiveNotificationDenied": "Para mostrarla, permite las notificaciones de Constanza en los ajustes del móvil.",
+  "stepsLiveNotificationChannelName": "Pasos en directo",
+  "stepsLiveNotificationChannelDescription": "Notificación fija con los pasos de hoy.",
+  "stepsLiveNotificationGoal": "Objetivo {n}",
+  "@stepsLiveNotificationGoal": {"placeholders": {"n": {"type": "String"}}}
 }

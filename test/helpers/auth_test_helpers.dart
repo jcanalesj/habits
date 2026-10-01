@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:habits/features/steps/2_presentation/providers/steps_providers.dart';
+import 'package:habits/features/steps/3_data/data.dart';
 import 'package:habits/features/auth/0_entity/entity.dart';
 import 'package:habits/features/auth/2_presentation/providers/auth_providers.dart';
 import 'package:habits/features/auth/3_data/data.dart';
@@ -66,6 +68,11 @@ class AuthTestEnv {
   /// Notificaciones simuladas (permiso concedido por defecto).
   final notifications = InMemoryNotificationsRepository();
 
+  /// Pasos en directo simulados. Sin esto, el canal real no responde dentro
+  /// del bucle de pumps y cerrar sesión se queda a medias. Por defecto "no
+  /// soportado" (como iOS): el interruptor no aparece.
+  final stepsLiveNotification = FakeStepsLiveNotification(supported: false);
+
   /// Reloj fijo en [testInstant]; los tests de cambio de día lo mueven.
   final clock = FixedClock(testInstant);
 
@@ -82,6 +89,7 @@ class AuthTestEnv {
     realHabitsRepositoryProvider.overrideWithValue(habits),
     wildcardsRepositoryProvider.overrideWithValue(wildcards),
     notificationsRepositoryProvider.overrideWithValue(notifications),
+    stepsLiveNotificationProvider.overrideWithValue(stepsLiveNotification),
     // Reloj y zona fijos: el "día lógico" de los tests es determinista.
     clockProvider.overrideWithValue(clock),
     profileTimezoneProvider.overrideWith((ref) => Stream.value(testTimezone)),

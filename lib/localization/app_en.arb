@@ -1275,5 +1275,12 @@
   "onboardingFinishFirstHabitBody": "What you've seen was sample data. Start with a single habit: small, concrete and something you can do today.",
   "onboardingCreateFirstHabit": "Create my first habit",
   "statsHabitsEmpty": "Once you create habits, their progress will show up here.",
-  "onboardingDemoData": "Sample data"
+  "onboardingDemoData": "Sample data",
+  "stepsLiveNotificationTitle": "Steps in the notification bar",
+  "stepsLiveNotificationHint": "A pinned notification with today's steps and calories, even with the app closed.",
+  "stepsLiveNotificationDenied": "To show it, allow Constanza notifications in your phone settings.",
+  "stepsLiveNotificationChannelName": "Live steps",
+  "stepsLiveNotificationChannelDescription": "Pinned notification with today's steps.",
+  "stepsLiveNotificationGoal": "Goal {n}",
+  "@stepsLiveNotificationGoal": {"placeholders": {"n": {"type": "String"}}}
 }

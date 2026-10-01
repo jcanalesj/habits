@@ -15,4 +15,9 @@ abstract class StepsRepository {
 abstract class StepLedgerStore {
   Map<String, Object?>? load();
   Future<void> save(Map<String, Object?> json);
+
+  /// Vuelve a leer del disco. En Android el servicio de pasos en directo
+  /// escribe el mismo libro desde código nativo, y la copia en memoria de
+  /// `shared_preferences` no se entera sola.
+  Future<void> reload();
 }

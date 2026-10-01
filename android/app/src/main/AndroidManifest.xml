@@ -13,6 +13,11 @@
          (TYPE_STEP_COUNTER). Android 10+ exige este permiso en ejecución. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-feature android:name="android.hardware.sensor.stepcounter" android:required="false" />
+    <!-- Pasos en directo: notificación fija que sigue contando con la app
+         cerrada. Es un servicio en primer plano de tipo "health" (Android
+         14+ exige declarar el tipo y su permiso). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
 
     <application
         android:label="Constanza"
@@ -77,6 +82,21 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Pasos en directo (ver StepsNotificationService.kt). -->
+        <service
+            android:name=".StepsNotificationService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
+        <receiver
+            android:name=".StepsNotificationBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
 
         <!-- Necesarios para que los avisos programados se disparen aunque la
              app esté cerrada y para restaurarlos tras un reinicio. -->

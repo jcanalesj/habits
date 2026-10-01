@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habits/features/auth/2_presentation/controllers/auth_controller.dart';
+import 'package:habits/features/habits/1_domain/repositories/notifications_repository.dart';
 import 'package:habits/features/habits/0_entity/entity.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/profile/weight/weight_providers.dart';
@@ -89,3 +90,84 @@ final todayStepsSummaryProvider =
     });
 
 String stepsCelebratedKey(String userId) => 'steps_celebrated_$userId';
+
+/// Canal nativo de la notificación fija de pasos (solo Android).
+final stepsLiveNotificationProvider = Provider<StepsLiveNotification>(
+  (ref) => PlatformStepsLiveNotification(),
+);
+
+/// Si esta plataforma puede mostrar los pasos en la barra de notificaciones.
+final stepsLiveNotificationSupportedProvider = FutureProvider<bool>(
+  (ref) => ref.watch(stepsLiveNotificationProvider).isSupported(),
+);
+
+/// Interruptor "pasos en la barra de notificaciones". El estado real vive
+/// en el lado nativo (sobrevive a cerrar la app): aquí solo se consulta y
+/// se mantiene al día la configuración que el servicio necesita.
+final stepsLiveNotificationEnabledProvider =
+    AsyncNotifierProvider<StepsLiveNotificationController, bool>(
+      StepsLiveNotificationController.new,
+    );
+
+class StepsLiveNotificationController extends AsyncNotifier<bool> {
+  StepsLiveNotificationLabels? _labels;
+  String? _locale;
+
+  @override
+  Future<bool> build() async {
+    // Objetivo o perfil nuevos: el servicio se reconfigura solo. Solo
+    // mientras alguien observa este provider (la página de Pasos): sin
+    // observadores queda en pausa, así que al volver se reenvía todo.
+    ref.listen(stepsConfigProvider, (_, _) => _pushUpdate());
+    ref.listen(stepsBodyProvider, (_, _) => _pushUpdate());
+    // La zona marca dónde corta el día el servicio.
+    ref.listen(profileTimezoneProvider, (_, _) => _pushUpdate());
+    ref.onResume(_pushUpdate);
+    return ref.watch(stepsLiveNotificationProvider).isEnabled();
+  }
+
+  StepsLiveNotificationConfig _config() {
+    final body = ref.read(stepsBodyProvider);
+    return StepsLiveNotificationConfig(
+      userId: ref.read(authControllerProvider).value?.id ?? 'anonymous',
+      goal:
+          ref.read(stepsConfigProvider).value?.goal ?? StepsConfig.defaultGoal,
+      strideMeters: StepsEstimator.strideMeters(body.heightCm),
+      weightKg: body.weightKg ?? StepsEstimator.defaultWeightKg,
+      timezone: ref.read(logicalCalendarProvider).timezoneName,
+      locale: _locale ?? 'es',
+      labels: _labels!,
+    );
+  }
+
+  /// Enciende la notificación. Pide antes el permiso de notificaciones del
+  /// sistema (Android 13+) y devuelve por qué no se ha podido, si no.
+  Future<StepsLiveNotificationResult> enable({
+    required StepsLiveNotificationLabels labels,
+    required String locale,
+  }) async {
+    final permission = await ref
+        .read(notificationsRepositoryProvider)
+        .requestPermission();
+    if (permission == NotificationPermission.denied) {
+      return StepsLiveNotificationResult.notificationsDenied;
+    }
+    _labels = labels;
+    _locale = locale;
+    final result = await ref
+        .read(stepsLiveNotificationProvider)
+        .start(_config());
+    state = AsyncData(result == StepsLiveNotificationResult.started);
+    return result;
+  }
+
+  Future<void> disable() async {
+    await ref.read(stepsLiveNotificationProvider).stop();
+    state = const AsyncData(false);
+  }
+
+  Future<void> _pushUpdate() async {
+    if (state.value != true || _labels == null) return;
+    await ref.read(stepsLiveNotificationProvider).update(_config());
+  }
+}

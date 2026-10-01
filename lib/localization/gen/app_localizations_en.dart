@@ -3512,4 +3512,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingDemoData => 'Sample data';
+
+  @override
+  String get stepsLiveNotificationTitle => 'Steps in the notification bar';
+
+  @override
+  String get stepsLiveNotificationHint =>
+      'A pinned notification with today\'s steps and calories, even with the app closed.';
+
+  @override
+  String get stepsLiveNotificationDenied =>
+      'To show it, allow Constanza notifications in your phone settings.';
+
+  @override
+  String get stepsLiveNotificationChannelName => 'Live steps';
+
+  @override
+  String get stepsLiveNotificationChannelDescription =>
+      'Pinned notification with today\'s steps.';
+
+  @override
+  String stepsLiveNotificationGoal(String n) {
+    return 'Goal $n';
+  }
 }

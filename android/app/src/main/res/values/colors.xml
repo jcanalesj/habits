@@ -2,4 +2,7 @@
 <resources>
     <!-- Fondo de marca que evita un destello blanco antes del primer frame. -->
     <color name="launch_background">#100C1B</color>
+    <!-- Barra de la notificación de pasos en directo (AppColors.primary). -->
+    <color name="steps_progress">#7C5CE0</color>
+    <color name="steps_progress_track">#337C5CE0</color>
 </resources>

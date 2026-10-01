@@ -176,6 +176,10 @@ class _StepsPageState extends ConsumerState<StepsPage> {
               onChangeGoal: () => _changeGoal(state.config),
             ),
           },
+          if (state.status == StepsStatus.counting) ...[
+            const SizedBox(height: 14),
+            const _LiveNotificationCard(),
+          ],
           const SizedBox(height: 18),
           _HistoryCard(
             range: _range,
@@ -192,6 +196,106 @@ class _StepsPageState extends ConsumerState<StepsPage> {
               style: TextStyle(color: palette.textHint, fontSize: 11),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+// ------------------------------------------------ pasos en directo
+
+/// Interruptor de la notificación fija con los pasos de hoy. Solo aparece
+/// donde existe (Android).
+class _LiveNotificationCard extends ConsumerWidget {
+  const _LiveNotificationCard();
+
+  Future<void> _toggle(BuildContext context, WidgetRef ref, bool on) async {
+    final l10n = context.l10n;
+    final controller = ref.read(stepsLiveNotificationEnabledProvider.notifier);
+    if (!on) {
+      await controller.disable();
+      return;
+    }
+    final result = await controller.enable(
+      locale: Localizations.localeOf(context).toLanguageTag(),
+      labels: StepsLiveNotificationLabels(
+        title: l10n.stepsStepsWithCount('{n}'),
+        kcal: l10n.stepsCaloriesKcal('{n}'),
+        km: l10n.stepsDistanceKm('{n}'),
+        goal: l10n.stepsLiveNotificationGoal('{n}'),
+        goalReached: l10n.stepsGoalReached,
+        channelName: l10n.stepsLiveNotificationChannelName,
+        channelDescription: l10n.stepsLiveNotificationChannelDescription,
+      ),
+    );
+    if (!context.mounted || result == StepsLiveNotificationResult.started) {
+      return;
+    }
+    AppNotice.show(
+      context,
+      message: switch (result) {
+        StepsLiveNotificationResult.activityDenied =>
+          l10n.stepsNoPermissionBody,
+        _ => l10n.stepsLiveNotificationDenied,
+      },
+      type: AppNoticeType.error,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final supported =
+        ref.watch(stepsLiveNotificationSupportedProvider).value ?? false;
+    if (!supported) return const SizedBox.shrink();
+    final l10n = context.l10n;
+    final palette = context.palette;
+    final enabled =
+        ref.watch(stepsLiveNotificationEnabledProvider).value ?? false;
+
+    return SurfaceCard(
+      padding: const EdgeInsets.fromLTRB(16, 12, 10, 12),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: palette.tint(AppColors.green, .14),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              PhosphorIconsBold.bellRinging,
+              color: AppColors.green,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.stepsLiveNotificationTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.stepsLiveNotificationHint,
+                  style: TextStyle(
+                    color: palette.textSecondary,
+                    fontSize: 12,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            key: const ValueKey('steps-live-notification'),
+            value: enabled,
+            onChanged: (value) => _toggle(context, ref, value),
+          ),
         ],
       ),
     );

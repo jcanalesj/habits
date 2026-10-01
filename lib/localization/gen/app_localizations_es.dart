@@ -3517,4 +3517,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboardingDemoData => 'Datos de ejemplo';
+
+  @override
+  String get stepsLiveNotificationTitle =>
+      'Pasos en la barra de notificaciones';
+
+  @override
+  String get stepsLiveNotificationHint =>
+      'Una notificación fija con tus pasos y calorías de hoy, también con la app cerrada.';
+
+  @override
+  String get stepsLiveNotificationDenied =>
+      'Para mostrarla, permite las notificaciones de Constanza en los ajustes del móvil.';
+
+  @override
+  String get stepsLiveNotificationChannelName => 'Pasos en directo';
+
+  @override
+  String get stepsLiveNotificationChannelDescription =>
+      'Notificación fija con los pasos de hoy.';
+
+  @override
+  String stepsLiveNotificationGoal(String n) {
+    return 'Objetivo $n';
+  }
 }

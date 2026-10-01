@@ -6073,6 +6073,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sample data'**
   String get onboardingDemoData;
+
+  /// No description provided for @stepsLiveNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps in the notification bar'**
+  String get stepsLiveNotificationTitle;
+
+  /// No description provided for @stepsLiveNotificationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A pinned notification with today\'s steps and calories, even with the app closed.'**
+  String get stepsLiveNotificationHint;
+
+  /// No description provided for @stepsLiveNotificationDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'To show it, allow Constanza notifications in your phone settings.'**
+  String get stepsLiveNotificationDenied;
+
+  /// No description provided for @stepsLiveNotificationChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Live steps'**
+  String get stepsLiveNotificationChannelName;
+
+  /// No description provided for @stepsLiveNotificationChannelDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned notification with today\'s steps.'**
+  String get stepsLiveNotificationChannelDescription;
+
+  /// No description provided for @stepsLiveNotificationGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {n}'**
+  String stepsLiveNotificationGoal(String n);
 }
 
 class _AppLocalizationsDelegate

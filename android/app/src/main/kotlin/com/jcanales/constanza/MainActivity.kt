@@ -12,7 +12,10 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.os.Bundle
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
+import org.json.JSONObject
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -39,6 +42,10 @@ class MainActivity : FlutterActivity() {
     private val stepSensor by lazy { sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) }
     private var stepListener: SensorEventListener? = null
     private var permissionRequest: MethodChannel.Result? = null
+
+    /// Oyente abierto por Dart (`constanza/pedometer/updates`), si lo hay.
+    private var pedometerSink: EventChannel.EventSink? = null
+    private var serviceListener: ((Int, Long) -> Unit)? = null
 
     private fun pedometerPermissionStatus(): String {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return "granted"
@@ -70,38 +77,114 @@ class MainActivity : FlutterActivity() {
                             )
                         }
                     }
+                    // Historial apuntado por el servicio de pasos en directo
+                    // (días en los que la app no se abrió). Null si no hay.
+                    "query" -> {
+                        val fromMs = call.argument<Number>("fromMs")?.toLong()
+                        val steps = fromMs?.let { StepsNotificationService.historySteps(this, it) }
+                        result.success(
+                            steps?.let { mapOf("steps" to it, "atMs" to System.currentTimeMillis()) },
+                        )
+                    }
                     else -> result.notImplemented()
                 }
             }
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "constanza/pedometer/updates")
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                    val sensor = stepSensor
-                    if (sensor == null || events == null) {
+                    if (stepSensor == null || events == null) {
                         events?.error("unavailable", "Sin sensor de pasos", null)
                         return
                     }
-                    val listener = object : SensorEventListener {
-                        override fun onSensorChanged(event: SensorEvent) {
-                            events.success(
-                                mapOf(
-                                    "counter" to event.values[0].toLong(),
-                                    "atMs" to System.currentTimeMillis(),
-                                ),
-                            )
-                        }
-
-                        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-                    }
-                    stepListener = listener
-                    sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+                    pedometerSink = events
+                    attachPedometer()
                 }
 
                 override fun onCancel(arguments: Any?) {
-                    stepListener?.let { sensorManager.unregisterListener(it) }
-                    stepListener = null
+                    detachPedometer()
+                    pedometerSink = null
                 }
             })
+    }
+
+    /// Conecta al oyente de Dart con la fuente que toque: con los pasos en
+    /// directo activos, el servicio ya ha convertido el contador en pasos
+    /// del día y se le pasa ese total (lectura absoluta, como en iOS); si
+    /// no, el sensor en bruto y Dart lleva la cuenta.
+    private fun attachPedometer() {
+        val events = pedometerSink ?: return
+        detachPedometer()
+        if (StepsNotificationService.running) {
+            val listener: (Int, Long) -> Unit = { steps, atMs ->
+                runOnUiThread { events.success(mapOf("steps" to steps, "atMs" to atMs)) }
+            }
+            serviceListener = listener
+            StepsNotificationService.addListener(listener)
+            events.success(
+                mapOf(
+                    "steps" to StepsNotificationService.todaySteps,
+                    "atMs" to System.currentTimeMillis(),
+                ),
+            )
+            return
+        }
+        val sensor = stepSensor ?: return
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                events.success(
+                    mapOf(
+                        "counter" to event.values[0].toLong(),
+                        "atMs" to System.currentTimeMillis(),
+                    ),
+                )
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        stepListener = listener
+        sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+    }
+
+    private fun detachPedometer() {
+        stepListener?.let { sensorManager.unregisterListener(it) }
+        stepListener = null
+        serviceListener?.let { StepsNotificationService.removeListener(it) }
+        serviceListener = null
+    }
+
+    // ------------------------------------------------- Pasos en directo
+    private fun registerStepsNotificationChannel(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "constanza/steps_notification")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "isSupported" -> result.success(stepSensor != null)
+                    "isEnabled" -> result.success(StepsNotificationService.isEnabled(this))
+                    "start", "update" -> {
+                        val config = JSONObject(call.arguments as Map<*, *>).toString()
+                        when {
+                            !StepsNotificationService.hasActivityPermission(this) ->
+                                result.success("activity_denied")
+                            !NotificationManagerCompat.from(this).areNotificationsEnabled() ->
+                                result.success("notifications_denied")
+                            call.method == "update" && !StepsNotificationService.isEnabled(this) ->
+                                result.success("stopped")
+                            else -> {
+                                StepsNotificationService.start(this, config)
+                                // El servicio tarda un instante en arrancar:
+                                // se reconecta a Dart en cuanto publica.
+                                window.decorView.postDelayed({ attachPedometer() }, 400)
+                                result.success("started")
+                            }
+                        }
+                    }
+                    "stop" -> {
+                        StepsNotificationService.stop(this)
+                        window.decorView.postDelayed({ attachPedometer() }, 200)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
     }
 
     private fun registerHapticsChannel(flutterEngine: FlutterEngine) {
@@ -145,9 +228,17 @@ class MainActivity : FlutterActivity() {
         permissionRequest = null
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Si el sistema mató el servicio de pasos en directo, al abrir la app
+        // se levanta de nuevo.
+        StepsNotificationService.restoreIfEnabled(this)
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         registerPedometerChannels(flutterEngine)
+        registerStepsNotificationChannel(flutterEngine)
         registerHapticsChannel(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "constanza/app_icon")
             .setMethodCallHandler { call, result ->
