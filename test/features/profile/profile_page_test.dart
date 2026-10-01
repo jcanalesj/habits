@@ -178,6 +178,10 @@ void main() {
       250,
       scrollable: find.byType(Scrollable).first,
     );
+    // La fila existe en cuanto la lista la construye, aunque quede bajo el
+    // borde: hay que asegurarse de que está dentro de la ventana.
+    await tester.ensureVisible(find.byKey(const ValueKey('delete-account')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('delete-account')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('delete-account-dialog')), findsOneWidget);

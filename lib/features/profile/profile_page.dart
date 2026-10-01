@@ -14,6 +14,7 @@ import 'package:habits/features/auth/2_presentation/controllers/auth_controller.
 import 'package:habits/features/auth/2_presentation/widgets/sign_out_button.dart';
 import 'package:habits/features/habits/2_presentation/controllers/home_controller.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -119,13 +120,16 @@ class ProfilePage extends ConsumerWidget {
             const SizedBox(height: 12),
             _SettingsGroup(
               children: [
-                _ProfileLink(
-                  icon: PhosphorIconsBold.scales,
-                  color: AppColors.blue,
-                  title: l10n.profileWeightTitle,
-                  subtitle: l10n.profileWeightSubtitle,
-                  onTap: () => context.push('/profile/weight'),
-                  showDivider: false,
+                TutorialAnchor(
+                  target: TutorialTarget.weightLink,
+                  child: _ProfileLink(
+                    icon: PhosphorIconsBold.scales,
+                    color: AppColors.blue,
+                    title: l10n.profileWeightTitle,
+                    subtitle: l10n.profileWeightSubtitle,
+                    onTap: () => context.push('/profile/weight'),
+                    showDivider: false,
+                  ),
                 ),
               ],
             ),
@@ -237,6 +241,14 @@ class ProfilePage extends ConsumerWidget {
                       body: l10n.supportProblemBody(SupportLinks.platformLabel),
                     ),
                   ),
+                ),
+                _ProfileLink(
+                  key: const ValueKey('profile-tutorial'),
+                  icon: PhosphorIconsBold.graduationCap,
+                  color: AppColors.lilac,
+                  title: l10n.profileTutorial,
+                  subtitle: l10n.profileTutorialSubtitle,
+                  onTap: () => ref.read(guidedTourProvider.notifier).start(),
                   showDivider: false,
                 ),
               ],

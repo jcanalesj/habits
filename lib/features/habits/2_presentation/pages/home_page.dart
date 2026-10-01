@@ -12,6 +12,8 @@ import 'package:habits/features/habits/2_presentation/controllers/home_controlle
 import 'package:habits/features/habits/2_presentation/pages/habits_list_page.dart';
 import 'package:habits/features/habits/2_presentation/providers/habits_providers.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
+import 'package:habits/features/onboarding/onboarding_tour_preferences.dart';
 import 'package:habits/features/profile/weight/weight_entry.dart';
 import 'package:habits/features/profile/weight/weight_providers.dart';
 import 'package:habits/local_preferences.dart';
@@ -111,6 +113,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
   late final String? _customWelcomeMessage;
   bool _showingWildcardGrant = false;
   bool _showingStreakLoss = false;
+  bool _pendingOnboardingTour = false;
   LogicalDate? _declinedRescueDay;
 
   String? get _userId => ref.read(authControllerProvider).value?.id;
@@ -164,6 +167,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         .read(coldStartWelcomeSessionProvider)
         .take(enabled: widget.welcomeAnimationEnabled);
     _welcomeMessageIndex = WelcomeMessageSelector.randomIndex();
+    _pendingOnboardingTour = _takeOnboardingTour();
     final customMessages = widget.customMotivationMessages;
     _customWelcomeMessage = customMessages.isEmpty
         ? null
@@ -181,6 +185,30 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _maybeShowStreakLossPrompt();
     });
+  }
+
+  /// Primera entrada de este usuario en el dispositivo: toca el tutorial.
+  /// Consume también la invitación de peso de esta sesión: el tutorial ya
+  /// la presenta y encadenar dos ventanas seguidas sería demasiado.
+  bool _takeOnboardingTour() {
+    final userId = _userId;
+    if (userId == null) return false;
+    if (ref.read(onboardingTourPreferencesProvider).isSeen(userId)) {
+      return false;
+    }
+    if (!ref.read(onboardingTourSessionProvider).take()) return false;
+    ref.read(weightInvitationSessionProvider).take();
+    return true;
+  }
+
+  Future<void> _showOnboardingTour() async {
+    final userId = _userId;
+    if (userId == null) return;
+    // Se marca al abrirlo, no al terminarlo: saltarlo también cuenta como
+    // visto, y siempre se puede repetir desde Perfil.
+    await ref.read(onboardingTourPreferencesProvider).markSeen(userId);
+    if (!mounted) return;
+    ref.read(guidedTourProvider.notifier).start();
   }
 
   Future<void> _maybeShowStreakLossPrompt() async {
@@ -421,6 +449,15 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         AppBottomNavBar.contentClearance +
         MediaQuery.viewPaddingOf(context).bottom;
 
+    // El tutorial espera a que termine la animación de bienvenida, que es
+    // quien revela la Home sobre la que se abre.
+    if (!_showColdStartWelcome && _pendingOnboardingTour) {
+      _pendingOnboardingTour = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showOnboardingTour();
+      });
+    }
+
     if (!_showColdStartWelcome &&
         weightEntriesAsync.hasValue &&
         weightEntries.isEmpty &&
@@ -444,15 +481,19 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         const SizedBox(height: 16),
         // Única racha de la app: la general del usuario. Ya no hay rachas
         // por ámbito ni por hábito (§1/§29).
-        GeneralStreakCard(
-          streak: _presentedStreak,
-          wildcards: summary.wildcards,
-          initiallyCollapsed: _streakCardInitiallyCollapsed,
-          onCollapsedChanged: _saveStreakCardCollapsed,
-          deviceHour: DateTime.now().hour,
-          onUseWildcard: _presentedStreak.canRescue && summary.wildcards.hasAny
-              ? () => _useWildcard(context, ref)
-              : null,
+        TutorialAnchor(
+          target: TutorialTarget.streakCard,
+          child: GeneralStreakCard(
+            streak: _presentedStreak,
+            wildcards: summary.wildcards,
+            initiallyCollapsed: _streakCardInitiallyCollapsed,
+            onCollapsedChanged: _saveStreakCardCollapsed,
+            deviceHour: DateTime.now().hour,
+            onUseWildcard:
+                _presentedStreak.canRescue && summary.wildcards.hasAny
+                ? () => _useWildcard(context, ref)
+                : null,
+          ),
         ),
         if (weightEntries.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -465,30 +506,35 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         Row(
           children: [
             Expanded(child: SectionHeader(title: l10n.myHabits)),
-            FilledButton.tonalIcon(
-              key: const ValueKey('home-new-habit'),
-              onPressed: () => HabitsListPage.openCreateHabit(
-                context,
-                ref,
-                activeHabitCount: allActiveHabits.length,
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: palette.isDark
-                    ? palette.primarySoft
-                    : palette.primary,
-                foregroundColor: palette.isDark
-                    ? palette.primaryDeep
-                    : palette.onPrimary,
-                side: palette.isDark
-                    ? BorderSide(color: palette.primary.withValues(alpha: .52))
-                    : null,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+            TutorialAnchor(
+              target: TutorialTarget.newHabitButton,
+              child: FilledButton.tonalIcon(
+                key: const ValueKey('home-new-habit'),
+                onPressed: () => HabitsListPage.openCreateHabit(
+                  context,
+                  ref,
+                  activeHabitCount: allActiveHabits.length,
                 ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: palette.isDark
+                      ? palette.primarySoft
+                      : palette.primary,
+                  foregroundColor: palette.isDark
+                      ? palette.primaryDeep
+                      : palette.onPrimary,
+                  side: palette.isDark
+                      ? BorderSide(
+                          color: palette.primary.withValues(alpha: .52),
+                        )
+                      : null,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                ),
+                icon: const Icon(PhosphorIconsBold.plus, size: 18),
+                label: Text(l10n.newHabit),
               ),
-              icon: const Icon(PhosphorIconsBold.plus, size: 18),
-              label: Text(l10n.newHabit),
             ),
           ],
         ),

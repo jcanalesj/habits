@@ -3405,4 +3405,73 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get stepsSensorNote =>
       'Los pasos se cuentan aunque la app esté cerrada. Ábrela de vez en cuando para guardar el total del día.';
+
+  @override
+  String onboardingStepCounter(int current, int total) {
+    return '$current de $total';
+  }
+
+  @override
+  String get onboardingSkip => 'Saltar';
+
+  @override
+  String get onboardingNext => 'Siguiente';
+
+  @override
+  String get onboardingFinish => '¡Listo!';
+
+  @override
+  String get onboardingCreateHabitsTitle => 'Crea tus hábitos';
+
+  @override
+  String get onboardingCreateHabitsBody =>
+      'Con este botón creas un hábito: nombre, icono, color y frecuencia (diaria, semanal, mensual o anual). Puedes contar varias repeticiones al día y ponerle un recordatorio.';
+
+  @override
+  String get onboardingStreakTitle => 'Tu racha y tus protectores';
+
+  @override
+  String get onboardingStreakBody =>
+      'Cada día que completes todos tus hábitos suma aquí. Si se te escapa un día, un protector de racha la salva.';
+
+  @override
+  String get onboardingCalendarsTitle => 'Consulta tus calendarios';
+
+  @override
+  String get onboardingCalendarsBody =>
+      'En Mis hábitos tienes el calendario mensual de cada hábito: qué días lo cumpliste y cuáles no.';
+
+  @override
+  String get onboardingQuitHabitsTitle => 'Deja un hábito';
+
+  @override
+  String get onboardingQuitHabitsBody =>
+      'Aquí viven los hábitos que quieres dejar. Al crear uno elige Dejar hábito: Constanza cuenta el tiempo sin hacerlo y, si recaes, guarda tu récord y vuelves a empezar.';
+
+  @override
+  String get onboardingWeightTitle => 'Registra tu peso';
+
+  @override
+  String get onboardingWeightBody =>
+      'Desde aquí guardas tu peso, marcas un objetivo, sigues tu evolución y consultas las calorías diarias recomendadas.';
+
+  @override
+  String get onboardingToolsTitle => 'Herramientas para tu día a día';
+
+  @override
+  String get onboardingToolsBody =>
+      'Tareas, Pomodoro, Compra, Finanzas y Pasos. Son utilidades aparte: no afectan a tu racha.';
+
+  @override
+  String get onboardingStatsTitle => 'Tus estadísticas';
+
+  @override
+  String get onboardingStatsBody =>
+      'Aquí ves tu constancia: cumplimiento, rachas y progreso por hábito. ¡Eso es todo! Puedes repetir este recorrido desde Perfil.';
+
+  @override
+  String get profileTutorial => 'Ver el tutorial';
+
+  @override
+  String get profileTutorialSubtitle => 'Repite el recorrido por la app';
 }

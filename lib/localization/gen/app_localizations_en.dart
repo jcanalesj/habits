@@ -3399,4 +3399,73 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get stepsSensorNote =>
       'Steps are counted even when the app is closed. Open it from time to time to save the day\'s total.';
+
+  @override
+  String onboardingStepCounter(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingFinish => 'Done!';
+
+  @override
+  String get onboardingCreateHabitsTitle => 'Create your habits';
+
+  @override
+  String get onboardingCreateHabitsBody =>
+      'This button creates a habit: name, icon, color and frequency (daily, weekly, monthly or yearly). You can count several repetitions a day and set a reminder.';
+
+  @override
+  String get onboardingStreakTitle => 'Your streak and your protectors';
+
+  @override
+  String get onboardingStreakBody =>
+      'Every day you complete all your habits adds up here. If you miss a day, a streak protector saves it.';
+
+  @override
+  String get onboardingCalendarsTitle => 'Check your calendars';
+
+  @override
+  String get onboardingCalendarsBody =>
+      'My habits shows a monthly calendar for each habit: which days you completed it and which you didn\'t.';
+
+  @override
+  String get onboardingQuitHabitsTitle => 'Quit a habit';
+
+  @override
+  String get onboardingQuitHabitsBody =>
+      'This is where the habits you want to quit live. When creating one, choose Quit habit: Constanza counts the time without it and, if you slip, keeps your record so you can start again.';
+
+  @override
+  String get onboardingWeightTitle => 'Track your weight';
+
+  @override
+  String get onboardingWeightBody =>
+      'From here you log your weight, set a goal, follow your progress and see your recommended daily calories.';
+
+  @override
+  String get onboardingToolsTitle => 'Tools for your day to day';
+
+  @override
+  String get onboardingToolsBody =>
+      'Tasks, Pomodoro, Shopping, Finances and Steps. They are separate utilities: they don\'t affect your streak.';
+
+  @override
+  String get onboardingStatsTitle => 'Your stats';
+
+  @override
+  String get onboardingStatsBody =>
+      'Here you see your consistency: completion, streaks and progress per habit. That\'s it! You can repeat this tour from Profile.';
+
+  @override
+  String get profileTutorial => 'View the tutorial';
+
+  @override
+  String get profileTutorialSubtitle => 'Repeat the tour of the app';
 }

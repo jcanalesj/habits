@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habits/app_lifecycle.dart';
 import 'package:habits/features/habits/1_domain/services/timezone_bootstrap.dart';
 import 'package:habits/features/habits/2_presentation/welcome/cold_start_welcome.dart';
+import 'package:habits/features/onboarding/onboarding_tour_preferences.dart';
 import 'package:habits/features/profile/appearance/app_icon.dart';
 import 'package:habits/features/profile/appearance/theme_mode_preferences.dart';
 import 'package:habits/firebase_setup.dart';
@@ -43,6 +44,13 @@ Future<void> main() async {
           preferences == null
               ? MemoryThemeModePreferences()
               : SharedThemeModePreferences(preferences),
+        ),
+        // Sin persistencia no se puede recordar que ya se vio: mejor no
+        // repetir el tutorial en cada arranque.
+        onboardingTourPreferencesProvider.overrideWithValue(
+          preferences == null
+              ? MemoryOnboardingTourPreferences(seenByDefault: true)
+              : SharedOnboardingTourPreferences(preferences),
         ),
       ],
       child: const HabitsApp(),

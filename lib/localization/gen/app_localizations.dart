@@ -5875,6 +5875,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Steps are counted even when the app is closed. Open it from time to time to save the day\'s total.'**
   String get stepsSensorNote;
+
+  /// No description provided for @onboardingStepCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total}'**
+  String onboardingStepCounter(int current, int total);
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Done!'**
+  String get onboardingFinish;
+
+  /// No description provided for @onboardingCreateHabitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your habits'**
+  String get onboardingCreateHabitsTitle;
+
+  /// No description provided for @onboardingCreateHabitsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This button creates a habit: name, icon, color and frequency (daily, weekly, monthly or yearly). You can count several repetitions a day and set a reminder.'**
+  String get onboardingCreateHabitsBody;
+
+  /// No description provided for @onboardingStreakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your streak and your protectors'**
+  String get onboardingStreakTitle;
+
+  /// No description provided for @onboardingStreakBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day you complete all your habits adds up here. If you miss a day, a streak protector saves it.'**
+  String get onboardingStreakBody;
+
+  /// No description provided for @onboardingCalendarsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your calendars'**
+  String get onboardingCalendarsTitle;
+
+  /// No description provided for @onboardingCalendarsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'My habits shows a monthly calendar for each habit: which days you completed it and which you didn\'t.'**
+  String get onboardingCalendarsBody;
+
+  /// No description provided for @onboardingQuitHabitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit a habit'**
+  String get onboardingQuitHabitsTitle;
+
+  /// No description provided for @onboardingQuitHabitsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is where the habits you want to quit live. When creating one, choose Quit habit: Constanza counts the time without it and, if you slip, keeps your record so you can start again.'**
+  String get onboardingQuitHabitsBody;
+
+  /// No description provided for @onboardingWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your weight'**
+  String get onboardingWeightTitle;
+
+  /// No description provided for @onboardingWeightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'From here you log your weight, set a goal, follow your progress and see your recommended daily calories.'**
+  String get onboardingWeightBody;
+
+  /// No description provided for @onboardingToolsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools for your day to day'**
+  String get onboardingToolsTitle;
+
+  /// No description provided for @onboardingToolsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks, Pomodoro, Shopping, Finances and Steps. They are separate utilities: they don\'t affect your streak.'**
+  String get onboardingToolsBody;
+
+  /// No description provided for @onboardingStatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your stats'**
+  String get onboardingStatsTitle;
+
+  /// No description provided for @onboardingStatsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Here you see your consistency: completion, streaks and progress per habit. That\'s it! You can repeat this tour from Profile.'**
+  String get onboardingStatsBody;
+
+  /// No description provided for @profileTutorial.
+  ///
+  /// In en, this message translates to:
+  /// **'View the tutorial'**
+  String get profileTutorial;
+
+  /// No description provided for @profileTutorialSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat the tour of the app'**
+  String get profileTutorialSubtitle;
 }
 
 class _AppLocalizationsDelegate

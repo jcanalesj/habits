@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
 import 'package:habits/localization/l10n.dart';
 import 'package:habits/theme/app_theme.dart';
 import 'package:phosphor_icons/phosphor_icons.dart';
@@ -25,18 +26,26 @@ class AppBottomNavBar extends StatelessWidget {
       PhosphorIconsRegular.calendarDots,
       PhosphorIconsFill.calendarDots,
       _habitsLabel,
+      tutorialTarget: TutorialTarget.navHabits,
     ),
     _NavTab(
       PhosphorIconsRegular.squaresFour,
       PhosphorIconsFill.squaresFour,
       _toolsLabel,
+      tutorialTarget: TutorialTarget.navTools,
     ),
     _NavTab(
       PhosphorIconsRegular.chartBar,
       PhosphorIconsFill.chartBar,
       _statsLabel,
+      tutorialTarget: TutorialTarget.navStats,
     ),
-    _NavTab(PhosphorIconsRegular.user, PhosphorIconsFill.user, _profileLabel),
+    _NavTab(
+      PhosphorIconsRegular.user,
+      PhosphorIconsFill.user,
+      _profileLabel,
+      tutorialTarget: TutorialTarget.navProfile,
+    ),
   ];
 
   static String _homeLabel(AppLocalizations l10n) => l10n.navHome;
@@ -71,11 +80,14 @@ class AppBottomNavBar extends StatelessWidget {
             children: [
               for (final (index, tab) in _tabs.indexed)
                 Expanded(
-                  child: _NavItem(
-                    icon: currentIndex == index ? tab.fill : tab.regular,
-                    label: tab.label(l10n),
-                    selected: currentIndex == index,
-                    onTap: () => onTap(index),
+                  child: _withAnchor(
+                    tab.tutorialTarget,
+                    _NavItem(
+                      icon: currentIndex == index ? tab.fill : tab.regular,
+                      label: tab.label(l10n),
+                      selected: currentIndex == index,
+                      onTap: () => onTap(index),
+                    ),
                   ),
                 ),
             ],
@@ -84,13 +96,18 @@ class AppBottomNavBar extends StatelessWidget {
       ),
     );
   }
+
+  /// Las pestañas que el recorrido guiado señala se registran como ancla.
+  static Widget _withAnchor(TutorialTarget? target, Widget child) =>
+      target == null ? child : TutorialAnchor(target: target, child: child);
 }
 
 class _NavTab {
-  const _NavTab(this.regular, this.fill, this.label);
+  const _NavTab(this.regular, this.fill, this.label, {this.tutorialTarget});
   final IconData regular;
   final IconData fill;
   final String Function(AppLocalizations l10n) label;
+  final TutorialTarget? tutorialTarget;
 }
 
 class _NavItem extends StatelessWidget {

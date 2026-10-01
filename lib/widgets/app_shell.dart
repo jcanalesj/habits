@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habits/components/components.dart';
 import 'package:habits/features/auth/2_presentation/presentation.dart';
+import 'package:habits/features/onboarding/guided_tour.dart';
+import 'package:habits/features/onboarding/guided_tour_overlay.dart';
 
 /// Shell de navegación: pinta la rama activa y la barra inferior.
 ///
@@ -22,16 +24,30 @@ class AppShell extends ConsumerWidget {
       debugPrint('ensureUserProfile falló: ${profile.error}');
     }
 
-    return Scaffold(
-      extendBody: true,
-      body: navigationShell,
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
+    // El recorrido guiado se pinta por encima del shell entero (contenido y
+    // barra) y navega entre ramas; por eso vive aquí y no en una ruta.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Scaffold(
+          extendBody: true,
+          body: TutorialAnchor(
+            target: TutorialTarget.shellBody,
+            child: navigationShell,
+          ),
+          bottomNavigationBar: TutorialAnchor(
+            target: TutorialTarget.navBar,
+            child: AppBottomNavBar(
+              currentIndex: navigationShell.currentIndex,
+              onTap: (index) => navigationShell.goBranch(
+                index,
+                initialLocation: index == navigationShell.currentIndex,
+              ),
+            ),
+          ),
         ),
-      ),
+        const GuidedTourOverlay(),
+      ],
     );
   }
 }
