@@ -1193,6 +1193,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get wildcardGrantTitle => 'New protector!';
+
+  @override
+  String wildcardGrantBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'You have $count streak protectors. Save them for days that get away from you.',
+      one:
+          'You have 1 streak protector. Save it for a day that gets away from you.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get noWildcardsLeft =>
       'You have no wildcards left. You\'ll get a new one next month.';
 
@@ -1225,6 +1241,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get wildcardErrorGeneric =>
       'The wildcard couldn\'t be used. Please try again.';
+
+  @override
+  String get streakLossPromptTitle => 'Your streak is about to be lost';
+
+  @override
+  String streakLossPromptBody(int count) {
+    return 'You didn\'t complete a habit yesterday. You can use a protector to keep your $count-day streak or continue and lose it.';
+  }
+
+  @override
+  String get protectMyStreak => 'Use protector';
+
+  @override
+  String get loseMyStreak => 'Lose the streak';
 
   @override
   String get cancel => 'Cancel';

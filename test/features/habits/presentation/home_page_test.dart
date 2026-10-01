@@ -350,6 +350,24 @@ void main() {
     expect(find.byType(Image), findsWidgets);
   });
 
+  testWidgets('al arrancar con saldo no muestra la celebración', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _appUnderTest(
+        locale: const Locale('es'),
+        wildcards: WildcardBalance(
+          available: 2,
+          lastGrantYearMonth: testToday.yearMonth,
+          grantedTotal: 2,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('¡Nuevo protector!'), findsNothing);
+  });
+
   group('Inicio: registrar, no editar', () {
     setUp(() {
       // La Home es larga: con el viewport por defecto (800x600) los botones

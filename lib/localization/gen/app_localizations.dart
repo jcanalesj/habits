@@ -2246,6 +2246,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{No streak protectors} =1{1 streak protector} other{{count} streak protectors}}'**
   String wildcardsAvailable(int count);
 
+  /// No description provided for @wildcardGrantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New protector!'**
+  String get wildcardGrantTitle;
+
+  /// No description provided for @wildcardGrantBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You have 1 streak protector. Save it for a day that gets away from you.} other{You have {count} streak protectors. Save them for days that get away from you.}}'**
+  String wildcardGrantBody(int count);
+
   /// No description provided for @noWildcardsLeft.
   ///
   /// In en, this message translates to:
@@ -2299,6 +2311,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The wildcard couldn\'t be used. Please try again.'**
   String get wildcardErrorGeneric;
+
+  /// No description provided for @streakLossPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your streak is about to be lost'**
+  String get streakLossPromptTitle;
+
+  /// No description provided for @streakLossPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You didn\'t complete a habit yesterday. You can use a protector to keep your {count}-day streak or continue and lose it.'**
+  String streakLossPromptBody(int count);
+
+  /// No description provided for @protectMyStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Use protector'**
+  String get protectMyStreak;
+
+  /// No description provided for @loseMyStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose the streak'**
+  String get loseMyStreak;
 
   /// No description provided for @cancel.
   ///

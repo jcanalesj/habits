@@ -1195,6 +1195,22 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get wildcardGrantTitle => '¡Nuevo protector!';
+
+  @override
+  String wildcardGrantBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Tienes $count protectores de racha. Guárdalos para cuando se te escape algún día.',
+      one:
+          'Tienes 1 protector de racha. Guárdalo para cuando se te escape un día.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get noWildcardsLeft =>
       'No te quedan comodines. Recibirás uno nuevo el mes que viene.';
 
@@ -1226,6 +1242,20 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get wildcardErrorGeneric =>
       'No se ha podido usar el comodín. Inténtalo de nuevo.';
+
+  @override
+  String get streakLossPromptTitle => 'Tu racha está a punto de perderse';
+
+  @override
+  String streakLossPromptBody(int count) {
+    return 'Ayer no completaste ningún hábito. Puedes usar un protector para conservar tu racha de $count días o continuar y perderla.';
+  }
+
+  @override
+  String get protectMyStreak => 'Usar protector';
+
+  @override
+  String get loseMyStreak => 'Perder la racha';
 
   @override
   String get cancel => 'Cancelar';

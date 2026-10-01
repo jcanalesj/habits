@@ -444,6 +444,9 @@
       }
     }
   },
+  "wildcardGrantTitle": "New protector!",
+  "wildcardGrantBody": "{count, plural, =1{You have 1 streak protector. Save it for a day that gets away from you.} other{You have {count} streak protectors. Save them for days that get away from you.}}",
+  "@wildcardGrantBody": {"placeholders": {"count": {"type": "int"}}},
   "noWildcardsLeft": "You have no wildcards left. You'll get a new one next month.",
   "wildcardProtectsNotAdds": "A wildcard protects your streak, but it doesn't add a day or mark any habit.",
   "wildcardConfirmTitle": "Use a wildcard?",
@@ -463,6 +466,11 @@
   "wildcardErrorNone": "You have no wildcards left.",
   "wildcardErrorConnection": "You need a connection to use a wildcard.",
   "wildcardErrorGeneric": "The wildcard couldn't be used. Please try again.",
+  "streakLossPromptTitle": "Your streak is about to be lost",
+  "streakLossPromptBody": "You didn't complete a habit yesterday. You can use a protector to keep your {count}-day streak or continue and lose it.",
+  "@streakLossPromptBody": {"placeholders": {"count": {"type": "int"}}},
+  "protectMyStreak": "Use protector",
+  "loseMyStreak": "Lose the streak",
   "cancel": "Cancel",
   "goalProgressLabel": "{completed} / {goal}",
   "@goalProgressLabel": {

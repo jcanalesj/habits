@@ -81,6 +81,9 @@ enum _WeightInvitationAction { start, later, never }
 
 String streakCardCollapsedKey(String userId) => 'streak_card_collapsed_$userId';
 
+String streakLossDeclinedKey(String userId, LogicalDate day) =>
+    'streak_loss_declined_${userId}_${day.key}';
+
 class _HomeContent extends ConsumerStatefulWidget {
   const _HomeContent({
     required this.summary,
@@ -106,6 +109,9 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
   late bool _showColdStartWelcome;
   late final int _welcomeMessageIndex;
   late final String? _customWelcomeMessage;
+  bool _showingWildcardGrant = false;
+  bool _showingStreakLoss = false;
+  LogicalDate? _declinedRescueDay;
 
   String? get _userId => ref.read(authControllerProvider).value?.id;
 
@@ -162,6 +168,88 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     _customWelcomeMessage = customMessages.isEmpty
         ? null
         : customMessages[math.Random().nextInt(customMessages.length)];
+    final rescue = widget.summary.streak.rescue;
+    final userId = _userId;
+    if (rescue != null &&
+        userId != null &&
+        ref
+                .read(sharedPreferencesProvider)
+                ?.getBool(streakLossDeclinedKey(userId, rescue.day)) ==
+            true) {
+      _declinedRescueDay = rescue.day;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _maybeShowStreakLossPrompt();
+    });
+  }
+
+  Future<void> _maybeShowStreakLossPrompt() async {
+    final rescue = summary.streak.rescue;
+    final userId = _userId;
+    if (rescue == null || userId == null || _showingStreakLoss) return;
+    final preferences = ref.read(sharedPreferencesProvider);
+    final declinedKey = streakLossDeclinedKey(userId, rescue.day);
+    if (preferences?.getBool(declinedKey) == true) return;
+
+    _showingStreakLoss = true;
+    final choice = await showDialog<_StreakLossChoice>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: context.palette.scrim,
+      builder: (_) => _StreakLossDialog(
+        rescue: rescue,
+        available: summary.wildcards.available,
+      ),
+    );
+    if (!mounted) return;
+    _showingStreakLoss = false;
+    if (choice == _StreakLossChoice.protect) {
+      await _consumeWildcard(context, ref);
+    } else if (choice == _StreakLossChoice.lose) {
+      await preferences?.setBool(declinedKey, true);
+      if (mounted) setState(() => _declinedRescueDay = rescue.day);
+    }
+  }
+
+  StreakState get _presentedStreak {
+    final streak = summary.streak;
+    if (streak.rescue?.day != _declinedRescueDay) return streak;
+    return streak.copyWith(
+      rescue: null,
+      status: streak.currentStreak > 0
+          ? StreakStatus.completedToday
+          : StreakStatus.none,
+    );
+  }
+
+  Future<void> _showWildcardGrantDialog(int count) => showDialog<void>(
+    context: context,
+    barrierColor: context.palette.scrim,
+    builder: (_) => _WildcardGrantDialog(count: count),
+  );
+
+  @override
+  void didUpdateWidget(covariant _HomeContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final rescueDay = widget.summary.streak.rescue?.day;
+    if (rescueDay != null &&
+        rescueDay != oldWidget.summary.streak.rescue?.day) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _maybeShowStreakLossPrompt();
+      });
+    }
+    final granted =
+        widget.summary.wildcards.grantedTotal -
+        oldWidget.summary.wildcards.grantedTotal;
+    if (granted <= 0 || _showingWildcardGrant) {
+      return;
+    }
+    _showingWildcardGrant = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await _showWildcardGrantDialog(widget.summary.wildcards.available);
+      if (mounted) _showingWildcardGrant = false;
+    });
   }
 
   HomeSummary get summary => widget.summary;
@@ -186,6 +274,10 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     );
     if (!confirmed || !context.mounted) return;
 
+    await _consumeWildcard(context, ref);
+  }
+
+  Future<void> _consumeWildcard(BuildContext context, WidgetRef ref) async {
     final result = await ref
         .read(homeControllerProvider.notifier)
         .useWildcard();
@@ -353,12 +445,12 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         // Única racha de la app: la general del usuario. Ya no hay rachas
         // por ámbito ni por hábito (§1/§29).
         GeneralStreakCard(
-          streak: summary.streak,
+          streak: _presentedStreak,
           wildcards: summary.wildcards,
           initiallyCollapsed: _streakCardInitiallyCollapsed,
           onCollapsedChanged: _saveStreakCardCollapsed,
           deviceHour: DateTime.now().hour,
-          onUseWildcard: summary.streak.canRescue && summary.wildcards.hasAny
+          onUseWildcard: _presentedStreak.canRescue && summary.wildcards.hasAny
               ? () => _useWildcard(context, ref)
               : null,
         ),
@@ -531,6 +623,71 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
       _HabitFilter.monthly => type == PeriodicityType.monthly,
       _HabitFilter.yearly => type == PeriodicityType.yearly,
     };
+  }
+}
+
+enum _StreakLossChoice { protect, lose }
+
+class _StreakLossDialog extends StatelessWidget {
+  const _StreakLossDialog({required this.rescue, required this.available});
+
+  final RescueOpportunity rescue;
+  final int available;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AppFormDialog(
+      hero: Image.asset(
+        'assets/images/streak_loss_cat.png',
+        height: 210,
+        fit: BoxFit.contain,
+        excludeFromSemantics: true,
+      ),
+      title: l10n.streakLossPromptTitle,
+      helper: l10n.streakLossPromptBody(rescue.streakAtRisk),
+      primaryLabel: l10n.protectMyStreak,
+      primaryIcon: PhosphorIconsBold.shieldCheck,
+      onPrimary: available > 0
+          ? () => Navigator.pop(context, _StreakLossChoice.protect)
+          : null,
+      secondaryLabel: l10n.loseMyStreak,
+      onSecondary: () => Navigator.pop(context, _StreakLossChoice.lose),
+      children: [
+        Text(
+          l10n.wildcardsAvailable(available),
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: context.palette.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _WildcardGrantDialog extends StatelessWidget {
+  const _WildcardGrantDialog({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AppFormDialog(
+      hero: Image.asset(
+        'assets/images/wildcard_grant_cat.png',
+        height: 210,
+        fit: BoxFit.contain,
+        excludeFromSemantics: true,
+      ),
+      title: l10n.wildcardGrantTitle,
+      helper: l10n.wildcardGrantBody(count),
+      primaryLabel: l10n.continueLabel,
+      primaryIcon: PhosphorIconsBold.shieldCheck,
+      onPrimary: () => Navigator.pop(context),
+    );
   }
 }
 
